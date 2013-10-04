@@ -1,4 +1,8 @@
-#!/usr/bin/env python
-from Code import Code
+# http://julienbayle.net
+
+from LividCode import LividCode
+
 def create_instance(c_instance):
-    return Code(c_instance)
+    """ Creates and returns the LividCode script """
+    return LividCode(c_instance)
+
