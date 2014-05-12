@@ -635,21 +635,26 @@ class GuitarWing(ControlSurface):
 			self._setup_device_control()
 			self._setup_transport_control()
 			#self._setup_selected_session_control()
-			#self._setup_mixer_control()
-			#self._setup_session_control()
+			self._setup_mixer_control()
+			self._setup_session_control()
 			#self._setup_step_sequencer()
 			#self._device.add_device_listener(self._on_new_device_set)
-			self._device.set_parameter_controls(tuple([self._fader[0], self._fader[1], self._fader[2], self._accel[2]]))  #, self._fader_button[0], self._fader_button[1], self._fader_button[2], self._padCC[4]]))
+			self._device.set_parameter_controls(tuple([self._fader[0], self._fader[1], self._fader[2], self._accel[2], self._ccs[0], self._ccs[1], self._ccs[2], self._ccs[3]]))  #, self._fader_button[0], self._fader_button[1], self._fader_button[2], self._padCC[4]]))
+			self._mixer.set_select_buttons(self._button[1], self._button[0])
+			#self._session.set_scene_launch_buttons(self._pad[:4])
 			for index in range(4):
-				self._pad[index].set_identifier(36+index)
-				self._pad[index].set_channel(CHANNEL)
-				self._pad[index].set_enabled(False)
+				self._scene[index].set_launch_button(self._pad[index])
+			#for index in range(4):
+			#	self._pad[index].set_identifier(36+index)
+			#	self._pad[index].set_channel(CHANNEL)
+			#	self._pad[index].set_enabled(False)
 			self._transport.set_stop_button(self._button[6])
 			self._transport.set_loop_button(self._button[7])
 			self._transport.set_seek_backward_button(self._button[8])
 			self._transport.set_record_button(self._button[9])
-			self._on_select_track_down_value.subject = self._button[0]
-			self._on_select_track_up_value.subject = self._button[1]
+			#self._on_select_track_down_value.subject = self._button[0]
+			#self._on_select_track_up_value.subject = self._button[1]
+
 	
 
 	@subject_slot('value')
@@ -662,40 +667,6 @@ class GuitarWing(ControlSurface):
 	def _on_select_track_down_value(self, value):
 		if value:
 			pass
-	
-
-	"""def _install_mapping(self, midi_map_handle, control, parameter, feedback_delay, feedback_map):
-		assert(self._in_build_midi_map)
-		assert(control != None and parameter != None)
-		assert(isinstance(parameter, Live.DeviceParameter.DeviceParameter))
-		assert(isinstance(control, InputControlElement))
-		assert(isinstance(feedback_delay, int))
-		assert(isinstance(feedback_map, tuple))
-		success = False
-		feedback_rule = None
-		if control.message_type is MIDI_NOTE_TYPE:
-			feedback_rule = Live.MidiMap.CCFeedbackRule()
-			feedback_rule.note_no = control.message_identifier()
-			feedback_rule.vel_map = feedback_map
-		elif control.message_type() is MIDI_CC_TYPE:
-			feedback_rule = Live.MidiMap.CCFeedbackRule()
-			feedback_rule.cc_no = control.message_identifier()
-			feedback_rule.cc_value_map = feedback_map
-		elif control.message_type() is MIDI_PB_TYPE:
-			feedback_rule = Live.MidiMap.PitchBendFeedbackRule()
-			feedback_rule.value_pair_map = feedback_map
-		assert(feedback_rule != None)
-		feedback_rule.channel = control.message_channel()
-		feedback_rule.delay_in_ms = feedback_delay
-		if control.message_type() is MIDI_NOTE_TYPE:
-			success = Live.MidiMap.map_midi_note_with_feedback_map(midi_map_handle, parameter, control.message_channel(), control.message_identifier(), feedback_rule)
-		elif control.message_type() is MIDI_CC_TYPE:
-			success = Live.MidiMap.map_midi_cc_with_feedback_map(midi_map_handle, parameter, control.message_channel(), control.message_identifier(), control.message_map_mode(), feedback_rule, not control.needs_takeover(), control.mapping_sensitivity)
-		elif control.message_type() is MIDI_PB_TYPE:
-			success = Live.MidiMap.map_midi_pitchbend_with_feedback_map(midi_map_handle, parameter, control.message_channel(), feedback_rule, not control.needs_takeover())
-		success and Live.MidiMap.send_feedback_for_parameter(midi_map_handle, parameter)
-		return success
-		"""
 	
 
 	def _setup_monobridge(self):
@@ -711,6 +682,8 @@ class GuitarWing(ControlSurface):
 		#self._fader_button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, index, 'Fader_Button_' + str(index), self) for index in range(3)]
 		self._fader_button = [MonoEncoderElement(MIDI_NOTE_TYPE, CHANNEL, SLIDERS[index], Live.MidiMap.MapMode.absolute, 'Fader_Button_' + str(index), index, self) for index in range(3)]
 
+		self._ccs = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, CCS[index], Live.MidiMap.MapMode.absolute, 'CCs_' + str(index), index, self) for index in range(4)]
+
 		self._pad =  [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, PADS[index], 'Pad_' + str(index), self) for index in range(5)]
 		self._padCC = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, PADS[index], Live.MidiMap.MapMode.absolute, 'PadCC_' + str(index), index, self) for index in range(5)]
 
@@ -719,21 +692,21 @@ class GuitarWing(ControlSurface):
 
 	def _setup_mixer_control(self):
 		is_momentary = True
-		self._num_tracks = (8) #A mixer is one-dimensional; 
-		self._mixer = GuitarWingMixerComponent(self, 8, 4, False, False)
+		self._num_tracks = (1) #A mixer is one-dimensional; 
+		self._mixer = MixerComponent(1, 0, False, False)
 		self._mixer.name = 'Mixer'
 		self._mixer.set_track_offset(0) #Sets start point for mixer strip (offset from left)
-		for index in range(8):
+		for index in range(1):
 			self._mixer.channel_strip(index)._invert_mute_feedback = True
 			self._mixer.channel_strip(index).name = 'Mixer_ChannelStrip_' + str(index)
-		for index in range(4):
-			self._mixer.return_strip(index).name = 'Mixer_ReturnStrip_' + str(index)
+		#for index in range(4):
+		#	self._mixer.return_strip(index).name = 'Mixer_ReturnStrip_' + str(index)
 		self._mixer.selected_strip().name = 'Mixer_SelectedStrip'
 		self.song().view.selected_track = self._mixer.channel_strip(0)._track 
 	
 
 	def _setup_session_control(self):
-		self._session = GuitarWingSessionComponent(8, 4, self)
+		self._session = GuitarWingSessionComponent(1, 4, self)
 		self._session.name = "Session"
 		self._session.set_offsets(0, 0)	 
 		self._session.set_stop_clip_value(STOP_CLIP)
@@ -741,7 +714,7 @@ class GuitarWing(ControlSurface):
 		for row in range(4):
 			self._scene[row] = self._session.scene(row)
 			self._scene[row].name = 'Scene_' + str(row)
-			for column in range(8):
+			for column in range(1):
 				clip_slot = self._scene[row].clip_slot(column)
 				clip_slot.name = str(column) + '_Clip_Slot_' + str(row)
 				clip_slot.set_triggered_to_play_value(CLIP_TRG_PLAY)
@@ -750,7 +723,7 @@ class GuitarWing(ControlSurface):
 				clip_slot.set_started_value(CLIP_STARTED)
 				clip_slot.set_recording_value(CLIP_RECORDING)
 		self._session.set_mixer(self._mixer)
-		self._session.set_track_banking_increment(TRACK_BANKING_INCREMENT)
+		#self._session.set_track_banking_increment(TRACK_BANKING_INCREMENT)
 		self.set_highlighting_session_component(self._session)
 		self._session._do_show_highlight()
 	
