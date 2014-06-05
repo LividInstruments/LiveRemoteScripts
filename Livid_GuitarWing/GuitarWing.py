@@ -627,6 +627,8 @@ class GuitarWing(ControlSurface):
 		self.flash_status = 1
 		self._clutch_device_selection = False
 		self._touched = 0
+		self._last_selected_track = None
+		self._last_selected_track_arm = False
 		with self.component_guard():
 			self._setup_monobridge()
 			self._setup_controls()
@@ -1144,7 +1146,25 @@ class GuitarWing(ControlSurface):
 					self._initialize_hardware()
 	
 
+	def _on_selected_track_changed(self):
+		super(GuitarWing, self)._on_selected_track_changed()
+		track = self._mixer.selected_strip()._track
+		track_list = []
+		for t in self._mixer.tracks_to_use():
+			track_list.append(t)
+		if self._last_selected_track and self._last_selected_track.can_be_armed and not self._last_selected_track_arm:
+			self.schedule_message(1, self._disarm_track, self._last_selected_track)
+			self.schedule_message(1, self._arm_current_track, track)
+		if track.can_be_armed:
+			self._last_selected_track_arm = track.arm
+		self._last_selected_track = track
 
+	def _arm_current_track(self, track):
+		track.arm = 1
+	
 
+	def _disarm_track(self, track):
+		track.arm = 0
+	
 
 #	a
