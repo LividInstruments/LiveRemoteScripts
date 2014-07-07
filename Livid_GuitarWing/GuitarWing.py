@@ -22,15 +22,15 @@ from _Framework.ControlSurfaceComponent import ControlSurfaceComponent # Base cl
 from _Framework.DeviceComponent import DeviceComponent # Class representing a device in Live
 from _Framework.EncoderElement import EncoderElement # Class representing a continuous control on the controller
 from _Framework.InputControlElement import * # Base class for all classes representing control elements on a controller
-from _Framework.MixerComponent import MixerComponent # Class encompassing several channel strips to form a mixer
+from VCM600.MixerComponent import MixerComponent # Class encompassing several channel strips to form a mixer
 from _Framework.ModeSelectorComponent import ModeSelectorComponent # Class for switching between modes, handle several functions with few controls
 from _Framework.NotifyingControlElement import NotifyingControlElement # Class representing control elements that can send values
 from _Framework.SceneComponent import SceneComponent # Class representing a scene in Live
 from _Framework.SessionComponent import SessionComponent # Class encompassing several scene to cover a defined section of Live's session
-from _Framework.SessionZoomingComponent import SessionZoomingComponent # Class using a matrix of buttons to choose blocks of clips in the session
+from _Framework.SessionZoomingComponent import DeprecatedSessionZoomingComponent as SessionZoomingComponent # Class using a matrix of buttons to choose blocks of clips in the session
 from _Framework.SliderElement import SliderElement # Class representing a slider on the controller
-from _Framework.TrackEQComponent import TrackEQComponent # Class representing a track's EQ, it attaches to the last EQ device in the track
-from _Framework.TrackFilterComponent import TrackFilterComponent # Class representing a track's filter, attaches to the last filter in the track
+from VCM600.TrackEQComponent import TrackEQComponent # Class representing a track's EQ, it attaches to the last EQ device in the track
+from VCM600.TrackFilterComponent import TrackFilterComponent # Class representing a track's filter, attaches to the last filter in the track
 from _Framework.TransportComponent import TransportComponent # Class encapsulating all functions in Live's transport section
 from _Framework.PhysicalDisplayElement import PhysicalDisplayElement
 from _Framework.SubjectSlot import subject_slot, subject_slot_group
@@ -1130,9 +1130,9 @@ class GuitarWing(ControlSurface):
 
 	"""some cheap overrides"""
 
-	def set_highlighting_session_component(self, session_component):
+	"""def set_highlighting_session_component(self, session_component):
 		self._highlighting_session_component = session_component
-		self._highlighting_session_component.set_highlighting_callback(self._set_session_highlight)
+		self._highlighting_session_component.set_highlighting_callback(self._set_session_highlight)"""
 	
 
 	def handle_sysex(self, midi_bytes):
