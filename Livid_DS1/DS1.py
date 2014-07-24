@@ -129,6 +129,23 @@ class DS1MixerComponent(MixerComponent):
 	
 
 
+class DS1SessionComponent(SessionComponent):
+
+
+	def set_track_select_dial(self, dial):
+		self._on_track_select_dial_value.subject = dial
+	
+
+	@subject_slot('value')
+	def _on_track_select_dial_value(self, value):
+		debug('_on_track_select_dial_value', value)
+		if value > 64:
+			self._bank_left()
+		else:
+			self._bank_right()
+	
+
+
 class DS1ChannelStripComponent(ChannelStripComponent):
 
 
@@ -342,7 +359,7 @@ class DS1(ControlSurface):
 	
 
 	def _setup_session_control(self):
-		self._session = SessionComponent(8, 1)
+		self._session = DS1SessionComponent(8, 1)
 		self._session.name = "Session"
 		self._session.set_offsets(0, 0)	 
 		self._session.set_stop_clip_value(STOP_CLIP)
@@ -359,7 +376,7 @@ class DS1(ControlSurface):
 				clip_slot.set_started_value(CLIP_STARTED)
 				clip_slot.set_recording_value(CLIP_RECORDING)
 		self._session.set_mixer(self._mixer)
-		self._session.layer = Layer(scene_bank_up_button = self._grid[0][1], scene_bank_down_button = self._grid[0][2], scene_launch_buttons = self._grid_matrix.submatrix[1:2, 1:2])
+		self._session.layer = Layer(track_select_dial = ComboElement(self._encoder[1], modifiers = [self._encoder_button[1]]), scene_bank_up_button = self._grid[0][1], scene_bank_down_button = self._grid[0][2], scene_launch_buttons = self._grid_matrix.submatrix[1:2, 1:2])
 		self._session.clips_layer = AddLayerMode(self._session, Layer(clip_launch_buttons = self._top_buttons, stop_track_clip_buttons = self._bottom_buttons))
 		self.set_highlighting_session_component(self._session)
 		self._session._do_show_highlight()
