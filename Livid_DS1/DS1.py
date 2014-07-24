@@ -132,6 +132,17 @@ class DS1MixerComponent(MixerComponent):
 class DS1ChannelStripComponent(ChannelStripComponent):
 
 
+	def __init__(self, *a, **k):
+		super(DS1ChannelStripComponent, self).__init__(*a, **k)
+		self._device_component = DeviceComponent()
+	
+
+	def set_track(self, *a, **k):
+		super(DS1ChannelStripComponent, self).set_track(*a, **k)
+		new_track = self._track or None
+		self._update_device_selection.subject = self._track
+	
+
 	def set_stop_button(self, button):
 		self._on_stop_value.subject = button
 	
@@ -159,6 +170,34 @@ class DS1ChannelStripComponent(ChannelStripComponent):
 				self._mute_button.set_light(self.empty_color)
 	
 
+	def set_parameter_controls(self, controls):
+		self._device_component and self._device_component.set_parameter_controls(controls)
+	
+
+	def set_device_component(self, device_component):
+		self._device_component = device_component
+		self._update_device_selection
+	
+
+	def on_selected_track_changed(self, *a, **k):
+		super(DS1ChannelStripComponent, self).on_selected_track_changed(*a, **k)
+		self._update_device_selection()
+	
+
+	@subject_slot('devices')
+	def _update_device_selection(self):
+		track = self._track
+		device_to_select = None
+		if track and device_to_select == None and len(track.devices) > 0:
+			device_to_select = track.devices[0]
+		self._device_component and self._device_component.set_device(device_to_select)
+	
+
+	def update(self, *a, **k):
+		super(DS1ChannelStripComponent, self).update()
+		self._update_device_selection()
+	
+
 
 class ToggleModeBehaviour(ModeButtonBehaviour):
 
@@ -167,7 +206,6 @@ class ToggleModeBehaviour(ModeButtonBehaviour):
 		debug('selected_mode:', component.selected_mode, 'mode:', mode,)
 		self.cycle_mode(-1)
 	
-
 
 
 class ToggledModesComponent(ModesComponent):
@@ -249,7 +287,7 @@ class DS1(ControlSurface):
 		self._master_fader = MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, DS1_MASTER, Live.MidiMap.MapMode.absolute, 'MasterFader', 0, self)
 		self._button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, DS1_BUTTONS[index], 'Button_' + str(index), self) for index in range(16)]
 		self._grid = [[MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, DS1_GRID[x][y], 'Button_' + str(x) + '_' + str(y), self) for x in range(3)] for y in range(3)]
-
+		self._dummy = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, 120+x, Live.MidiMap.MapMode.absolute, 'Dummy_Dial_' + str(x), x, self) for x in range(5)]
 		self._fader_matrix = ButtonMatrixElement(name = 'FaderMatrix', rows = [self._fader])
 		self._top_buttons = ButtonMatrixElement(name = 'TopButtonMatrix', rows = [self._button[:8]])
 		self._bottom_buttons = ButtonMatrixElement(name = 'BottomButtonMatrix', rows = [self._button[8:]])
@@ -258,6 +296,7 @@ class DS1(ControlSurface):
 		self._encoder_matrix = ButtonMatrixElement(name = 'EncoderMatrix', rows = [self._encoder])
 		self._encoder_button_matrix = ButtonMatrixElement(name = 'EncoderButtonMatrix', rows = [self._encoder_button])
 		self._grid_matrix = ButtonMatrixElement(name = 'GridMatrix', rows = self._grid)
+		self._selected_parameter_controls = ButtonMatrixElement(name = 'SelectedParameterControls', rows = [self._dummy + self._encoder[:3]])
 
 
 	
@@ -284,13 +323,18 @@ class DS1(ControlSurface):
 	
 
 	def _setup_mixer_control(self):
-		is_momentary = True
-		self._num_tracks = (8) #A mixer is one-dimensional; 
+		self._num_tracks = (8)
 		self._mixer = DS1MixerComponent(script = self, num_tracks = 8, num_returns = 4, invert_mute_feedback = True, autoname = True)
 		self._mixer.name = 'Mixer'
-		self._mixer.set_track_offset(0) #Sets start point for mixer strip (offset from left)
+		self._mixer.set_track_offset(0)
 		self._mixer.master_strip().set_volume_control(self._master_fader)
+		self._mixer.set_prehear_volume_control(self._side_dial[3])
 		self._mixer.layer = Layer(volume_controls = self._fader_matrix)
+		self._strip = [self._mixer.channel_strip(index) for index in range(8)]
+		for index in range(8):
+			self._strip[index].layer = Layer(parameter_controls = self._dial_matrix.submatrix[index:index+1, :])
+		self._mixer.selected_strip().layer = Layer(parameter_controls = self._selected_parameter_controls)
+		self._mixer.master_strip().layer = Layer(parameter_controls = self._side_dial_matrix.submatrix[:3, :])
 		self._mixer.main_layer = AddLayerMode(self._mixer, Layer(solo_buttons = self._top_buttons, mute_buttons = self._bottom_buttons))
 		self._mixer.select_layer = AddLayerMode(self._mixer, Layer(arm_buttons = self._top_buttons, track_select_buttons = self._bottom_buttons))
 		self.song().view.selected_track = self._mixer.channel_strip(0)._track 
