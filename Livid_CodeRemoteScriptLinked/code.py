@@ -186,7 +186,7 @@ class code(ControlSurface):
 		returnb_pan_control = SliderElement(MIDI_CC_TYPE, CHAN, 23)
 		returnb_volume_control = SliderElement(MIDI_CC_TYPE, CHAN, 24)
 		master_select_button = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHAN, 31)
-		prehear_control = EncoderElement(MIDI_CC_TYPE, CHAN, 30, Live.MidiMap.MapMode.absolute)
+		prehear_control = EncoderElement(MIDI_CC_TYPE, CHAN, 31, Live.MidiMap.MapMode.absolute)
 		crossfader.name = 'Crossfader'
 		master_volume_control.name = 'Master_Volume_Control'
 		returna_pan_control.name = 'ReturnA_Pan_Control'

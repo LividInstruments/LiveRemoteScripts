@@ -40,13 +40,16 @@ from _Framework.Resource import PrioritizedResource
 from _Framework.Util import mixin
 
 """Custom files, overrides, and files from other scripts"""
-from _Mono_Framework.MonoButtonElement import *
-from _Mono_Framework.MonoEncoderElement import MonoEncoderElement
+
 from _Mono_Framework.MonoBridgeElement import MonoBridgeElement
 from _Mono_Framework.MonoDeviceComponent import MonoDeviceComponent
-from _Mono_Framework.DeviceNavigator import DeviceNavigator
-from _Mono_Framework.TranslationComponent import TranslationComponent
-from _Mono_Framework.Debug import *
+
+from MonoButtonElement import *
+from MonoEncoderElement import MonoEncoderElement
+from DeviceNavigator import DeviceNavigator
+from TranslationComponent import TranslationComponent
+from Debug import *
+
 
 from Map import *
 
@@ -271,7 +274,9 @@ class DS1(ControlSurface):
 
 	"""script initialization methods"""
 	def _initialize_hardware(self):
-		self._send_midi((191, 122, 64))
+		self._send_midi((191, 122, 64))    #what is this?
+		self._send_midi((240, 0, 1, 97, 16, 17, 0, 0, 247))   #turn off relative encoders
+		#self._send_midi((240, 0, 1, 97, 16, 17, 2, 0, 247))   #turn on relative for top right encoder
 	
 
 	def _check_connection(self):
@@ -313,7 +318,7 @@ class DS1(ControlSurface):
 		self._encoder_matrix = ButtonMatrixElement(name = 'EncoderMatrix', rows = [self._encoder])
 		self._encoder_button_matrix = ButtonMatrixElement(name = 'EncoderButtonMatrix', rows = [self._encoder_button])
 		self._grid_matrix = ButtonMatrixElement(name = 'GridMatrix', rows = self._grid)
-		self._selected_parameter_controls = ButtonMatrixElement(name = 'SelectedParameterControls', rows = [self._dummy + self._encoder[:3]])
+		self._selected_parameter_controls = ButtonMatrixElement(name = 'SelectedParameterControls', rows = [self._dummy + self._encoder[:1] + self._encoder[2:]])
 
 
 	
