@@ -269,12 +269,12 @@ class DS1(ControlSurface):
 			self._setup_m4l_interface()
 			#self._device.add_device_listener(self._on_new_device_set)
 		self.log_message("<<<<<<<<<<<<<<<<<= DS1 log opened =>>>>>>>>>>>>>>>>>>>>>") 
-		#self.schedule_message(3, self._check_connection)
+		self.schedule_message(3, self._initialize_hardware)
 	
 
 	"""script initialization methods"""
 	def _initialize_hardware(self):
-		self._send_midi((191, 122, 64))    #what is this?
+		#self._send_midi((191, 122, 64))    #what is this?
 		self._send_midi((240, 0, 1, 97, 16, 17, 0, 0, 247))   #turn off relative encoders
 		#self._send_midi((240, 0, 1, 97, 16, 17, 2, 0, 247))   #turn on relative for top right encoder
 	
