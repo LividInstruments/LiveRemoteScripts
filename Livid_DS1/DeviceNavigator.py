@@ -16,12 +16,12 @@ class DeviceNavigator(ControlSurfaceComponent):
 		self._mixer = mixer
 		self._script = script
 		self._on_device_changed.subject = self.song()
-		self._device_color_on = 4
-		self._device_color_off = 0
-		self._chain_color_on = 5
-		self._chain_color_off = 0
-		self._level_color_on = 3
-		self._level_color_off = 0
+		self._device_color_on = 'Device.NavOn'
+		self._device_color_off = 'Device.NavOff'
+		self._chain_color_on = 'Device.ChainNavOn'
+		self._chain_color_off = 'Device.ChainNavOff'
+		self._level_color_on = 'Device.ContainNavOn'
+		self._level_color_off = 'Device.ContainNavOff'
 	
 
 	def deassign_all(self):

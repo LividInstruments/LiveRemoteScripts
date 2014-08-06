@@ -104,3 +104,157 @@ ZOOM_STOPPED = 127
 ZOOM_PLAYING = 6
 ZOOM_SELECTED = 8
 
+from _Framework.ButtonElement import Color
+
+class LividRGB:
+
+	OFF = Color(0)
+	WHITE = Color(1)
+	YELLOW = Color(2)
+	CYAN = Color(3)
+	MAGENTA = Color(4)
+	RED = Color(5)
+	GREEN = Color(6)
+	BLUE = Color(7)
+	
+	class BlinkFast:
+		WHITE = Color(8)
+		YELLOW = Color(9)
+		CYAN = Color(10)
+		MAGENTA = Color(11)
+		RED = Color(12)
+		GREEN = Color(13)
+		BLUE = Color(14)
+	
+
+	class BlinkMedium:
+		WHITE = Color(15)
+		YELLOW = Color(16)
+		CYAN = Color(17)
+		MAGENTA = Color(18)
+		RED = Color(19)
+		GREEN = Color(20)
+		BLUE = Color(21)
+	
+
+	class BlinkSlow:
+		WHITE = Color(22)
+		YELLOW = Color(23)
+		CYAN = Color(24)
+		MAGENTA = Color(25)
+		RED = Color(26)
+		GREEN = Color(27)
+		BLUE = Color(28)
+	
+
+
+class DS1Colors:
+
+
+	class ModeButtons:
+		ModSwitcher = LividRGB.BlinkMedium.CYAN
+		ModSwitcherDisabled = LividRGB.CYAN
+		Translations = LividRGB.BlinkMedium.MAGENTA
+		TranslationsDisabled = LividRGB.MAGENTA
+		DeviceSelector = LividRGB.BlinkMedium.YELLOW
+		DeviceSelectorDisabled = LividRGB.YELLOW
+	
+
+	class DefaultButton:
+		On = LividRGB.WHITE
+		Off = LividRGB.OFF
+		Disabled = LividRGB.OFF
+		Alert = LividRGB.BlinkFast.WHITE
+	
+
+	class Session:
+		StopClipTriggered = LividRGB.BlinkFast.BLUE
+		StopClip = LividRGB.WHITE
+		Scene = LividRGB.CYAN
+		NoScene = LividRGB.OFF
+		SceneTriggered = LividRGB.BlinkFast.BLUE
+		ClipTriggeredPlay = LividRGB.BlinkFast.GREEN
+		ClipTriggeredRecord = LividRGB.BlinkFast.RED
+		RecordButton = LividRGB.OFF
+		ClipStopped = LividRGB.WHITE
+		ClipStarted = LividRGB.GREEN
+		ClipRecording = LividRGB.RED
+		NavigationButtonOn = LividRGB.CYAN
+		NavigationButtonOff = LividRGB.YELLOW
+		ZoomOn = LividRGB.BlinkFast.WHITE
+		ZoomOff = LividRGB.WHITE
+	
+
+	class Zooming:
+		Selected = LividRGB.BlinkFast.YELLOW
+		Stopped = LividRGB.WHITE
+		Playing = LividRGB.GREEN
+		Empty = LividRGB.OFF
+	
+
+	class LoopSelector:
+		Playhead = LividRGB.YELLOW
+		OutsideLoop = LividRGB.BLUE
+		InsideLoopStartBar = LividRGB.CYAN
+		SelectedPage = LividRGB.WHITE
+		InsideLoop = LividRGB.CYAN
+		PlayheadRecord = LividRGB.RED
+	
+
+	class Transport:
+		PlayOn = LividRGB.BlinkMedium.GREEN
+		PlayOff = LividRGB.GREEN
+		StopOn = LividRGB.BLUE
+		RecordOn = LividRGB.BlinkMedium.RED
+		RecordOff = LividRGB.RED
+		OverdubOn = LividRGB.BlinkFast.RED
+		OverdubOff = LividRGB.RED	
+		SeekBackwardOn = LividRGB.BlinkMedium.CYAN
+		SeekBackwardOff = LividRGB.CYAN
+		LoopOn = LividRGB.BlinkMedium.YELLOW
+		LoopOff = LividRGB.YELLOW
+	
+
+	class Mixer:
+		SoloOn = LividRGB.CYAN
+		SoloOff = LividRGB.OFF
+		MuteOn = LividRGB.YELLOW
+		MuteOff = LividRGB.OFF
+		ArmSelected = LividRGB.RED
+		ArmUnselected = LividRGB.RED
+		ArmOff = LividRGB.OFF
+		StopClip = LividRGB.WHITE
+		SelectedOn = LividRGB.BLUE
+		SelectedOff = LividRGB.OFF
+	
+
+	class Recording:
+		Transition = LividRGB.BlinkFast.MAGENTA
+	
+
+	class Recorder:
+		On = LividRGB.WHITE
+		Off = LividRGB.BLUE
+		NewOn = LividRGB.BlinkMedium.YELLOW
+		NewOff = LividRGB.YELLOW
+		FixedOn = LividRGB.BlinkMedium.CYAN
+		FixedOff = LividRGB.CYAN
+		RecordOn = LividRGB.BlinkMedium.MAGENTA
+		RecordOff = LividRGB.MAGENTA
+		AutomationOn = LividRGB.BlinkMedium.CYAN
+		AutomationOff = LividRGB.CYAN
+		FixedAssigned = LividRGB.MAGENTA
+		FixedNotAssigned = LividRGB.OFF
+	
+
+	class Device:
+		NavOn = LividRGB.MAGENTA
+		NavOff = LividRGB.OFF
+		BankOn = LividRGB.YELLOW
+		BankOff = LividRGB.OFF
+		ChainNavOn = LividRGB.RED
+		ChainNavOff = LividRGB.OFF
+		ContainNavOn = LividRGB.CYAN
+		ContainNavOff = LividRGB.OFF
+	
+

@@ -96,6 +96,35 @@ def return_empty():
 debug = initialize_debug()
 
 
+class DS1TransportComponent(TransportComponent):
+
+
+	def set_record_button(self, button, *a, **k):
+		button and button.set_on_off_values('Transport.RecordOn', 'Transport.RecordOff')
+		super(DS1TransportComponent, self).set_record_button(button, *a, **k)
+	
+
+	def set_play_button(self, button, *a, **k):
+		button and button.set_on_off_values('Transport.PlayOn', 'Transport.PlayOff')
+		super(DS1TransportComponent, self).set_play_button(button, *a, **k)
+	
+
+	def set_stop_button(self, button, *a, **k):
+		button and button.set_on_off_values('Transport.StopOn', 'Transport.StopOn')
+		super(DS1TransportComponent, self).set_stop_button(button, *a, **k)
+	
+
+	def set_seek_backward_button(self, button, *a, **k):
+		button and button.set_on_off_values('Transport.SeekBackwardOn', 'Transport.SeekBackwardOff')
+		super(DS1TransportComponent, self).set_seek_backward_button(button, *a, **k)
+	
+
+	def set_loop_button(self, button, *a, **k):
+		button and button.set_on_off_values('Transport.LoopOn', 'Transport.LoopOff')
+		super(DS1TransportComponent, self).set_loop_button(button, *a, **k)
+	
+
+
 class DS1MixerComponent(MixerComponent):
 
 
@@ -254,6 +283,7 @@ class DS1(ControlSurface):
 		self.flash_status = 1
 		self._touched = 0
 		self._update_linked_device_selection = None
+		self._skin = Skin(DS1Colors)
 		with self.component_guard():
 			self._setup_monobridge()
 			self._setup_controls()
@@ -305,11 +335,12 @@ class DS1(ControlSurface):
 		self._encoder = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, DS1_ENCODERS[x], Live.MidiMap.MapMode.absolute, 'Side_Dial_' + str(x), x, self) for x in range(4)]
 		for encoder in self._encoder:
 			encoder._mapping_feedback_delay = -1
-		self._encoder_button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, DS1_ENCODER_BUTTONS[index], 'EncoderButton_' + str(index), self) for index in range(4)]
+		self._encoder_button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, DS1_ENCODER_BUTTONS[index], 'EncoderButton_' + str(index), self, skin = self._skin) for index in range(4)]
 		self._master_fader = MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, DS1_MASTER, Live.MidiMap.MapMode.absolute, 'MasterFader', 0, self)
-		self._button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, DS1_BUTTONS[index], 'Button_' + str(index), self) for index in range(16)]
-		self._grid = [[MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, DS1_GRID[x][y], 'Button_' + str(x) + '_' + str(y), self) for x in range(3)] for y in range(3)]
+		self._button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, DS1_BUTTONS[index], 'Button_' + str(index), self, skin = self._skin) for index in range(16)]
+		self._grid = [[MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, DS1_GRID[x][y], 'Button_' + str(x) + '_' + str(y), self, skin = self._skin) for x in range(3)] for y in range(3)]
 		self._dummy = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, 120+x, Live.MidiMap.MapMode.absolute, 'Dummy_Dial_' + str(x), x, self) for x in range(5)]
+
 		self._fader_matrix = ButtonMatrixElement(name = 'FaderMatrix', rows = [self._fader])
 		self._top_buttons = ButtonMatrixElement(name = 'TopButtonMatrix', rows = [self._button[:8]])
 		self._bottom_buttons = ButtonMatrixElement(name = 'BottomButtonMatrix', rows = [self._button[8:]])
@@ -357,29 +388,15 @@ class DS1(ControlSurface):
 			self._strip[index].layer = Layer(parameter_controls = self._dial_matrix.submatrix[index:index+1, :])
 		self._mixer.selected_strip().layer = Layer(parameter_controls = self._selected_parameter_controls)
 		self._mixer.master_strip().layer = Layer(parameter_controls = self._side_dial_matrix.submatrix[:3, :])
-		self._mixer.main_layer = AddLayerMode(self._mixer, Layer(solo_buttons = self._top_buttons, mute_buttons = self._bottom_buttons))
-		self._mixer.select_layer = AddLayerMode(self._mixer, Layer(arm_buttons = self._top_buttons, track_select_buttons = self._bottom_buttons))
+		self._mixer.main_layer = AddLayerMode(self._mixer, Layer(solo_buttons = self._bottom_buttons, mute_buttons = self._top_buttons))
+		self._mixer.select_layer = AddLayerMode(self._mixer, Layer(arm_buttons = self._bottom_buttons, track_select_buttons = self._top_buttons))
 		self.song().view.selected_track = self._mixer.channel_strip(0)._track 
 		self._mixer.set_enabled(True)
 	
 
 	def _setup_session_control(self):
-		self._session = DS1SessionComponent(8, 1)
-		self._session.name = "Session"
+		self._session = DS1SessionComponent(num_tracks = 8, num_scenes = 1, auto_name = True, enable_skinning = True)
 		self._session.set_offsets(0, 0)	 
-		self._session.set_stop_clip_value(STOP_CLIP)
-		self._scene = [None for index in range(1)]
-		for row in range(1):
-			self._scene[row] = self._session.scene(row)
-			self._scene[row].name = 'Scene_' + str(row)
-			for column in range(8):
-				clip_slot = self._scene[row].clip_slot(column)
-				clip_slot.name = str(column) + '_Clip_Slot_' + str(row)
-				clip_slot.set_triggered_to_play_value(CLIP_TRG_PLAY)
-				clip_slot.set_triggered_to_record_value(CLIP_TRG_REC)
-				clip_slot.set_stopped_value(CLIP_STOP)
-				clip_slot.set_started_value(CLIP_STARTED)
-				clip_slot.set_recording_value(CLIP_RECORDING)
 		self._session.set_mixer(self._mixer)
 		self._session.layer = Layer(track_select_dial = ComboElement(self._encoder[1], modifiers = [self._encoder_button[1]]), scene_bank_up_button = self._grid[0][1], scene_bank_down_button = self._grid[0][2], scene_launch_buttons = self._grid_matrix.submatrix[1:2, 1:2])
 		self._session.clips_layer = AddLayerMode(self._session, Layer(clip_launch_buttons = self._top_buttons, stop_track_clip_buttons = self._bottom_buttons))
@@ -388,7 +405,7 @@ class DS1(ControlSurface):
 	
 
 	def _setup_transport_control(self):
-		self._transport = TransportComponent()
+		self._transport = DS1TransportComponent()
 		self._transport.name = 'Transport'
 		self._transport.layer = Layer(stop_button = self._grid[1][0], play_button = self._grid[0][0], record_button = self._grid[2][0], loop_button = self._grid[2][1], seek_backward_button = self._grid[1][2])
 		self._transport.set_enabled(True)
