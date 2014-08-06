@@ -616,16 +616,11 @@ class DS1(ControlSurface):
 
 	"""general functionality"""
 	def disconnect(self):
-		self._send_midi(STREAMINGOFF)
-		if not self._last_selected_track is None:
-			if self._last_selected_track.current_input_sub_routing_has_listener(self._on_selected_track_midi_subrouting_changed):
-				self._last_selected_track.remove_current_input_sub_routing_listener(self._on_selected_track_midi_subrouting_changed)
 		if not self.oscServer is None:
 			self.oscServer.shutdown()
 		self.oscServer = None
 		self.log_message("--------------= DS1 log closed =--------------")
 		super(DS1, self).disconnect()
-		#rebuild_sys()
 	
 
 	def _can_auto_arm_track(self, track):
