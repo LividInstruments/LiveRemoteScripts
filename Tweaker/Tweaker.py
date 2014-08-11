@@ -10,7 +10,7 @@ from itertools import chain
 """ _Framework files """
 from _Framework.ButtonElement import ButtonElement # Class representing a button a the controller
 from _Framework.ButtonMatrixElement import ButtonMatrixElement # Class representing a 2-dimensional set of buttons
-from _Framework.ChannelStripComponent import ChannelStripComponent # Class attaching to the mixer of a given track
+from _Framework.ChannelStripComponent import ChannelStripComponent as BaseChannelStripComponent # Class attaching to the mixer of a given track
 from _Framework.ClipSlotComponent import ClipSlotComponent # Class representing a ClipSlot within Live
 from _Framework.CompoundComponent import CompoundComponent # Base class for classes encompasing other components to form complex components
 from _Framework.ControlElement import ControlElement # Base class for all classes representing control elements on a controller 
@@ -19,20 +19,24 @@ from _Framework.ControlSurfaceComponent import ControlSurfaceComponent # Base cl
 from _Framework.DisplayDataSource import DisplayDataSource # Data object that is fed with a specific string and notifies its observers
 from _Framework.EncoderElement import EncoderElement # Class representing a continuous control on the controller
 from _Framework.InputControlElement import * # Base class for all classes representing control elements on a controller
-from VCM600.MixerComponent import MixerComponent # Class encompassing several channel strips to form a mixer
+from VCM600.MixerComponent import MixerComponent as BaseMixerComponent # Class encompassing several channel strips to form a mixer
 from _Framework.ModeSelectorComponent import ModeSelectorComponent # Class for switching between modes, handle several functions with few controls
 from _Framework.NotifyingControlElement import NotifyingControlElement # Class representing control elements that can send values
 from _Framework.SceneComponent import SceneComponent # Class representing a scene in Live
-from _Framework.SessionComponent import SessionComponent # Class encompassing several scene to cover a defined section of Live's session
+from _Framework.SessionComponent import SessionComponent as BaseSessionComponent# Class encompassing several scene to cover a defined section of Live's session
 from _Framework.SessionZoomingComponent import DeprecatedSessionZoomingComponent as SessionZoomingComponent # Class using a matrix of buttons to choose blocks of clips in the session
 from _Framework.SliderElement import SliderElement # Class representing a slider on the controller
 from VCM600.TrackEQComponent import TrackEQComponent # Class representing a track's EQ, it attaches to the last EQ device in the track
 from VCM600.TrackFilterComponent import TrackFilterComponent # Class representing a track's filter, attaches to the last filter in the track
 from _Framework.TransportComponent import TransportComponent # Class encapsulating all functions in Live's transport section
-
+from _Framework.SubjectSlot import SubjectEvent, subject_slot, subject_slot_group
 """Custom files, overrides, and files from other scripts"""
 from MonoButtonElement import MonoButtonElement
 from DetailViewControllerComponent import DetailViewControllerComponent
+
+
+#from _Mono_Framework.Debug import *
+#debug = initialize_debug()
 
 import LiveUtils
 from _Generic.Devices import *
@@ -145,6 +149,138 @@ DEVICE_BOB_DICT = {'AudioEffectGroupDevice': RCK_BOBS,
  'Vinyl': VDS_BOBS,
  'Gate': GTE_BOBS,
  'PingPongDelay': PPG_BOBS}
+
+class ChannelStripComponent(BaseChannelStripComponent):
+
+
+	def __init__(self, script, *a, **k):
+		self._script = script
+		self._index = 0
+		super(ChannelStripComponent, self).__init__(*a, **k)
+	
+
+	def update(self):
+		super(ChannelStripComponent, self).update()
+		self._script._update_device(self)
+	
+
+	def _select_value(self, value):
+		super(ChannelStripComponent, self)._select_value(value)
+		self._script._last_selected_strip_number = self._index
+	
+
+	def _on_cf_assign_changed(self):
+		if (self.is_enabled() and (self._crossfade_toggle != None)):
+			if (self._track != None) and (self._track in chain(self.song().tracks, self.song().return_tracks)):
+				if self._track.mixer_device.crossfade_assign == 1: #modified
+					self._crossfade_toggle.turn_off()
+				elif self._track.mixer_device.crossfade_assign == 0:
+					self._crossfade_toggle.send_value(CROSSFADE_A)
+				else:
+					self._crossfade_toggle.send_value(CROSSFADE_B)
+	
+
+	"""def set_track(self, *a, **k):
+		super(ChannelStripComponent, self).set_track(*a, **k)
+		self._script._on_selected_track_changed()"""
+	
+
+	#def connect_parameters(self, *a, **k):
+	#	super(ChannelStripComponent, self).connect_parameters(*a, **k)
+	#	self._script._update_device(self)
+	
+
+class MixerComponent(BaseMixerComponent):
+
+
+	def __init__(self, script, *a, **k):
+		self._script = script
+		super(MixerComponent, self).__init__(*a, **k)
+	
+
+	def tracks_to_use(self):
+		return tuple(self.song().visible_tracks) + tuple(self.song().return_tracks)
+		
+	
+
+	def _create_strip(self, *a, **k):
+		return ChannelStripComponent(self._script, *a, **k)
+	
+
+	def update(self, *a, **k):
+		super(MixerComponent, self).update(*a, **k)
+		self._script._update_navigation_view()
+	
+
+
+class SessionComponent(BaseSessionComponent):
+
+
+	def __init__(self, script, *a, **k):
+		self._script = script
+		super(SessionComponent, self).__init__(*a, **k)
+	
+
+	def update(self):
+		super(SessionComponent, self).update()
+		self._script._update_navigation_view()
+	
+
+	def _update_stop_clips_led(self, index):
+		pass
+	
+
+	def _change_offsets(self, track_increment, scene_increment):
+		offsets_changed = (track_increment != 0) or (scene_increment != 0)
+		if offsets_changed:
+			self._track_offset += track_increment
+			self._scene_offset += scene_increment
+			assert (self._track_offset >= 0)
+			assert (self._scene_offset >= 0)
+			if (self._mixer != None):
+				if(self._script._nav_lock):
+					if (self.track_offset() + self._script._mixer_offset) > (len(self.tracks_to_use())-2):
+						self._script._mixer_offset = max(len(self.tracks_to_use()) - self._track_offset - 2, 0)
+					self._mixer.set_track_offset(max(0, self.track_offset() + self._script._mixer_offset))
+		self._reassign_tracks()
+		if offsets_changed:
+			self._reassign_scenes()
+			self.notify_offset()
+			self._script._update_navigation_view()
+			if self._script._mixer.channel_strip(self._script._last_selected_strip_number)._track != None:
+				self.song().view.selected_track = self._script._mixer.channel_strip(self._script._last_selected_strip_number)._track
+			if ((self.width() > 0) and (self.height() > 0)):
+				self._do_show_highlight()
+		
+	
+
+	@subject_slot_group('fired_slot_index')
+	def _on_fired_slot_index_changed(self, index):
+		tracks_to_use = tuple(self.song().visible_tracks) + tuple(self.song().return_tracks)
+		track_index = index + self.track_offset()
+		if self.is_enabled() and self._stop_track_clip_buttons != None:
+			if index < len(self._stop_track_clip_buttons):
+				button = self._stop_track_clip_buttons[index]
+				if button != None:
+					if(track_index < len(tracks_to_use)) and (tracks_to_use[track_index].clip_slots) and (tracks_to_use[track_index].fired_slot_index == -2):
+						button.send_value(session._stop_track_clip_value)
+					#elif index in range(len(session.tracks_to_use())):
+					#	dif = self._mixer._track_offset - self._session._track_offset
+					#	button.send_value(NAV_COLORS[int(index in range(dif, dif + 2))], True)
+					#else:
+					#	button.turn_off()
+					else:
+						self._script._update_navigation_view()
+		
+	
+
+	@subject_slot_group('value')
+	def _on_stop_track_value(self, value, button = None):
+		super(SessionComponent, self)._on_stop_track_value(value, button)
+		if self.is_enabled():
+			button and button.send_value(3, True)
+			self._script.schedule_message(10, self._script._update_navigation_view)
+	
 
 
 class DeviceComponent(ControlSurfaceComponent):
@@ -506,6 +642,44 @@ class DeviceComponent(ControlSurfaceComponent):
 				index += 1
 	
 
+	"""def _assign_parameters(self):
+		assert self.is_enabled()
+		assert (self._device != None)
+		assert (self._parameter_controls != None)
+		self._bank_name = ('Bank ' + str(self._bank_index + 1)) #added
+		if (self._device.class_name in self._device_banks.keys()): #modified
+			assert (self._device.class_name in self._device_best_banks.keys())
+			banks = self._device_banks[self._device.class_name]
+			bank = None
+			if (not self._is_banking_enabled()):
+				 banks = self._device_best_banks[self._device.class_name]
+				 self._bank_name = 'Best of Parameters' #added
+			if (len(banks) > self._bank_index):
+				bank = banks[self._bank_index]
+				if self._is_banking_enabled(): #added
+					if self._device.class_name in self._device_bank_names.keys(): #added
+						self._bank_name[self._bank_index] = self._device_bank_names[self._device.class_name] #added *recheck
+			assert ((bank == None) or (len(bank) >= len(self._parameter_controls)))
+			for index in range(len(self._parameter_controls)):
+				parameter = None
+				if (bank != None):
+					parameter = get_parameter_by_name(self._device, bank[index])
+				if (parameter != None):
+					self._parameter_controls[index].connect_to(parameter)
+				else:
+					self._parameter_controls[index].release_parameter()
+		else:
+			parameters = self._device_parameters_to_map()
+			num_controls = len(self._parameter_controls)
+			index = (self._bank_index * num_controls)
+			for control in self._parameter_controls:
+				if (index < len(parameters)):
+					control.connect_to(parameters[index])
+				else:
+					control.release_parameter()
+				index += 1"""
+	
+
 	def _on_device_name_changed(self):
 		if (self._device_name_data_source != None):
 			if (self.is_enabled() and (self._device != None)):
@@ -548,7 +722,7 @@ class DeviceComponent(ControlSurfaceComponent):
 	
 
 	def _number_of_parameter_banks(self):
-		return number_of_parameter_banks(self._device) #added
+		return number_of_parameter_banks(self._device)
 	
 
 
@@ -621,7 +795,7 @@ class Tweaker(ControlSurface):
 		super(Tweaker, self).__init__(c_instance, *a, **k)
 		with self.component_guard():
 			self._update_linked_device_selection = None
-			self._tweaker_version_check = '0.3'
+			self._tweaker_version_check = '0.4'
 			self.log_message("--------------= Tweaker Session " + str(self._tweaker_version_check) + " log opened =--------------") 
 			self._timer = 0
 			self.flash_status = 1
@@ -641,17 +815,9 @@ class Tweaker(ControlSurface):
 			self._setup_pads()
 			self._setup_navigation_lock()
 			self._setup_arrange_session_toggle()
-			#self.assign_main_configuration()
-			#self.request_rebuild_midi_map()
-			#self._mixer._reassign_tracks()	#this is to update rebuild the cf_assign closure, otherwise the colors aren't correct
-			#self.schedule_message(30, self._detect_devices)
-
-			#self.show_message('Tweaker Control Surface Loaded')
-		#self.show_message('Tweaker Control Surface Loaded')
-		#self._shift_value(0)  #this updates the pads so that they transmit to Live on the assigned PAD_CHANNEL...also, lights shift button
 		self.assign_main_configuration()
-		#self.schedule_message(2, self._shift_value, 0)
-		self.schedule_message(3, self._mixer._reassign_tracks)
+		self.show_message('Tweaker Control Surface Loaded')
+		#self.schedule_message(3, self._mixer._reassign_tracks)
 	
 
 	"""script initialization methods"""
@@ -684,7 +850,7 @@ class Tweaker(ControlSurface):
 			button_row = []
 			for column in range(7):
 				button_row.append(self._grid[column][row])
-			self._matrix.add_row(tuple(button_row)) 	
+			self._matrix.add_row(tuple(button_row))		
 		self._send_midi(tuple([240,0,1,106,01,07,21,21,247])) #set all pots to walk mode
 		self._send_midi(tuple([240, 0, 1, 106, 1, 6, 127 , 127, 25, 0, 15, 0, 9, PAD_SENSITIVITY, 247]))	#set pads to sensitivity set in Map file
 	
@@ -697,24 +863,18 @@ class Tweaker(ControlSurface):
 	def _setup_mixer_control(self):
 		is_momentary = True
 		self._num_tracks = (2) #A mixer is one-dimensional; 
-		self._mixer = MixerComponent(2, 0, False, False)
+		self._mixer = MixerComponent(self, 2, 0, False, False)
 		self._mixer.name = 'Mixer'
-		self._mixer.tracks_to_use = self._mixer_tracks_to_use(self._mixer)
 		self._device_navigator = [None for index in range(2)]
 		self._mixer.set_track_offset(0) #Sets start point for mixer strip (offset from left)
 		for index in range(2):
 			self._mixer.channel_strip(index).set_volume_control(self._fader[index])
-			self._mixer.channel_strip(index)._on_cf_assign_changed = self._channelstrip_on_cf_assign_changed(self._mixer.channel_strip(index))
 			self._mixer.channel_strip(index).name = 'Mixer_ChannelStrip_' + str(index)
-			#mixer.track_filter(index).name = 'Mixer_TrackFilter_' + str(index)
+			self._mixer.channel_strip(index)._index = index
 			self._mixer.channel_strip(index)._invert_mute_feedback = True
 			self._mixer.channel_strip(index)._device_component = self._device[index]
-			self._mixer.channel_strip(index).update = self._channelstrip_update(self._mixer.channel_strip(index))
-			self._mixer.channel_strip(index)._select_value = self._channelstrip_select_value(self._mixer.channel_strip(index), index)
 			self._device_navigator[index] = DetailViewControllerComponent(self, self._mixer.channel_strip(index))
 			self._device_navigator[index].name = 'Device_Navigator_'+str(index)
-		self._mixer.channel_strip(0).set_track = self._channelstrip_set_track(self._mixer.channel_strip(0), self._channelstrip1_cb)
-		self._mixer.channel_strip(1).set_track = self._channelstrip_set_track(self._mixer.channel_strip(1), self._channelstrip2_cb)
 		self.song().view.selected_track = self._mixer.channel_strip(0)._track #set the selected strip to the first track, so that we don't, for example, try to assign a button to arm the master track, which would cause an assertion error
 		#self._mixer._reassign_tracks()
 	
@@ -723,7 +883,7 @@ class Tweaker(ControlSurface):
 		is_momentary = True
 		num_tracks = NUM_TRACKS
 		num_scenes = NUM_SCENES
-		self._session = SessionComponent(num_tracks, num_scenes)
+		self._session = SessionComponent(self, num_tracks, num_scenes)
 		self._session.name = "Session"
 		self._session.set_offsets(0, 0)	 
 		self._session.set_stop_clip_value(STOP_CLIP)
@@ -739,11 +899,6 @@ class Tweaker(ControlSurface):
 				clip_slot.set_stopped_value(CLIP_STOP)
 				clip_slot.set_started_value(CLIP_STARTED)
 				clip_slot.set_recording_value(CLIP_RECORDING)
-		self._session._stop_track_value = self._session_stop_track_value(self._session)
-		self._session._on_fired_slot_index_changed = self._session_on_fired_slot_index_changed(self._session)
-		self._session._change_offsets = self._session_change_offsets(self._session)
-		self._session.update = self._session_update(self._session)
-		#self._session.add_offset_listener(self._update_navigation_view)
 		self._session.set_mixer(self._mixer)
 		self.set_highlighting_session_component(self._session)
 		self._session_zoom = SessionZoomingComponent(self._session)	 
@@ -751,7 +906,6 @@ class Tweaker(ControlSurface):
 		self._session_zoom.set_stopped_value(ZOOM_STOPPED)
 		self._session_zoom.set_playing_value(ZOOM_PLAYING)
 		self._session_zoom.set_selected_value(ZOOM_SELECTED)
-		#self._session_zoom.set_enabled(True)
 	
 
 	def _setup_device_control(self):
@@ -760,8 +914,8 @@ class Tweaker(ControlSurface):
 			self._device[index] = DeviceComponent()
 			self._device[index].name = 'Device_Component_'+str(index)
 			self._device[index].set_enabled(True)
-			self._device[index]._number_of_parameter_banks = self._device_number_of_parameter_banks(self._device[index])
-			self._device[index]._assign_parameters = self._device_assign_parameters(self._device[index])
+			#self._device[index]._number_of_parameter_banks = self._device_number_of_parameter_banks(self._device[index])
+			#self._device[index]._assign_parameters = self._device_assign_parameters(self._device[index])
 			self._device[index]._device_banks = DEVICE_DICT
 			self._device[index]._device_best_banks = DEVICE_BOB_DICT
 			self._device[index]._device_bank_names = BANK_NAME_DICT
@@ -778,20 +932,15 @@ class Tweaker(ControlSurface):
 	
 
 	def _setup_pads(self):
-		for pad in self._pad_pressure:
-			pad.add_value_listener(self._light_pad, True)
+		self._light_pad.replace_subjects(self._pad_pressure)
 	
 
 	def _setup_navigation_lock(self):
-		if(self._encoder_button[0].value_has_listener(self._nav_lock_value)):
-			self._encoder_button[0].remove_value_listener(self._nav_lock_value)
-		self._encoder_button[0].add_value_listener(self._nav_lock_value)
+		self._nav_lock_value.subject = self._encoder_button[0]
 	
 
 	def _setup_arrange_session_toggle(self):
-		if(self._nav[1].value_has_listener(self._arrange_session_value)):
-			self._nav[1].remove_value_listener(self._arrange_session_value)
-		self._nav[1].add_value_listener(self._arrange_session_value)
+		self._arrange_session_value.subject = self._nav[1]
 	
 
 	"""configuration methods"""
@@ -827,19 +976,19 @@ class Tweaker(ControlSurface):
 		for track in range(2):
 			self._update_device(self._mixer.channel_strip(track))
 		#self._device.set_bank_nav_buttons(self._menu[0], self._menu[3])
-		self.assign_track_selector(self._encoder[0])
 		#for index in range(8):
 		#	self._pad[index].send_value(1, True)
 		#	self._pad[index].set_channel(1)
 		#	self._pad[index].set_identifier(index)
 		#	self._pad[index].set_enabled(False)	 #this has to happen for translate to work
-		if not self._grid[7][3].value_has_listener(self._shift_value):
-			self._grid[7][3].add_value_listener(self._shift_value)
+		self._track_selector_value.subject = self._encoder[0]
+		self._shift_value.subject = self._grid[7][3]
 		self._grid[7][3].send_value(127, True)
-		self.request_rebuild_midi_map()	
+		self.request_rebuild_midi_map() 
 	
 
 	"""Tweaker custom methods"""
+	@subject_slot('value')
 	def _shift_value(self, value):
 		self._pad_offset.set_enabled(value>0)
 		if value > 0:
@@ -849,10 +998,8 @@ class Tweaker(ControlSurface):
 				pad.set_enabled(True)
 			self._pad_offset.set_mode_buttons(tuple(self._pad))
 			self.schedule_message(1, self._pad_offset.update)
-			if self._session.is_enabled():
-				#self._update_navigation_view()
-				#self.schedule_message(1, self._update_navigation_veiw)
-				self._update_navigation_view()
+			#if self._session.is_enabled():
+			#	self._update_navigation_view()
 			self._grid[7][3].send_value(SHIFT_ON)
 			for track in range(2):
 				self._mixer.channel_strip(track).set_crossfade_toggle(None)
@@ -872,17 +1019,7 @@ class Tweaker(ControlSurface):
 				self._mixer.channel_strip(track).set_crossfade_toggle(self._button[2 + (track*3)])
 	
 
-	def assign_track_selector(self, encoder):
-		assert isinstance(encoder, EncoderElement)
-		if not encoder.value_has_listener(self._track_selector_value):
-			encoder.add_value_listener(self._track_selector_value)
-	
-
-	def deassign_track_selector(self, encoder):
-		if encoder.value_has_listener(self._track_selector_value):
-			encoder.remove_value_listener(self._track_selector_value)
-	
-
+	@subject_slot('value')
 	def _nav_lock_value(self, value):
 		if value > 0:
 			if self._nav_lock:
@@ -900,6 +1037,7 @@ class Tweaker(ControlSurface):
 			self._session.update()
 	
 
+	@subject_slot('value')
 	def _arrange_session_value(self, value):
 		if value > 0:
 			if (self.application().view.is_view_visible('Arranger')):
@@ -908,6 +1046,7 @@ class Tweaker(ControlSurface):
 				self.application().view.show_view('Arranger')	  
 	
 
+	@subject_slot('value')
 	def _track_selector_value(self, value):
 		if(value is 1):
 			if self._nav_lock:
@@ -918,7 +1057,7 @@ class Tweaker(ControlSurface):
 				self._mixer_offset = max(self._mixer_offset - 1, 0)
 		if self._nav_lock:
 			self._mixer.set_track_offset(self._session._track_offset + self._mixer_offset)
-			#self._session.set_offsets(self._session._track_offset)  ??
+			#self._session.set_offsets(self._session._track_offset)	 ??
 		else:
 			self._mixer.set_track_offset(self._mixer_offset)
 		self._session.update()
@@ -931,42 +1070,7 @@ class Tweaker(ControlSurface):
 			self._linked_session._link()
 	
 
-	def _update_navigation_view(self):
-		dif = self._mixer._track_offset - self._session._track_offset
-		for index in range(7):
-			#if (index + self._session._track_offset) in range(len(self._session.tracks_to_use())):
-			if (index + self._session._track_offset) in range(0, len(self.song().visible_tracks)):
-				self._grid[index][3].send_value(NAV_COLORS[int(index in range(dif, dif + 2))], True)
-			elif (index + self._session._track_offset) in range(len(self.song().visible_tracks), len(self._session.tracks_to_use())):
-				self._grid[index][3].send_value(RETURN_NAV_COLORS[int(index in range(dif, dif + 2))], True)
-			else:
-				self._grid[index][3].send_value(0, True)
-		self._send_midi(tuple([240,0,1,106,01,07,21,21,247])) #set all pots to walk mode
-		
-	
-
-	def _update_device(self, channelstrip):
-		for control in channelstrip._device_component._parameter_controls:
-			control.send_value(0, True)
-		if channelstrip._device_component._on_off_button != None:
-			channelstrip._device_component._on_off_button.turn_off()
-		if not channelstrip._track is None:
-			if not channelstrip._device_component._device in channelstrip._track.devices:
-				track = channelstrip._track
-				device_to_select = track.view.selected_device
-				if (device_to_select == None) and (len(track.devices) > 0):
-					device_to_select = track.devices[0]
-				elif channelstrip._device_component and not type(channelstrip._device_component) is type(None):
-					channelstrip._device_component.set_device(device_to_select)
-				else:
-					channelstrip._device_component.set_device(None)	
-			else:
-				pass
-		else:
-			channelstrip._device_component.set_device(None)	
-		channelstrip._device_component._on_on_off_changed()	
-	
-
+	@subject_slot_group('value')
 	def _light_pad(self, value, sender):
 		if not self._pad_offset.is_enabled():
 			if value > sender._last_sent:
@@ -977,18 +1081,47 @@ class Tweaker(ControlSurface):
 		sender._last_sent = value
 	
 
-	"""called on timer"""
-	def update_display(self):
-		super(Tweaker, self).update_display()
-		self._timer = (self._timer + 1) % 256
-		self.flash()
+	def _update_navigation_view(self):
+		try:
+			dif = self._mixer._track_offset - self._session._track_offset
+			for index in range(7):
+				#if (index + self._session._track_offset) in range(len(self._session.tracks_to_use())):
+				if (index + self._session._track_offset) in range(0, len(self.song().visible_tracks)):
+					self._grid[index][3].send_value(NAV_COLORS[int(index in range(dif, dif + 2))], True)
+				elif (index + self._session._track_offset) in range(len(self.song().visible_tracks), len(self._session.tracks_to_use())):
+					self._grid[index][3].send_value(RETURN_NAV_COLORS[int(index in range(dif, dif + 2))], True)
+				else:
+					self._grid[index][3].send_value(0, True)
+			self._send_midi(tuple([240,0,1,106,01,07,21,21,247])) #set all pots to walk mode
+		except:
+			self.log_message('cant update navigation veiw')
+		
 	
 
-	def flash(self):
-		if(self.flash_status > 0):
-			for control in self.controls:
-				if isinstance(control, TweakerMonoButtonElement):
-					control.flash(self._timer)
+	def _update_device(self, channelstrip):
+		try:
+			if channelstrip in self._mixer._channel_strips[:2]:
+				for control in channelstrip._device_component._parameter_controls:
+					control.send_value(0, True)
+				if channelstrip._device_component._on_off_button != None:
+					channelstrip._device_component._on_off_button.turn_off()
+				if not channelstrip._track is None:
+					if not channelstrip._device_component._device in channelstrip._track.devices:
+						track = channelstrip._track
+						device_to_select = track.view.selected_device
+						if (device_to_select == None) and (len(track.devices) > 0):
+							device_to_select = track.devices[0]
+						elif channelstrip._device_component and not type(channelstrip._device_component) is type(None):
+							channelstrip._device_component.set_device(device_to_select)
+						else:
+							channelstrip._device_component.set_device(None) 
+					else:
+						pass
+				else:
+					channelstrip._device_component.set_device(None) 
+				channelstrip._device_component._on_on_off_changed() 
+		except:
+			self.log_message('cant update device')
 	
 
 	"""m4l bridge"""
@@ -1022,9 +1155,10 @@ class Tweaker(ControlSurface):
 	
 
 	def notification_to_bridge(self, name, value, sender):
-		if(isinstance(sender, MonoEncoderElement2)):
-			self._monobridge._send(sender.name, 'lcd_name', str(self.generate_strip_string(name)))
-			self._monobridge._send(sender.name, 'lcd_value', str(self.generate_strip_string(value)))
+		#if(isinstance(sender, MonoEncoderElement2)):
+		#	self._monobridge._send(sender.name, 'lcd_name', str(self.generate_strip_string(name)))
+		#	self._monobridge._send(sender.name, 'lcd_value', str(self.generate_strip_string(value)))
+		pass
 	
 
 	def touched(self):
@@ -1047,44 +1181,38 @@ class Tweaker(ControlSurface):
 				self.schedule_message(2, self.check_touch)
 	
 
-	def	handle_sysex(self, midi_bytes):
-		pass
+	"""general functionality"""
+	def update_display(self):
+		super(Tweaker, self).update_display()
+		self._timer = (self._timer + 1) % 256
+		self.flash()
 	
 
-	"""general functionality"""
+	def flash(self):
+		if(self.flash_status > 0):
+			for control in self.controls:
+				if isinstance(control, TweakerMonoButtonElement):
+					control.flash(self._timer)
+	
+
 	def disconnect(self):
-		"""clean things up on disconnect"""
-		#self._update_linked_device_selection = None
-		if self._session.offset_has_listener(self._update_navigation_view):
-			self._session.remove_offset_listener(self._update_navigation_view)
-		if(self._nav[1].value_has_listener(self._arrange_session_value)):
-			self._nav[1].remove_value_listener(self._arrange_session_value)
-		if(self._encoder_button[0].value_has_listener(self._nav_lock_value)):
-			self._encoder_button[0].remove_value_listener(self._nav_lock_value)
-		for pad in self._pad_pressure:
-			if pad.value_has_listener(self._light_pad):
-				pad.remove_value_listener(self._light_pad)
-		if self._grid[7][3].value_has_listener(self._shift_value):
-			self._grid[7][3].remove_value_listener(self._shift_value)
 		if self._session._is_linked():
 			self._session._unlink()
-		self.deassign_track_selector(self._encoder[0])
 		self.log_message("--------------= Tweaker Session " + str(self._tweaker_version_check) + " log closed =--------------") #Create entry in log file
 		super(Tweaker, self).disconnect()
-		return None
+	
+
+	def handle_sysex(self, midi_bytes):
+		pass
 	
 
 	def _get_num_tracks(self):
 		return self.num_tracks
 	
 
- 	def _on_selected_track_changed(self):
-		super(Tweaker, self)._on_selected_track_changed()
-		if self._session.is_enabled():
-			self._session.update()
-		for index in range(2):
-			self._update_device(self._mixer.channel_strip(index))
-			self._mixer.on_selected_track_changed()
+	def _on_selected_track_changed(self, *a, **k):
+		super(Tweaker, self)._on_selected_track_changed(*a, **k)
+		self._update_navigation_view()
 	
 
 	def connect_script_instances(self, instanciated_scripts):
@@ -1098,190 +1226,4 @@ class Tweaker(ControlSurface):
 			if not self._session._is_linked():
 				self._session._link()
 	
-
-	"""SessionComponent overrides"""
-	def _session_update(self, session):
-		def _update():
-			SessionComponent.update(session)
-			if session.is_enabled():
-				self._update_navigation_view()
-		return _update
-		
-	
-
-	def _session_change_offsets(self, session): 
-		def _change_offsets(track_increment, scene_increment):
-			offsets_changed = (track_increment != 0) or (scene_increment != 0)
-			if offsets_changed:
-				session._track_offset += track_increment
-				session._scene_offset += scene_increment
-				assert (session._track_offset >= 0)
-				assert (session._scene_offset >= 0)
-				if (session._mixer != None):
-					if(self._nav_lock):
-						if (session.track_offset() + self._mixer_offset) > (len(session.tracks_to_use())-2):
-							self._mixer_offset = max(len(session.tracks_to_use()) - session._track_offset - 2, 0)
-						session._mixer.set_track_offset(max(0, session.track_offset() + self._mixer_offset))
-			session._reassign_tracks()
-			if offsets_changed:
-				session._reassign_scenes()
-				# this is replaced by notify_offset() in Live9 #for callback in session._offset_callbacks:
-				# this is replaced by notify_offset() in Live9 #	callback()
-				session.notify_offset()
-				self._update_navigation_view()
-				if self._mixer.channel_strip(self._last_selected_strip_number)._track != None:
-					self.song().view.selected_track = self._mixer.channel_strip(self._last_selected_strip_number)._track
-				if ((session.width() > 0) and (session.height() > 0)):
-					session._do_show_highlight()
-		return _change_offsets
-		
-	
-
-	def _session_on_fired_slot_index_changed(self, session):
-		def _on_fired_slot_index_changed(index):
-			tracks_to_use = tuple(self.song().visible_tracks) + tuple(self.song().return_tracks)
-			track_index = index + session.track_offset()
-			if session.is_enabled() and session._stop_track_clip_buttons != None:
-				if index < len(session._stop_track_clip_buttons):
-					button = session._stop_track_clip_buttons[index]
-					if button != None:
-						if(track_index < len(tracks_to_use)) and (tracks_to_use[track_index].clip_slots) and (tracks_to_use[track_index].fired_slot_index == -2):
-							button.send_value(session._stop_track_clip_value)
-						#elif index in range(len(session.tracks_to_use())):
-						#	dif = self._mixer._track_offset - self._session._track_offset
-						#	button.send_value(NAV_COLORS[int(index in range(dif, dif + 2))], True)
-						#else:
-						#	button.turn_off()
-						else:
-							self._update_navigation_view()
-		return _on_fired_slot_index_changed
-		
-	
-
-	def _session_stop_track_value(self, session):
-		def _stop_track_value(value, sender):
-			assert (session._stop_track_clip_buttons != None)
-			assert (list(session._stop_track_clip_buttons).count(sender) == 1)
-			assert (value in range(128))
-			if session.is_enabled():
-				if ((value is not 0) or (not sender.is_momentary())):
-					tracks = session.tracks_to_use()
-					track_index = (list(session._stop_track_clip_buttons).index(sender) + session.track_offset())
-					if (track_index in range(len(tracks))) and (tracks[track_index] in session.song().tracks):
-						tracks[track_index].stop_all_clips()
-					sender.send_value(3, True)
-					self.schedule_message(10, self._update_navigation_view)
-		
-		return _stop_track_value
-	
-
-	"""ChannelStripComponent overrides"""
-	def _channelstrip_update(self, channelstrip):
-		def _update():
-			ChannelStripComponent.update(channelstrip)
-			self._update_device(channelstrip)
-		return _update
-		
-	
-
-	def _channelstrip_set_track(self, channelstrip, cb):
-		def _set_track(track):
-			assert ((track == None) or isinstance(track, Live.Track.Track))
-			if channelstrip._track != None and isinstance(channelstrip._track, Live.Track.Track):
-				if channelstrip._track.devices_has_listener(cb):
-					channelstrip._track.remove_devices_listener(cb)
-			if (track != None):
-				track.add_devices_listener(cb)
-			ChannelStripComponent.set_track(channelstrip, track)
-		return _set_track
-		
-	
-
-	def _channelstrip_select_value(self, channelstrip, index):  
-		def _select_value(value):
-			ChannelStripComponent._select_value(channelstrip, value)
-			self._last_selected_strip_number = index
-		return _select_value
-		
-	
-
-	def _channelstrip_on_cf_assign_changed(self, channel_strip):
-		def _on_cf_assign_changed():
-			if (channel_strip.is_enabled() and (channel_strip._crossfade_toggle != None)):
-				if (channel_strip._track != None) and (channel_strip._track in chain(self.song().tracks, self.song().return_tracks)):
-					if channel_strip._track.mixer_device.crossfade_assign == 1: #modified
-						channel_strip._crossfade_toggle.turn_off()
-					elif channel_strip._track.mixer_device.crossfade_assign == 0:
-						channel_strip._crossfade_toggle.send_value(CROSSFADE_A)
-					else:
-						channel_strip._crossfade_toggle.send_value(CROSSFADE_B)
-		return _on_cf_assign_changed
-		
-	
-
-	def _channelstrip1_cb(self):
-		self._on_selected_track_changed()
-	
-
-	def _channelstrip2_cb(self):
-		self._on_selected_track_changed()
-	
-
-	"""MixerComponent overrides"""
-	def _mixer_tracks_to_use(self, mixer):
-		def tracks_to_use():
-			return tuple(self.song().visible_tracks) + tuple(self.song().return_tracks)
-		return tracks_to_use
-		
-	
-
-	"""SessionComponent overrides"""
-	def _device_number_of_parameter_banks(self, device):
-		def _number_of_parameter_banks():
-			return number_of_parameter_banks(device._device) #added
-		return _number_of_parameter_banks
-			
-	
-
-	def _device_assign_parameters(self, device):
-		def _assign_parameters():
-			assert device.is_enabled()
-			assert (device._device != None)
-			assert (device._parameter_controls != None)
-			device._bank_name = ('Bank ' + str(device._bank_index + 1)) #added
-			if (device._device.class_name in device._device_banks.keys()): #modified
-				assert (device._device.class_name in device._device_best_banks.keys())
-				banks = device._device_banks[device._device.class_name]
-				bank = None
-				if (not device._is_banking_enabled()):
-					 banks = device._device_best_banks[device._device.class_name]
-					 device._bank_name = 'Best of Parameters' #added
-				if (len(banks) > device._bank_index):
-					bank = banks[device._bank_index]
-					if device._is_banking_enabled(): #added
-						if device._device.class_name in device._device_bank_names.keys(): #added
-							device._bank_name[device._bank_index] = device._device_bank_names[device._device.class_name] #added *recheck
-				assert ((bank == None) or (len(bank) >= len(device._parameter_controls)))
-				for index in range(len(device._parameter_controls)):
-					parameter = None
-					if (bank != None):
-						parameter = get_parameter_by_name(device._device, bank[index])
-					if (parameter != None):
-						device._parameter_controls[index].connect_to(parameter)
-					else:
-						device._parameter_controls[index].release_parameter()
-			else:
-				parameters = device._device_parameters_to_map()
-				num_controls = len(device._parameter_controls)
-				index = (device._bank_index * num_controls)
-				for control in device._parameter_controls:
-					if (index < len(parameters)):
-						control.connect_to(parameters[index])
-					else:
-						control.release_parameter()
-					index += 1
-		return _assign_parameters
-		
-	
-
 

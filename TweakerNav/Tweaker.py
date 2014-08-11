@@ -37,7 +37,7 @@ class Tweaker(ControlSurface):
 		ControlSurface.__init__(self, c_instance)
 		with self.component_guard():
 			self._update_linked_device_selection = None
-			self._tweaker_version = '0.2'
+			self._tweaker_version = '0.4'
 			self.log_message("--------------= Tweaker Mixer " + str(self._tweaker_version) + " log opened =--------------") 
 			self._update_linked_device_selection = None
 			self._setup_mixer_control()
