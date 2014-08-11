@@ -737,7 +737,7 @@ class PadOffsetComponent(ModeSelectorComponent):
 	
 
 	def set_mode_buttons(self, buttons):
-		#self._script.log_message('set mode buttons' + str(buttons))
+		#debug('set mode buttons' + str(buttons))
 		for button in self._modes_buttons:
 			button.remove_value_listener(self._mode_value)
 		self._modes_buttons = []
@@ -749,7 +749,7 @@ class PadOffsetComponent(ModeSelectorComponent):
 				self._modes_buttons.append(button)
 			for index in range(len(self._modes_buttons)):
 				if (index == self._mode_index):
-					self._script.log_message('turn on ' + str(index))
+					#debug('turn on ', str(index))
 					self._modes_buttons[index].turn_on(True)
 				else:
 					self._modes_buttons[index].turn_off(True)
@@ -834,13 +834,6 @@ class Tweaker(ControlSurface):
 		self._crossfader = EncoderElement(MIDI_CC_TYPE, CHANNEL, CROSSFADER, Live.MidiMap.MapMode.absolute)
 		self._encoder = [EncoderElement(MIDI_CC_TYPE, CHANNEL, TWEAKER_ENCODERS[index], Live.MidiMap.MapMode.absolute) for index in range(len(TWEAKER_ENCODERS))]
 		self._pad = [TweakerMonoButtonElement(False, MIDI_NOTE_TYPE, CHANNEL, TWEAKER_PADS[index], 'Pad_' + str(index), self) for index in range(len(TWEAKER_PADS))]
-		for index in range(4):
-			self._pad[index].set_enabled(False)
-			self._pad[index].set_channel(PAD_CHANNEL)
-			self._pad[index].set_identifier(index + 4)
-			self._pad[index+4].set_enabled(False)
-			self._pad[index+4].set_channel(PAD_CHANNEL)
-			self._pad[index+4].set_identifier(index)
 		self._pad_pressure = [EncoderElement(MIDI_CC_TYPE, CHANNEL, TWEAKER_PAD_PRESSURES[index], Live.MidiMap.MapMode.absolute) for index in range(len(TWEAKER_PADS))]
 		for index in range(8):
 			self._pad_pressure[index]._last_sent = 0
@@ -933,6 +926,13 @@ class Tweaker(ControlSurface):
 
 	def _setup_pads(self):
 		self._light_pad.replace_subjects(self._pad_pressure)
+		for index in range(4):
+			self._pad[index].set_enabled(False)
+			self._pad[index].set_channel(PAD_CHANNEL)
+			self._pad[index].set_identifier(index + 4)
+			self._pad[index+4].set_enabled(False)
+			self._pad[index+4].set_channel(PAD_CHANNEL)
+			self._pad[index+4].set_identifier(index)
 	
 
 	def _setup_navigation_lock(self):
