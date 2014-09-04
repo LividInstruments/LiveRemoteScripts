@@ -20,16 +20,14 @@ class MonoEncoderElement(EncoderElement):
 	__module__ = __name__
 	__doc__ = ' Class representing a slider on the controller '
 
-	def __init__(self, msg_type, channel, identifier, map_mode, name, num, script, *a, **k):
+	def __init__(self, msg_type, channel, identifier, map_mode, name, num, script, mapping_feedback_delay = 1, *a, **k):
 		super(MonoEncoderElement, self).__init__(msg_type, channel, identifier, map_mode=Live.MidiMap.MapMode.absolute, *a, **k)
+		self._mapping_feedback_delay = mapping_feedback_delay
 		self.name = name
 		self.num = num
 		self._parameter = None
 		self._script = script
 		self._is_enabled = True
-		#self._report_input = True
-		#self._report_output = True
-		#self._last_sent_val = -1
 		self._paramter_lcd_name = ' '
 		self._parameter_last_value = None
 		self._mapped_to_midi_velocity = False
@@ -42,11 +40,10 @@ class MonoEncoderElement(EncoderElement):
 
 	def disconnect(self):
 		self.remove_parameter_listener(self._parameter)
-		EncoderElement.disconnect(self)
-		
+		super(MonoEncoderElement, self).disconnect()
+	
+
 	def connect_to(self, parameter):
-		assert (parameter != None)
-		assert isinstance(parameter, Live.DeviceParameter.DeviceParameter)
 		self._mapped_to_midi_velocity = False
 		assignment = parameter
 		if(str(parameter.name) == str('Track Volume')):		#checks to see if parameter is track volume
@@ -55,11 +52,15 @@ class MonoEncoderElement(EncoderElement):
 					if(str(parameter.canonical_parent.canonical_parent.devices[0].class_name)==str('MidiVelocity')):	#if not, looks for velicty as first plugin
 						assignment = parameter.canonical_parent.canonical_parent.devices[0].parameters[6]				#if found, assigns fader to its 'outhi' parameter
 						self._mapped_to_midi_velocity = True
-		self._parameter_to_map_to = assignment
+		if not self._parameter_to_map_to is assignment:
+			self.send_value(0, True)
+		super(MonoEncoderElement, self).connect_to(assignment)
 		self.add_parameter_listener(self._parameter_to_map_to)
+	
 
 	def set_enabled(self, enabled):
 		self._is_enabled = enabled
+		self._request_rebuild()
 
 	def set_value(self, value):
 		if(self._parameter_to_map_to != None):
@@ -69,23 +70,18 @@ class MonoEncoderElement(EncoderElement):
 		else:
 			self.receive_value(int(value*127))
 	
+
 	def release_parameter(self):
 		if(self._parameter_to_map_to != None):
 			self.remove_parameter_listener(self._parameter_to_map_to)
-		InputControlElement.release_parameter(self)
-		#self._parameter_to_map_to = None
-
-	"""def install_connections(self, *a, *k):	#this override has to be here so that translation will happen when buttons are disabled
-		if self._is_enabled:
-			EncoderElement.install_connections(self)
-		elif ((self._msg_channel != self._original_channel) or (self._msg_identifier != self._original_identifier)):
-			self._install_translation(self._msg_type, self._original_identifier, self._original_channel, self._msg_identifier, self._msg_channel)"""
+		super(MonoEncoderElement, self).release_parameter()
+	
 
 	def script_wants_forwarding(self):
 		if not self._is_enabled:
 			return False
 		else:
-			return InputControlElement.script_wants_forwarding(self)
+			return super(MonoEncoderElement, self).script_wants_forwarding()
 	
 
 	def forward_parameter_value(self):
@@ -102,6 +98,7 @@ class MonoEncoderElement(EncoderElement):
 				except:
 					self._parameter_last_value = ' '
 				self._script.notification_to_bridge(self._parameter_lcd_name, self._parameter_last_value, self)
+	
 
 	def add_parameter_listener(self, parameter):
 		self._parameter = parameter
@@ -128,6 +125,7 @@ class MonoEncoderElement(EncoderElement):
 			self._script.notification_to_bridge(self._parameter_lcd_name, self._parameter_last_value, self)
 			cb = lambda: self.forward_parameter_value()
 			parameter.add_value_listener(cb)
+	
 
 	def remove_parameter_listener(self, parameter):
 		self._parameter = None

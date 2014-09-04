@@ -27,13 +27,11 @@ from VCM600.TrackFilterComponent import TrackFilterComponent
 from _Framework.TransportComponent import TransportComponent
 from _Framework.M4LInterfaceComponent import M4LInterfaceComponent
 
-from _Mono_Framework.MonomodComponent import MonomodComponent
 from _Mono_Framework.MonoBridgeElement import MonoBridgeElement
 from _Mono_Framework.MonoEncoderElement import MonoEncoderElement
 from _Mono_Framework.MonoBridgeElement import MonoBridgeElement
 from _Mono_Framework.DetailViewControllerComponent import DetailViewControllerComponent
 from _Mono_Framework.MonoButtonElement import MonoButtonElement
-from _Mono_Framework.SwitchboardElement import SwitchboardElement
 from _Mono_Framework.MonoClient import MonoClient
 from _Mono_Framework.CodecEncoderElement import CodecEncoderElement
 from _Mono_Framework.EncoderMatrixElement import EncoderMatrixElement
@@ -41,6 +39,8 @@ from _Mono_Framework.LiveUtils import *
 from _Mono_Framework.ModDevices import *
 from _Mono_Framework.Debug import *
 
+from MonomodComponent import MonomodComponent
+from SwitchboardElement import SwitchboardElement
 from MonoDeviceComponent import MonoDeviceComponent
 
 from _Generic.Devices import *

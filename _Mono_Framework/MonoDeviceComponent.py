@@ -6,7 +6,9 @@ from _Tools.re import *
 from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
 from Live8DeviceComponent import Live8DeviceComponent as DeviceComponent
 from _Generic.Devices import *
+from Debug import *
 
+debug = initialize_debug()
 
 
 class MonoDeviceComponent(DeviceComponent):
@@ -595,14 +597,14 @@ class NewMonoDeviceComponent(DeviceComponent):
 		self._params = []
 		self._custom_parameter = []
 		self._nodevice = NoDevice()
+		self._is_alted = False
 	
 
 	def disconnect(self):
 		if self._device_parent != None:
-			if self._device_parent != None:
-				if self._device_parent.canonical_parent != None:
-					if self._device_parent.canonical_parent.devices_has_listener(self._parent_device_changed):
-						self._device_parent.canonical_parent.remove_devices_listener(self._parent_device_changed)
+			if self._device_parent.canonical_parent != None:
+				if self._device_parent.canonical_parent.devices_has_listener(self._parent_device_changed):
+					self._device_parent.canonical_parent.remove_devices_listener(self._parent_device_changed)
 		if self._device != None:
 			if self._device.canonical_parent != None:
 				if self._device.canonical_parent != None:
@@ -677,7 +679,7 @@ class NewMonoDeviceComponent(DeviceComponent):
 
 	def _select_parent_chain(self, chain, force = False):
 		#self.log_message('_select_parent_chain ' + str(chain)) # + ' ' + str(self.is_enabled()))
-		self._device_chain = chain  #self._chain = chain  
+		self._device_chain = chain  #self._chain = chain 
 		if self._device_parent != None:
 			if isinstance(self._device_parent, Live.Device.Device):
 				if self._device_parent.can_have_chains:
@@ -699,9 +701,7 @@ class NewMonoDeviceComponent(DeviceComponent):
 			if isinstance(self._device_parent, Live.Device.Device):
 				if self._device_parent.can_have_drum_pads and self._device_parent.has_drum_pads:
 					pad = self._device_parent.drum_pads[pad]
-					self._parent.log_message('pad is: ' + str(pad))
-					#for item in dir(pad):
-					#	self._parent.log_message(str(item))
+					#self._parent.log_message('pad is: ' + str(pad))
 					if pad.chains and pad.chains[0] and pad.chains[0].devices and isinstance(pad.chains[0].devices[0], Live.Device.Device):
 						self.set_device(pad.chains[0].devices[0], force)
 					elif 'NoDevice' in self._device_banks.keys():
@@ -782,7 +782,7 @@ class NewMonoDeviceComponent(DeviceComponent):
 	
 
 	def _assign_parameters(self, host, *a):
-		#self.log_message('assign_parameters '+str(host))
+		#debug('assign_parameters '+str(host))
 		assert (self._device != None)
 		if(host.is_enabled()):
 			for control in host._parameter_controls:
@@ -809,13 +809,15 @@ class NewMonoDeviceComponent(DeviceComponent):
 				if not host._parameter_controls is None:
 					for index in range(len(host._parameter_controls)):
 						parameter = None
-						if (bank != None) and (index in range(len(bank))):
-							parameter = self.get_parameter_by_name(self._device, bank[index])
+						corrected_index = index + (self._is_alted * 8)
+						if (bank != None) and (corrected_index in range(len(bank))):
+							parameter = self.get_parameter_by_name(self._device, bank[corrected_index])
 						if (parameter != None):
 							host._parameter_controls[index].connect_to(parameter)
 						else:
 							host._parameter_controls[index].release_parameter()
 			else:
+				#debug('setting defautl parameters-------------------')
 				parameters = self._device_parameters_to_map()
 				if not host._parameter_controls is None:
 					num_controls = len(host._parameter_controls)
@@ -1011,16 +1013,17 @@ class NewMonoDeviceComponent(DeviceComponent):
 	
 
 	def update(self):
-		#self.log_message('update!')
+		#debug('monoDevice update!')
 		if self._device != None:
 			self._device_bank_registry[self._device] = self._bank_index
-			for host in self._parent._active_handlers:
+			for host in self._parent.active_handlers():
 				if host.is_enabled() and not host._parameter_controls is None and len(host._parameter_controls) > 0:
 					old_bank_name = self._bank_name
 					self._assign_parameters(host)
-					if self._bank_name != old_bank_name:
-						self._show_msg_callback(str(self._device.name) + ' Bank: ' + str(self._bank_name))
+					#if self._bank_name != old_bank_name:
+					#	self._show_msg_callback(str(self._device.name) + ' Bank: ' + str(self._bank_name))
 		else:
+			#debug('device is none')
 			for host in self._parent._active_handlers:
 				if host._parameter_controls != None:
 					for control in host._parameter_controls:
@@ -1058,9 +1061,7 @@ class NewMonoDeviceComponent(DeviceComponent):
 	
 
 	def _device_parameters_to_map(self):
-		raise self.is_enabled() or AssertionError
-		raise self._device != None or AssertionError
-		raise host._parameter_controls != None or AssertionError
+		assert(self._device != None)
 		return self._device.parameters[1:]
 	
 

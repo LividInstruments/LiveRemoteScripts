@@ -40,9 +40,8 @@ from _Mono_Framework.MonoEncoderElement import MonoEncoderElement
 from _Mono_Framework.ResetSendsComponent import ResetSendsComponent
 from _Mono_Framework.DetailViewControllerComponent import DetailViewControllerComponent
 from _Mono_Framework.DeviceSelectorComponent import DeviceSelectorComponent
-from _Mono_Framework.MonomodComponent import MonomodComponent
 from _Mono_Framework.MonoDeviceComponent import MonoDeviceComponent
-from _Mono_Framework.SwitchboardElement import SwitchboardElement
+
 from _Mono_Framework.MonoClient import MonoClient
 from _Mono_Framework.Debug import *
 from _Mono_Framework.LiveUtils import *
@@ -50,6 +49,8 @@ from _Mono_Framework.LiveUtils import *
 """Custom files, overrides, and files from other scripts"""
 
 from _Generic.Devices import *
+from MonomodComponent import MonomodComponent
+from SwitchboardElement import SwitchboardElement
 from MonoDeviceComponent import MonoDeviceComponent
 from ModDevices import *
 from Map import *
@@ -179,6 +180,17 @@ class CntrlrDetailViewControllerComponent(DetailViewControllerComponent):
 				modifier_pressed = True
 				if not ((not self.application().view.is_view_visible('Detail')) or (not self.application().view.is_view_visible('Detail/DeviceChain'))):
 					self._script._update_selected_device()
+	
+
+
+class CntrlrResetSendsComponent(ResetSendsComponent):
+
+
+	def reset_send(self, send_number):
+		track = self._script._mixer.channel_strip(send_number)
+		for index in range(len(track._send_controls)):
+			if track._send_controls[index].mapped_parameter()!=None:
+				track._send_controls[index].mapped_parameter().value = 0
 	
 
 
@@ -756,11 +768,8 @@ class Cntrlr(ControlSurface):
 			for column in range(4):
 				dial_button_row.append(self._encoder_button[(row*4) + column])
 			self._dial_button_matrix.add_row(tuple(dial_button_row))
-		self._key_matrix = ButtonMatrixElement()
-		button_row = []						#since we only use one row for the chopper, we can define a 1 dimensional button matrix for this one.   
-		for column in range(16):			#We use the ButtonMatrixObject because it takes care of setting up callbacks for all the buttons easily when we need them later
-			button_row.append(self._button[16 + column])
-		self._key_matrix.add_row(tuple(button_row))
+		self._key_matrix = ButtonMatrixElement(rows = [self._button[16:]], name = 'KeyMatrix')
+		self._top_key_matrix = ButtonMatrixElement(rows = [self._button[:16]])
 	
 
 	def _setup_m4l_interface(self):
@@ -791,7 +800,7 @@ class Cntrlr(ControlSurface):
 			self._mixer.track_eq(index).name = 'Mixer_EQ_' + str(index)					#We also name the individual EQ_component so we can access it
 			self._mixer.channel_strip(index)._invert_mute_feedback = True				#This makes it so that when a track is muted, the corresponding button is turned off
 		self.song().view.selected_track = self._mixer.channel_strip(0)._track 			#set the selected strip to the first track, so that we don't, for example, try to assign a button to arm the master track, which would cause an assertion error
-		self._send_reset = ResetSendsComponent(self)		#This creates a custom MonoComponent that allows us to reset all the sends on a track to zero with a single button
+		self._send_reset = CntrlrResetSendsComponent(self)		#This creates a custom MonoComponent that allows us to reset all the sends on a track to zero with a single button
 		self._send_reset.name = 'Sends_Reset'				#We name it so that we can access it from m4l
 	
 
@@ -935,7 +944,7 @@ class Cntrlr(ControlSurface):
 		for column in range(4):	
 			for row in range(4):
 				self._scene[row].clip_slot(column).set_launch_button(None)	#remove the clip launch assignments
-		self._send_reset.set_buttons(tuple([None for index in range(4)]))	#remove the send_reset button assignments - this has to be sent as a tuple
+		self._send_reset.set_buttons(self._top_key_matrix.submatrix[8:12, :1])	#remove the send_reset button assignments - this has to be sent as a tuple
 		self._session.set_stop_track_clip_buttons(None)						#remove the clip_stop button assignments
 		self._transport.set_play_button(None)								#remove the play button assignment
 		self._transport.set_record_button(None)								#remove the record button assignment
@@ -1008,7 +1017,7 @@ class Cntrlr(ControlSurface):
 			self._mixer.channel_strip(index).set_mute_button(self._button[index+16])	#assign the mute buttons to our mixer channel strips
 			self._button[index+20].set_on_value(SELECT[self._rgb])						#set the select color from the Map.py
 			self._mixer.channel_strip(index).set_select_button(self._button[index+20])	#assign the select buttons to our mixer channel strips
-		self._send_reset.set_buttons(tuple(self._button[index + 8] for index in range(4)))			#this is yet another way to quickly assign multiple elements conveniently in-place.  We are creating a recursion inside an assignment.  The tuple() method creates an immutable array.  It can't be modified until it gets where it's going and is unpacked.
+		self._send_reset.set_buttons(self._top_key_matrix.submatrix[8:12, :1])			#this is yet another way to quickly assign multiple elements conveniently in-place.  We are creating a recursion inside an assignment.  The tuple() method creates an immutable array.  It can't be modified until it gets where it's going and is unpacked.
 		self._session.set_stop_track_clip_buttons(tuple(self._button[index+24] for index in range(4)))	#these last two lines assign the send_reset buttons and the stop_clip buttons for each track
 		for index in range(4):
 			self._button[index+8].send_value(SEND_RESET[self._rgb], True)				#now we are going to send a message to turn the LEDs on for the send_reset buttons

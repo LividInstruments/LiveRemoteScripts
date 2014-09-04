@@ -31,9 +31,9 @@ class CodecEncoderElement(EncoderElement):
 	__doc__ = ' Class representing an encoder on the Livid Code controller '
 
 
-	def __init__(self, msg_type, channel, identifier, map_mode, name, num, script, *a, **k):
+	def __init__(self, msg_type, channel, identifier, map_mode, name, num, script, mapping_feedback_delay = 1, *a, **k):
 		super(CodecEncoderElement, self).__init__(msg_type, channel, identifier, map_mode, *a, **k)
-		self._mapping_feedback_delay = 1
+		self._mapping_feedback_delay = mapping_feedback_delay
 		self._script = script
 		self.name = name
 		self.num = num
@@ -179,6 +179,7 @@ class CodecEncoderElement(EncoderElement):
 
 	def set_enabled(self, enabled):
 		self._is_enabled = enabled
+		self._request_rebuild()
 	
 
 	def forward_parameter_value(self):

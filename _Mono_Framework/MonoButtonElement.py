@@ -1,9 +1,10 @@
 # by amounra 0413 : http://www.aumhaa.com
 
 import Live
-from _Framework.ButtonElement import ButtonElement
-from _Framework.InputControlElement import InputControlElement
-from _Framework.NotifyingControlElement import NotifyingControlElement
+from _Framework.ButtonElement import ButtonElement, ON_VALUE, OFF_VALUE
+from _Framework.Skin import Skin, SkinColorMissingError
+
+from Debug import *
 
 MIDI_NOTE_TYPE = 0
 MIDI_CC_TYPE = 1
@@ -16,15 +17,16 @@ MIDI_NOTE_OFF_STATUS = 128
 MIDI_CC_STATUS = 176
 MIDI_PB_STATUS = 224
 
+debug = initialize_debug()
 
 class MonoButtonElement(ButtonElement):
 	__module__ = __name__
 	__doc__ = ' Special button class that can be configured with custom on- and off-values, some of which flash at specified intervals called by _Update_Display'
 
-	def __init__(self, is_momentary, msg_type, channel, identifier, name, cs, *a, **k):
-		super(MonoButtonElement, self).__init__(is_momentary, msg_type, channel, identifier, *a, **k)
-		self.name = name
-		self._script = cs
+
+	def __init__(self, is_momentary, msg_type, channel, identifier, name = 'Button', script = None, *a, **k):
+		super(MonoButtonElement, self).__init__(is_momentary, msg_type, channel, identifier, name = name, *a, **k)
+		self._script = script
 		self._color_map = [2, 64, 4, 8, 16, 127, 32]
 		self._num_colors = 7
 		self._num_flash_states = 18
@@ -34,10 +36,12 @@ class MonoButtonElement(ButtonElement):
 		self._off_value = 0
 		self._darkened = 0
 		self._is_enabled = True
+		self._force_forwarding = False
 		self._is_notifying = False
 		self._force_next_value = False
 		self._parameter = None
 		self._report_input = True
+	
 
 	def set_color_map(self, color_map):
 		assert isinstance(color_map, tuple)
@@ -48,21 +52,17 @@ class MonoButtonElement(ButtonElement):
 	
 
 	def set_on_off_values(self, on_value, off_value):
-		assert (on_value in range(128))
-		assert (off_value in range(128))
 		self._last_sent_message = None
 		self._on_value = on_value
 		self._off_value = off_value
 	
 
 	def set_on_value(self, value):
-		assert (value in range(128))
 		self._last_sent_message = None
 		self._on_value = value
 	
 
 	def set_off_value(self, value):
-		assert (value in range(128))
 		self._last_sent_message = None
 		self._off_value = value
 	
@@ -70,33 +70,57 @@ class MonoButtonElement(ButtonElement):
 	def set_force_next_value(self):
 		self._last_sent_message = None
 		self._force_next_value = True
+	
 
 	def set_enabled(self, enabled):
 		self._is_enabled = enabled
 		self._request_rebuild()
+	
 
 	def turn_on(self, force = False):
 		self.force_next_send()
-		self.send_value(self._on_value)
+		if self._on_value in range(0, 128):
+			self.send_value(self._on_value)
+		else:
+			try:
+				color = self._skin[self._on_value]
+				color.draw(self)
+			except SkinColorMissingError:
+				#super(MonoButtonElement, self).turn_on()
+				debug('skin color missing', self._on_value)
+				self.send_value(127)
+	
 
 	def turn_off(self, force = False):
 		self.force_next_send()
-		self.send_value(self._off_value)
+		if self._off_value in range(0, 128):
+			self.send_value(self._off_value)
+		else:
+			try:
+				color = self._skin[self._off_value]
+				color.draw(self)
+			except SkinColorMissingError:
+				#super(MonoButtonElement, self).turn_off()
+				debug('skin color missing', self._off_value)
+				self.send_value(0)
+	
 
 	def reset(self, force = False):
 		self.force_next_send()
 		self.send_value(0)
-		
-	def receive_value(self, value):
-		self._last_sent_message = None
-		ButtonElement.receive_value(self, value)
 	
 
-	def send_value(self, value, force = False):		#commented this because of ButtonElement==NoneType errors in log
-		if(type(self) != type(None)):
-			assert (value != None)
-			assert isinstance(value, int)
-			assert (value in range(128))
+	def set_light(self, value, *a, **k):
+		try:
+			self._skin[value]
+		except SkinColorMissingError:
+			#debug('skin missing for', value)
+			pass
+		super(MonoButtonElement, self).set_light(value, *a, **k)
+	
+
+	def send_value(self, value, force = False):
+		if (value != None) and isinstance(value, int) and (value in range(128)):
 			if (force or self._force_next_send or ((value != self._last_sent_value) and self._is_being_forwarded)):
 				data_byte1 = self._original_identifier
 				if value in range(1, 127):
@@ -122,13 +146,15 @@ class MonoButtonElement(ButtonElement):
 					self._report_value(value, (not is_input))
 				self._flash_state = round((value -1)/self._num_colors)
 				self._force_next_value = False
-
+		else:
+			debug('Button bad send value:', value)
+	
 
 	def script_wants_forwarding(self):
-		if not self._is_enabled:
+		if not self._is_enabled and not self._force_forwarding:
 			return False
 		else:
-			return InputControlElement.script_wants_forwarding(self)
+			return super(MonoButtonElement, self).script_wants_forwarding()
 	
 
 	def flash(self, timer):

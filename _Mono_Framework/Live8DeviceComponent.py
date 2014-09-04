@@ -46,15 +46,18 @@ class Live8DeviceComponent(ControlSurfaceComponent):
 				button.remove_value_listener(self._bank_value)
 		self._bank_buttons = None
 		if self._on_off_button != None:
-			self._on_off_button.remove_value_listener(self._on_off_value)
+			if self._on_off_button.value_has_listener(self._on_off_value):
+				self._on_off_button.remove_value_listener(self._on_off_value)
 			self._on_off_button = None
 		if self._lock_button != None:
-			self._lock_button.remove_value_listener(self._lock_value)
+			if self._lock_button.value_has_listener(self._lock_value):
+				self._lock_button.remove_value_listener(self._lock_value)
 			self._lock_button = None
 		if self._device != None:
 			parameter = self._on_off_parameter()
 			if parameter != None:
-				parameter.remove_value_listener(self._on_on_off_changed)
+				if parameter.value_has_listener(self._on_on_off_changed):
+					parameter.remove_value_listener(self._on_on_off_changed)
 			self._device.remove_name_listener(self._on_device_name_changed)
 			self._device.remove_parameters_listener(self._on_parameters_changed)
 			self._device = None

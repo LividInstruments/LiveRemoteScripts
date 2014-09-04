@@ -10,6 +10,10 @@ from _Framework.SubjectSlot import SubjectEvent, SubjectSlotGroup, subject_slot,
 from _Mono_Framework.MonoButtonElement import MonoButtonElement
 from _Tools.re import *
 
+from _Mono_Framework.Debug import *
+
+debug = initialize_debug()
+
 DEVICE_COLORS = {'midi_effect':2,
 				'audio_effect':5,
 				'instrument':3,
@@ -109,7 +113,6 @@ class DeviceSelectorComponent(ModeSelectorComponent):
 		for device in self.enumerate_track_device(self.song().master_track.devices):
 			if(match(key, str(device)) != None):
 				preset = device
-
 		if(preset != None):
 			#self._script._device.set_device(preset)
 			self._script.set_appointed_device(preset)
@@ -171,8 +174,6 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 
 	def disconnect(self, *a, **k):
 		super(NewDeviceSelectorComponent, self).disconnect()
-		if self.song().appointed_device_has_listener(self._device_listener):
-			self.song().remove_appointed_device_listener(self._device_listener)
 	
 
 	def set_offset(self, offset):
@@ -200,7 +201,6 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 
 	@subject_slot_group('value')
 	def _on_button_value(self, value, sender):
-		#self.log_message('on_button_value ' + str(value) + ' ' + str(sender))
 		if self.is_enabled():
 			if value:
 				self.select_device(self._buttons.index(sender))
@@ -213,10 +213,16 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 				preset = self._device_registry[index] 
 			if not preset is None and isinstance(preset, Live.Device.Device):
 				self.song().view.select_device(preset)
+				self._script.set_appointed_device(preset)
+				try:
+					self._script.monomodular.is_mod(preset) and self._script.modhandler.select_mod(self._script.monomodular.is_mod(preset))
+				except:
+					pass
 			self.update()
 	
 
 	def scan_all(self):
+		debug('scan all--------------------------------')
 		self._device_registry = [None for index in range(len(self._buttons))]
 		prefix = str(self._prefix)
 		offset = self._offset
@@ -224,22 +230,28 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 		for track in self.song().tracks:
 			for device in self.enumerate_track_device(track):
 				for index, entry in enumerate(self._device_registry):
-					key = str(prefix + str(index + 1 + offset) + ' ')
-					if(match(key, str(device.name)) != None):
+					key = str(prefix + str(index + 1 + offset))
+					if device.name.startswith(key):
 						self._device_registry[index] = device
+					elif device.name.startswith('*' +key) and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
+						self._device_registry[index] = device.chains[0].devices[0]
 		for return_track in self.song().return_tracks:
 			for device in self.enumerate_track_device(return_track):
 				for index, entry in enumerate(self._device_registry):
-					key = str(prefix + str(index + 1 + offset) + ' ')
-					if(match(key, str(device.name)) != None):
+					key = str(prefix + str(index + 1 + offset))
+					if device.name.startswith(key):
 						self._device_registry[index] = device
+					elif device.name.startswith('*' + key) and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
+						self._device_registry[index] = device.chains[0].devices[0]
 		for device in self.enumerate_track_device(self.song().master_track):
 			for index, entry in enumerate(self._device_registry):
 				key = str(prefix + str(index + 1 + offset) + ' ')
-				if(match(key, str(device.name)) != None):
+				if device.name.startswith(key):
 					self._device_registry[index] = device
+				elif device.name.startswith('*' + key) and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
+					self._device_registry[index] = device.chains[0].devices[0]
 		self.update()
-		self.log_message('device registry: ' + str(self._device_registry))
+		#debug('device registry: ' + str(self._device_registry))
 	
 
 	def enumerate_track_device(self, track):
@@ -256,7 +268,7 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 
 	@subject_slot('appointed_device')
 	def _device_listener(self, *a, **k):
-		#self.log_message('device_listener')
+		#debug('device_listener')
 		self._on_name_changed.subject = self.song().appointed_device
 		self._watched_device = self.song().appointed_device
 		if self.is_enabled():
@@ -265,7 +277,7 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 
 	@subject_slot('name')
 	def _on_name_changed(self):
-		#self.log_message('on name changed')
+		#debug('on name changed')
 		if self._watched_device == self.song().appointed_device:
 			self.scan_all()
 	
@@ -283,7 +295,6 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 			dev = self.song().appointed_device
 			offset = self._offset
 			if self._buttons:
-				#self.log_message('has buttons...')
 				for index in range(len(self._buttons)):
 					preset = self._device_registry[index]
 					button = self._buttons[index]
