@@ -768,8 +768,7 @@ class Cntrlr(ControlSurface):
 			for column in range(4):
 				dial_button_row.append(self._encoder_button[(row*4) + column])
 			self._dial_button_matrix.add_row(tuple(dial_button_row))
-		self._key_matrix = ButtonMatrixElement(rows = [self._button[16:]], name = 'KeyMatrix')
-		self._top_key_matrix = ButtonMatrixElement(rows = [self._button[:16]])
+		self._key_matrix = ButtonMatrixElement(rows = [self._button[:16], self._button[16:]], name = 'KeyMatrix')
 	
 
 	def _setup_m4l_interface(self):
@@ -904,7 +903,7 @@ class Cntrlr(ControlSurface):
 	def _setup_chopper(self):
 		self._chopper = MonoChopperComponent(self, self._mixer)		#create the chopper module, and pass it our mixer so that we can use it to navigate which clip is being manipulated
 		self._chopper.name = 'Chopper'					#name it so we can access it via m4l
-		self._chopper._set_button_matrix(self._key_matrix)	#set its controls to the ButtonMatrixElement we created in _setup_controls()
+		self._chopper._set_button_matrix(self._key_matrix.submatrix[:, 1:])	#set its controls to the ButtonMatrixElement we created in _setup_controls()
 	
 
 	"""since there are many different configurations possible with the modButtons, we'll need to create a ModeSelectorComponent"""
@@ -944,7 +943,7 @@ class Cntrlr(ControlSurface):
 		for column in range(4):	
 			for row in range(4):
 				self._scene[row].clip_slot(column).set_launch_button(None)	#remove the clip launch assignments
-		self._send_reset.set_buttons(self._top_key_matrix.submatrix[8:12, :1])	#remove the send_reset button assignments - this has to be sent as a tuple
+		self._send_reset.set_buttons(self._key_matrix.submatrix[8:12, :1])	#remove the send_reset button assignments - this has to be sent as a tuple
 		self._session.set_stop_track_clip_buttons(None)						#remove the clip_stop button assignments
 		self._transport.set_play_button(None)								#remove the play button assignment
 		self._transport.set_record_button(None)								#remove the record button assignment
@@ -1017,7 +1016,7 @@ class Cntrlr(ControlSurface):
 			self._mixer.channel_strip(index).set_mute_button(self._button[index+16])	#assign the mute buttons to our mixer channel strips
 			self._button[index+20].set_on_value(SELECT[self._rgb])						#set the select color from the Map.py
 			self._mixer.channel_strip(index).set_select_button(self._button[index+20])	#assign the select buttons to our mixer channel strips
-		self._send_reset.set_buttons(self._top_key_matrix.submatrix[8:12, :1])			#this is yet another way to quickly assign multiple elements conveniently in-place.  We are creating a recursion inside an assignment.  The tuple() method creates an immutable array.  It can't be modified until it gets where it's going and is unpacked.
+		self._send_reset.set_buttons(self._key_matrix.submatrix[8:12, :1])			#this is yet another way to quickly assign multiple elements conveniently in-place.  We are creating a recursion inside an assignment.  The tuple() method creates an immutable array.  It can't be modified until it gets where it's going and is unpacked.
 		self._session.set_stop_track_clip_buttons(tuple(self._button[index+24] for index in range(4)))	#these last two lines assign the send_reset buttons and the stop_clip buttons for each track
 		for index in range(4):
 			self._button[index+8].send_value(SEND_RESET[self._rgb], True)				#now we are going to send a message to turn the LEDs on for the send_reset buttons
