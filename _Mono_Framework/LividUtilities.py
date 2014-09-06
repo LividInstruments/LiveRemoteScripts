@@ -11,7 +11,9 @@ CALLS = {'set_streaming_enabled':62,
 		'set_capacitive_fader_note_output_enabled':69,
 		'set_fader_led_colors':61,
 		'set_pad_output_type':66,
-		'set_pad_pressure_output_type':10,}
+		'set_pad_pressure_output_type':10,
+		'set_encoder_mapping':11,
+		'set_encoder_encosion_mode':17}
 
 def fallback_send_midi(message = None, *a, **k):
 	debug('control surface not assigned to the sysex call:', message);

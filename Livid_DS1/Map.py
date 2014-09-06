@@ -152,6 +152,12 @@ class DS1Colors:
 
 
 	class ModeButtons:
+		Main = LividRGB.WHITE
+		Select = LividRGB.RED
+		Clips = LividRGB.MAGENTA
+	
+
+	class ModeButtons:
 		ModSwitcher = LividRGB.BlinkMedium.CYAN
 		ModSwitcherDisabled = LividRGB.CYAN
 		Translations = LividRGB.BlinkMedium.MAGENTA
@@ -172,7 +178,7 @@ class DS1Colors:
 		StopClip = LividRGB.WHITE
 		Scene = LividRGB.CYAN
 		NoScene = LividRGB.OFF
-		SceneTriggered = LividRGB.BlinkFast.BLUE
+		SceneTriggered = LividRGB.GREEN
 		ClipTriggeredPlay = LividRGB.BlinkFast.GREEN
 		ClipTriggeredRecord = LividRGB.BlinkFast.RED
 		RecordButton = LividRGB.OFF
@@ -216,16 +222,16 @@ class DS1Colors:
 	
 
 	class Mixer:
-		SoloOn = LividRGB.CYAN
-		SoloOff = LividRGB.OFF
+		SoloOn = LividRGB.BLUE
+		SoloOff = LividRGB.CYAN
 		MuteOn = LividRGB.YELLOW
-		MuteOff = LividRGB.OFF
+		MuteOff = LividRGB.WHITE
 		ArmSelected = LividRGB.RED
 		ArmUnselected = LividRGB.RED
-		ArmOff = LividRGB.OFF
-		StopClip = LividRGB.WHITE
-		SelectedOn = LividRGB.BLUE
-		SelectedOff = LividRGB.OFF
+		ArmOff = LividRGB.WHITE
+		StopClip = LividRGB.BLUE
+		SelectedOn = LividRGB.GREEN
+		SelectedOff = LividRGB.MAGENTA
 	
 
 	class Recording:

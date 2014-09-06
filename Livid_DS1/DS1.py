@@ -44,10 +44,12 @@ from _Framework.Util import mixin
 from _Mono_Framework.MonoBridgeElement import MonoBridgeElement
 from _Mono_Framework.MonoDeviceComponent import MonoDeviceComponent
 
-from MonoButtonElement import *
-from MonoEncoderElement import MonoEncoderElement
-from DeviceNavigator import DeviceNavigator
-from TranslationComponent import TranslationComponent
+from _Mono_Framework.MonoButtonElement import *
+from _Mono_Framework.MonoEncoderElement import MonoEncoderElement
+from _Mono_Framework.DeviceNavigator import DeviceNavigator
+from _Mono_Framework.TranslationComponent import TranslationComponent
+from _Mono_Framework.LividUtilities import LividSettings
+from _Mono_Framework.MonoModes import SendLividSysexMode
 from Debug import *
 
 
@@ -69,6 +71,10 @@ from Push.ConfigurableButtonElement import ConfigurableButtonElement
 from Push.LoopSelectorComponent import LoopSelectorComponent
 from Push.Actions import CreateInstrumentTrackComponent, CreateDefaultTrackComponent, CaptureAndInsertSceneComponent, DuplicateDetailClipComponent, DuplicateLoopComponent, SelectComponent, DeleteComponent, DeleteSelectedClipComponent, DeleteSelectedSceneComponent, CreateDeviceComponent
 from Push.SkinDefault import make_default_skin
+
+
+ENCODER_SPEED = [0, 0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0, 9, 0, 10, 0, 11, 0, 12, 0, 13, 0, 14, 0, 15, 0, 16, 0, 17, 0, 18, 0, 19, 0, 20, 0, 21, 0, 22, 0, 23, 0, 24, 0, 127, 1, 26, 0, 127, 1, 127, 1]
+
 
 
 MIDI_NOTE_TYPE = 0
@@ -262,9 +268,10 @@ class ToggledModesComponent(ModesComponent):
 
 	@subject_slot('value')
 	def _on_toggle_value(self, value):
-		debug('mode is:', self.selected_mode)
+		#debug('mode is:', self.selected_mode)
 		if value:
 			self.cycle_mode(-1)
+			self._on_toggle_value.subject and self._on_toggle_value.subject.set_light('ModeButtons.'+self.selected_mode)
 	
 
 
@@ -287,8 +294,7 @@ class DS1(ControlSurface):
 		with self.component_guard():
 			self._setup_monobridge()
 			self._setup_controls()
-			#self._define_sysex()
-			#self._setup_autoarm()
+			self._define_sysex()
 			self._setup_mixer_control()
 			self._setup_session_control()
 			self._setup_transport_control()
@@ -304,9 +310,8 @@ class DS1(ControlSurface):
 
 	"""script initialization methods"""
 	def _initialize_hardware(self):
-		#self._send_midi((191, 122, 64))    #what is this?
-		self._send_midi((240, 0, 1, 97, 16, 17, 0, 0, 247))   #turn off relative encoders
-		#self._send_midi((240, 0, 1, 97, 16, 17, 2, 0, 247))   #turn on relative for top right encoder
+		self.encoder_absolute_mode.enter_mode()
+		self.encoder_speed_sysex.enter_mode()
 	
 
 	def _check_connection(self):
@@ -355,19 +360,10 @@ class DS1(ControlSurface):
 	
 
 	def _define_sysex(self):
-		self.clips_layer_sysex = SendSysexMode(script = self, sysex = CLIPS_FADER_COLORS)
-		self.sends_layer_sysex = SendSysexMode(script = self, sysex = SENDS_FADER_COLORS)
-		self.device_layer_sysex = SendSysexMode(script = self, sysex = DEVICE_FADER_COLORS)
-		self.user_layer_sysex = SendSysexMode(script = self, sysex = USER_FADER_COLORS)
-		self.mod_layer_sysex = SendSysexMode(script = self, sysex = USER_FADER_COLORS)
+		self._livid_settings = LividSettings(model = 16, control_surface = self)
+		self.encoder_speed_sysex = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_encoder_mapping', message = ENCODER_SPEED)
+		self.encoder_absolute_mode = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_encoder_encosion_mode', message = [0])
 
-		self.midi_mode_sysex = SendSysexMode(script = self, sysex = MIDIBUTTONMODE)
-		self.user_mode_sysex = SendSysexMode(script = self, sysex = USERBUTTONMODE)
-		self.live_mode_sysex = SendSysexMode(script = self, sysex = LIVEBUTTONMODE)
-		self.splitvertical_mode_sysex = SendSysexMode(script = self, sysex = SPLITVERTICAL)
-		self.splithorizontal_mode_sysex = SendSysexMode(script = self, sysex = SPLITHORIZONTAL)
-		self.atoff_mode_sysex = SendSysexMode(script = self, sysex = ATOFFBUTTONMODE)
-		self.aton_mode_sysex = SendSysexMode(script = self, sysex = ATONBUTTONMODE)
 	
 
 	def _setup_autoarm(self):
@@ -636,9 +632,7 @@ class DS1(ControlSurface):
 	def handle_sysex(self, midi_bytes):
 		#self.log_message('sysex: ' + str(midi_bytes))
 		if len(midi_bytes) > 14:
-			if midi_bytes[:6] == tuple([240, 0, 1, 97, 12, 64]):
-				self._register_pad_pressed(midi_bytes[6:14])
-			elif midi_bytes[3:10] == tuple([6, 2, 0, 1, 97, 1, 0]):
+			if midi_bytes[3:10] == tuple([6, 2, 0, 1, 97, 1, 0]):
 				if not self._connected:
 					self._connected = True
 					self._initialize_hardware()
