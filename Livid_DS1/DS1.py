@@ -50,7 +50,7 @@ from _Mono_Framework.DeviceNavigator import DeviceNavigator
 from _Mono_Framework.TranslationComponent import TranslationComponent
 from _Mono_Framework.LividUtilities import LividSettings
 from _Mono_Framework.MonoModes import SendLividSysexMode
-from Debug import *
+from _Mono_Framework.Debug import *
 
 
 from Map import *
