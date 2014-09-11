@@ -1,12 +1,5 @@
+# by amounra 0914 : http://www.aumhaa.com
 
-"""
-Base_Map.py
-
-Created by amounra on 2012-12-30.
-
-This file allows the reassignment of the controls from their default arrangement.  The order is from left to right; 
-Buttons are Note #'s and Faders/Rotaries are Controller #'s
-"""
 OSC_TRANSMIT = False
 
 OSC_OUTPORT = 9001
@@ -39,114 +32,8 @@ DS1_ENCODER_BUTTONS = [25, 26, 27, 28]
 
 DS1_SIDE_DIALS = [50, 51, 52, 53]
 
-FOLLOW = True		#this sets whether or not the last selected device on a track is selected for editing when you select a new track
-
-TRACK_BANKING_INCREMENT = 8
-
-""" The default assignment of colors within the OhmRGB is:
-Note 2 = white
-Note 4 = cyan 
-Note 8 = magenta 
-Note 16 = red 
-Note 32 = blue 
-Note 64 = yellow
-Note 127 = green
-Because the colors are reassignable, and the default colors have changed from the initial prototype,
-	MonOhm script utilizes a color map to assign colors to the buttons.	 This color map can be changed 
-	here in the script.	 The color ordering is from 1 to 7.	 
-"""
-COLOR_MAP = [2, 64, 4, 8, 16, 127, 32]
-#COLOR_MAP = [7, 1, 3, 2, 6, 5, 4]
-
-"""This variable determines whether or not the script automatically arms an instruments track for recording when it is selected"""
-AUTO_ARM_SELECTED = True
-
-"""This variable determines whether the octave shift for the note offset controls work as momentary or toggle"""
-OFFSET_SHIFT_IS_MOMENTARY = False
-CHAN_SELECT = 7
-MUTE = 2
-SOLO = 3
-OFFSET = 6
-SHIFT_OFFSET = 13
-VERTOFFSET = 7
-MIDIMODE = 14
-USERMODE = 13
-SCALEOFFSET = 5
-SPLITMODE = 1
-SEQUENCERMODE = 6
-DRUMBANK = 7
-OVERDUB = 5
-RECORD = 6
-NEW = 2
-LENGTH = 3
-SELECTED_NOTE = 6
-
-"""[non-banked, banked]"""
-SESSION_NAV = [127, 3]
-DEVICE_NAV = 5
-BANK_NAV = 4
-CHAIN_NAV = 11
-DEVICE_LAYER = 12
-
-
-TRACK_MUTE = 2
-TRACK_ARM = 5
-TRACK_SOLO = 3
-TRACK_STOP = 127
-
-STOP_CLIP = 127
-CLIP_TRG_PLAY = 13
-CLIP_TRG_REC = 11
-CLIP_STOP = 1
-CLIP_STARTED = 6
-CLIP_RECORDING = 5
-ZOOM_STOPPED = 127
-ZOOM_PLAYING = 6
-ZOOM_SELECTED = 8
-
 from _Framework.ButtonElement import Color
-
-class LividRGB:
-
-	OFF = Color(0)
-	WHITE = Color(1)
-	YELLOW = Color(2)
-	CYAN = Color(3)
-	MAGENTA = Color(4)
-	RED = Color(5)
-	GREEN = Color(6)
-	BLUE = Color(7)
-	
-	class BlinkFast:
-		WHITE = Color(8)
-		YELLOW = Color(9)
-		CYAN = Color(10)
-		MAGENTA = Color(11)
-		RED = Color(12)
-		GREEN = Color(13)
-		BLUE = Color(14)
-	
-
-	class BlinkMedium:
-		WHITE = Color(15)
-		YELLOW = Color(16)
-		CYAN = Color(17)
-		MAGENTA = Color(18)
-		RED = Color(19)
-		GREEN = Color(20)
-		BLUE = Color(21)
-	
-
-	class BlinkSlow:
-		WHITE = Color(22)
-		YELLOW = Color(23)
-		CYAN = Color(24)
-		MAGENTA = Color(25)
-		RED = Color(26)
-		GREEN = Color(27)
-		BLUE = Color(28)
-	
-
+from _Mono_Framework.LividColors import LividRGB
 
 class DS1Colors:
 

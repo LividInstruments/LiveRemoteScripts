@@ -24,6 +24,24 @@ class SendSysexMode(Mode):
 	
 
 
+class DisplayMessageMode(Mode):
+
+
+	def __init__(self, script = None, message = None, *a, **k):
+		super(DisplayMessageMode, self).__init__(*a, **k)
+		self._show_message = script.show_message
+		self._message = message
+	
+
+	def enter_mode(self):
+		self._show_message and self._message and self._show_message(self._message)
+	
+
+	def leave_mode(self):
+		pass
+	
+
+
 class SendLividSysexMode(Mode):
 
 

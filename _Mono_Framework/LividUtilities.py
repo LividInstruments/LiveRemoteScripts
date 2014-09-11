@@ -4,6 +4,8 @@ from Debug import *
 
 debug = initialize_debug()
 
+LIVID_RGB_COLORMAP = [2, 64, 4, 8, 16, 127, 32]
+
 QUERYSURFACE = (240, 126, 127, 6, 1, 247)
 
 CALLS = {'set_streaming_enabled':62,
@@ -20,7 +22,7 @@ def fallback_send_midi(message = None, *a, **k):
 
 
 def get_call_type(call_type):
-	debug('call type is:', call_type)
+	#debug('call type is:', call_type)
 	if call_type in CALLS:
 		return [CALLS[call_type]]
 	else:
@@ -55,7 +57,6 @@ class LividSettings(object):
 		else:
 			debug(call, 'is not a valid lividsettings call')
 	
-
 
 
 

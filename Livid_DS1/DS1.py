@@ -49,8 +49,8 @@ from _Mono_Framework.MonoEncoderElement import MonoEncoderElement
 from _Mono_Framework.DeviceNavigator import DeviceNavigator
 from _Mono_Framework.TranslationComponent import TranslationComponent
 from _Mono_Framework.LividUtilities import LividSettings
-from _Mono_Framework.MonoModes import SendLividSysexMode
-from Debug import *
+from _Mono_Framework.MonoModes import SendLividSysexMode, DisplayMessageMode
+from _Mono_Framework.Debug import *
 
 
 from Map import *
@@ -155,6 +155,29 @@ class DS1MixerComponent(MixerComponent):
 			self._prev_track_button = prev_button
 			self._prev_track_button_slot.subject = prev_button
 			self.on_selected_track_changed()
+	
+
+	def set_track_select_dial(self, dial):
+		self._on_track_select_dial_value.subject = dial
+	
+
+	@subject_slot('value')
+	def _on_track_select_dial_value(self, value):
+		debug('on track select dial value:', value)
+		if value == 1:
+			selected_track = self.is_enabled() and self.song().view.selected_track
+			all_tracks = tuple(self.song().visible_tracks) + tuple(self.song().return_tracks) + (self.song().master_track,)
+			assert(selected_track in all_tracks)
+			if selected_track != all_tracks[-1]:
+				index = list(all_tracks).index(selected_track)
+				self.song().view.selected_track = all_tracks[index + 1]
+		elif value == 127:
+			selected_track = self.is_enabled() and self.song().view.selected_track
+			all_tracks = tuple(self.song().visible_tracks) + tuple(self.song().return_tracks) + (self.song().master_track,)
+			assert(selected_track in all_tracks)
+			if selected_track != all_tracks[0]:
+				index = list(all_tracks).index(selected_track)
+				self.song().view.selected_track = all_tracks[index - 1]
 	
 
 	def set_return_controls(self, controls):
@@ -362,8 +385,11 @@ class DS1(ControlSurface):
 	def _define_sysex(self):
 		self._livid_settings = LividSettings(model = 16, control_surface = self)
 		self.encoder_speed_sysex = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_encoder_mapping', message = ENCODER_SPEED)
-		self.encoder_absolute_mode = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_encoder_encosion_mode', message = [0])
+		self.encoder_absolute_mode = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_encoder_encosion_mode', message = [2])
 
+		self.main_mode_message = DisplayMessageMode(self, 'Mute/Solo Mode')
+		self.select_mode_message = DisplayMessageMode(self, 'Arm/Select Mode')
+		self.clip_mode_message = DisplayMessageMode(self, 'Launch/Stop Mode')
 	
 
 	def _setup_autoarm(self):
@@ -378,7 +404,7 @@ class DS1(ControlSurface):
 		self._mixer.set_track_offset(0)
 		self._mixer.master_strip().set_volume_control(self._master_fader)
 		self._mixer.set_prehear_volume_control(self._side_dial[3])
-		self._mixer.layer = Layer(volume_controls = self._fader_matrix)
+		self._mixer.layer = Layer(volume_controls = self._fader_matrix, track_select_dial = self._encoder[1])
 		self._strip = [self._mixer.channel_strip(index) for index in range(8)]
 		for index in range(8):
 			self._strip[index].layer = Layer(parameter_controls = self._dial_matrix.submatrix[index:index+1, :])
@@ -403,7 +429,7 @@ class DS1(ControlSurface):
 	def _setup_transport_control(self):
 		self._transport = DS1TransportComponent()
 		self._transport.name = 'Transport'
-		self._transport.layer = Layer(stop_button = self._grid[1][0], play_button = self._grid[0][0], record_button = self._grid[2][0], loop_button = self._grid[2][1], seek_backward_button = self._grid[1][2])
+		self._transport.layer = Layer(stop_button = self._grid[1][0], play_button = self._grid[0][0], record_button = self._grid[2][0],)
 		self._transport.set_enabled(True)
 	
 
@@ -413,7 +439,7 @@ class DS1(ControlSurface):
 		self.set_device_component(self._device)
 		self._device_navigator = DeviceNavigator(self._device, self._mixer, self)
 		self._device_navigator.name = 'Device_Navigator'
-		self._device_selection_follows_track_selection = FOLLOW 
+		#self._device_selection_follows_track_selection = FOLLOW 
 		self._device.device_name_data_source().set_update_callback(self._on_device_name_changed)
 	
 
@@ -422,6 +448,7 @@ class DS1(ControlSurface):
 		self._clip_creator.name = 'ClipCreator'
 		self._recorder = SessionRecordingComponent(self._clip_creator, ViewControlComponent())
 		self._recorder.set_enabled(True)
+		self._recorder.layer = Layer(automation_button = self._grid[1][2], record_button  = self._grid[2][1],)
 	
 
 	def _setup_m4l_interface(self):
@@ -460,9 +487,9 @@ class DS1(ControlSurface):
 
 	def _setup_main_modes(self):
 		self._main_modes = ToggledModesComponent(name = 'MainModes')
-		self._main_modes.add_mode('Main', [self._mixer.main_layer],)
-		self._main_modes.add_mode('Select', [self._mixer.select_layer],)
-		self._main_modes.add_mode('Clips', [self._session.clips_layer],)
+		self._main_modes.add_mode('Main', [self._mixer.main_layer, self.main_mode_message],)
+		self._main_modes.add_mode('Select', [self._mixer.select_layer, self.select_mode_message],)
+		self._main_modes.add_mode('Clips', [self._session.clips_layer, self.clip_mode_message],)
 		self._main_modes.layer = Layer(priority = 4, toggle_button = self._grid[2][2])
 		self._main_modes.selected_mode = 'Main'
 		self._main_modes.set_enabled(True)
