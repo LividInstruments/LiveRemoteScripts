@@ -7,6 +7,7 @@ from _Framework.MixerComponent import MixerComponent as MixerComponentBase
 from _Framework.ChannelStripComponent import ChannelStripComponent as ChannelStripComponentBase
 from _Framework.InputControlElement import ParameterSlot
 from _Framework.TrackArmState import TrackArmState
+from _Framework.DeviceComponent import DeviceComponent
 from _Generic.Devices import *
 
 from Debug import *
@@ -120,6 +121,11 @@ class MixerComponent(MixerComponentBase):
 			#debug('set stop button:', button)
 	
 
+	def set_arming_track_select_buttons(self, buttons):
+		for strip, button in map(None, self._channel_strips, buttons or []):
+			strip.set_arming_select_button(button)
+	
+
 	def set_eq_gain_controls(self, controls):
 		self._eq_controls = controls
 		if controls:
@@ -141,6 +147,7 @@ class ChannelStripComponent(ChannelStripComponentBase):
 
 	def __init__(self, *a, **k):
 		super(ChannelStripComponent, self).__init__(*a, **k)
+		self._device_component = DeviceComponent()
 		self._on_selected_track_changed.subject = self.song().view
 		self._fold_task = self._tasks.add(Task.sequence(Task.wait(TRACK_FOLD_DELAY), Task.run(self._do_fold_track))).kill()
 		#self._cue_volume_slot = self.register_disconnectable(ParameterSlot())
@@ -155,6 +162,7 @@ class ChannelStripComponent(ChannelStripComponentBase):
 	@subject_slot('devices')
 	def _on_devices_changed(self):
 		debug(self.name, 'on devices changed')
+		self._update_device_selection()
 		self._detect_eq(self._track)
 		self.update()
 	
@@ -172,6 +180,7 @@ class ChannelStripComponent(ChannelStripComponentBase):
 	def set_track(self, track):
 		assert(isinstance(track, (type(None), Live.Track.Track)))
 		self._on_devices_changed.subject = track
+		self._update_device_selection()
 		self._detect_eq(track)
 		super(ChannelStripComponent,self).set_track(track)
 	
@@ -220,6 +229,16 @@ class ChannelStripComponent(ChannelStripComponentBase):
 				else:
 					self._select_button.set_light(self.empty_color)
 			self._update_track_button()
+		self._update_device_selection()
+	
+
+	def set_parameter_controls(self, controls):
+		self._device_component and self._device_component.set_parameter_controls(controls)
+	
+
+	def set_device_component(self, device_component):
+		self._device_component = device_component
+		self._update_device_selection
 	
 
 	def _connect_parameters(self):
@@ -335,16 +354,16 @@ class ChannelStripComponent(ChannelStripComponentBase):
 		if self.is_enabled():
 			if self._arming_select_button != None:
 				if self._track == None:
-					self._select_button.set_light(self.empty_color)
+					self._arming_select_button.set_light(self.empty_color)
 				elif self._track.can_be_armed and (self._track.arm or self._track.implicit_arm):
 					if self._track == self.song().view.selected_track:
-						self._select_button.set_light('Mixer.ArmSelected')
+						self._arming_select_button.set_light('Mixer.ArmSelected')
 					else:
-						self._select_button.set_light('Mixer.ArmUnselected')
+						self._arming_select_button.set_light('Mixer.ArmUnselected')
 				elif self._track == self.song().view.selected_track:
-					self._select_button.turn_on()
+					self._arming_select_button.turn_on()
 				else:
-					self._select_button.turn_off()
+					self._arming_select_button.turn_off()
 	
 
 	def set_arming_select_button(self, button):
@@ -358,7 +377,7 @@ class ChannelStripComponent(ChannelStripComponentBase):
 		if value and self.song().view.selected_track == self._track:
 			self._do_toggle_arm(exclusive=self.song().exclusive_arm)
 		else:
-			super(ChannelStripComponent, self)._select_value(value)
+			self.song().view.selected_track =  self.song().view.selected_track != self._track and self._track
 		if value and self._track.is_foldable and self._select_button.is_momentary():
 			self._fold_task.restart()
 		else:
@@ -383,9 +402,24 @@ class ChannelStripComponent(ChannelStripComponentBase):
 		pass
 	
 
+	
+
 	@subject_slot('arm')
 	def _on_arm_state_changed(self):
 		if self.is_enabled() and self._track:
 			self._update_track_button()
+	
+
+	def _update_device_selection(self):
+		track = self._track
+		device_to_select = None
+		if track and device_to_select == None and len(track.devices) > 0:
+			device_to_select = track.devices[0]
+		self._device_component and self._device_component.set_device(device_to_select)
+	
+
+	def update(self, *a, **k):
+		super(ChannelStripComponent, self).update()
+		self._update_device_selection()
 	
 

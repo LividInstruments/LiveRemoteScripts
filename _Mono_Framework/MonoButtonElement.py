@@ -24,10 +24,10 @@ class MonoButtonElement(ButtonElement):
 	__doc__ = ' Special button class that can be configured with custom on- and off-values, some of which flash at specified intervals called by _Update_Display'
 
 
-	def __init__(self, is_momentary, msg_type, channel, identifier, name = 'Button', script = None, *a, **k):
+	def __init__(self, is_momentary, msg_type, channel, identifier, name = 'Button', script = None, color_map = None, *a, **k):
 		super(MonoButtonElement, self).__init__(is_momentary, msg_type, channel, identifier, name = name, *a, **k)
 		self._script = script
-		self._color_map = [2, 64, 4, 8, 16, 127, 32]
+		self._color_map = color_map or [2, 64, 4, 8, 16, 127, 32]
 		self._num_colors = 7
 		self._num_flash_states = 18
 		self._flash_state = 0
@@ -65,6 +65,13 @@ class MonoButtonElement(ButtonElement):
 	def set_off_value(self, value):
 		self._last_sent_message = None
 		self._off_value = value
+	
+
+	def set_darkened_value(self, value = 0):
+		debug('setting darkened:', value)
+		if value:
+			value = self._color_map[value-1]
+		self._darkened = value
 	
 
 	def set_force_next_value(self):
@@ -160,7 +167,7 @@ class MonoButtonElement(ButtonElement):
 	def flash(self, timer):
 		if (self._is_being_forwarded and self._flash_state in range(1, self._num_flash_states) and (timer % self._flash_state) == 0):
 			data_byte1 = self._original_identifier
-			data_byte2 = self._color * int((timer % (self._flash_state * 2)) > 0)
+			data_byte2 = self._color if int((timer % (self._flash_state * 2)) > 0) else self._darkened
 			status_byte = self._original_channel
 			if (self._msg_type == MIDI_NOTE_TYPE):
 				status_byte += MIDI_NOTE_ON_STATUS

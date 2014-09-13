@@ -20,12 +20,11 @@ from _Framework.DisplayDataSource import DisplayDataSource
 from _Framework.DeviceComponent import DeviceComponent
 from _Framework.EncoderElement import EncoderElement
 from _Framework.InputControlElement import *
-from _Framework.MixerComponent import MixerComponent
 from _Framework.ModeSelectorComponent import ModeSelectorComponent
 from _Framework.NotifyingControlElement import NotifyingControlElement
 from _Framework.SceneComponent import SceneComponent
 from _Framework.SessionComponent import SessionComponent
-from _Framework.SessionZoomingComponent import DeprecatedSessionZoomingComponent as SessionZoomingComponent
+from _Framework.SessionRecordingComponent import SessionRecordingComponent as BaseSessionRecordingComponent
 from _Framework.SliderElement import SliderElement
 from _Framework.TransportComponent import TransportComponent
 from _Framework.PhysicalDisplayElement import *
@@ -46,6 +45,7 @@ from _Mono_Framework.MonoDeviceComponent import MonoDeviceComponent
 
 from _Mono_Framework.MonoButtonElement import *
 from _Mono_Framework.MonoEncoderElement import MonoEncoderElement
+from _Mono_Framework.MonoMixerComponent import MixerComponent
 from _Mono_Framework.DeviceNavigator import DeviceNavigator
 from _Mono_Framework.TranslationComponent import TranslationComponent
 from _Mono_Framework.LividUtilities import LividSettings
@@ -60,7 +60,6 @@ import _Mono_Framework.modOSC
 
 
 from Push.AutoArmComponent import AutoArmComponent
-from Push.SessionRecordingComponent import *
 from Push.ViewControlComponent import ViewControlComponent
 from Push.DrumGroupComponent import DrumGroupComponent
 from Push.StepSeqComponent import StepSeqComponent
@@ -102,6 +101,20 @@ def return_empty():
 debug = initialize_debug()
 
 
+class SessionRecordingComponent(BaseSessionRecordingComponent):
+
+
+	def __init__(self, *a, **k):
+		super(SessionRecordingComponent, self).__init__(*a, **k)
+		self._automation_toggle.view_transform = lambda x: 'Recorder.AutomationOn' if x else 'Recorder.AutomationOff'
+	
+
+	def set_record_button(self, button):
+		button and button.set_on_off_values('Recorder.RecordOn', 'Recorder.RecordOff')
+		super(SessionRecordingComponent, self).set_record_button(button)
+	
+
+
 class DS1TransportComponent(TransportComponent):
 
 
@@ -130,66 +143,6 @@ class DS1TransportComponent(TransportComponent):
 		super(DS1TransportComponent, self).set_loop_button(button, *a, **k)
 	
 
-
-class DS1MixerComponent(MixerComponent):
-
-
-	def __init__(self, script, *a, **k):
-		super(DS1MixerComponent,self).__init__( *a, **k)
-		self._script = script
-	
-
-	def _create_strip(self):
-		return DS1ChannelStripComponent()
-	
-
-	def set_next_track_button(self, next_button):
-		if next_button is not self._next_track_button:
-			self._next_track_button = next_button
-			self._next_track_button_slot.subject = next_button
-			self.on_selected_track_changed()
-	
-
-	def set_previous_track_button(self, prev_button):
-		if prev_button is not self._prev_track_button:
-			self._prev_track_button = prev_button
-			self._prev_track_button_slot.subject = prev_button
-			self.on_selected_track_changed()
-	
-
-	def set_track_select_dial(self, dial):
-		self._on_track_select_dial_value.subject = dial
-	
-
-	@subject_slot('value')
-	def _on_track_select_dial_value(self, value):
-		debug('on track select dial value:', value)
-		if value == 1:
-			selected_track = self.is_enabled() and self.song().view.selected_track
-			all_tracks = tuple(self.song().visible_tracks) + tuple(self.song().return_tracks) + (self.song().master_track,)
-			assert(selected_track in all_tracks)
-			if selected_track != all_tracks[-1]:
-				index = list(all_tracks).index(selected_track)
-				self.song().view.selected_track = all_tracks[index + 1]
-		elif value == 127:
-			selected_track = self.is_enabled() and self.song().view.selected_track
-			all_tracks = tuple(self.song().visible_tracks) + tuple(self.song().return_tracks) + (self.song().master_track,)
-			assert(selected_track in all_tracks)
-			if selected_track != all_tracks[0]:
-				index = list(all_tracks).index(selected_track)
-				self.song().view.selected_track = all_tracks[index - 1]
-	
-
-	def set_return_controls(self, controls):
-		for strip, control in map(None, self._return_strips, controls or []):
-			strip.set_volume_control(control)
-	
-
-	def tracks_to_use(self):
-		return tuple(self.song().visible_tracks) + tuple(self.song().return_tracks)
-	
-
-
 class DS1SessionComponent(SessionComponent):
 
 
@@ -204,76 +157,6 @@ class DS1SessionComponent(SessionComponent):
 			self._bank_left()
 		else:
 			self._bank_right()
-	
-
-
-class DS1ChannelStripComponent(ChannelStripComponent):
-
-
-	def __init__(self, *a, **k):
-		super(DS1ChannelStripComponent, self).__init__(*a, **k)
-		self._device_component = DeviceComponent()
-	
-
-	def set_track(self, *a, **k):
-		super(DS1ChannelStripComponent, self).set_track(*a, **k)
-		new_track = self._track or None
-		self._update_device_selection.subject = self._track
-	
-
-	def set_stop_button(self, button):
-		self._on_stop_value.subject = button
-	
-
-	@subject_slot('value')
-	def _on_stop_value(self, value):
-		if self._track:
-			self._track.stop_all_clips()
-	
-
-	def set_invert_mute_feedback(self, invert_feedback):
-		assert(isinstance(invert_feedback, type(False)))
-		self._invert_mute_feedback = invert_feedback
-		self.update()
-	
-
-	def _on_mute_changed(self):
-		if self.is_enabled() and self._mute_button != None:
-			if self._track != None or self.empty_color == None:
-				if self._track in chain(self.song().tracks, self.song().return_tracks) and self._track.mute == self._invert_mute_feedback:
-					self._mute_button.turn_on()
-				else:
-					self._mute_button.turn_off()
-			else:
-				self._mute_button.set_light(self.empty_color)
-	
-
-	def set_parameter_controls(self, controls):
-		self._device_component and self._device_component.set_parameter_controls(controls)
-	
-
-	def set_device_component(self, device_component):
-		self._device_component = device_component
-		self._update_device_selection
-	
-
-	def on_selected_track_changed(self, *a, **k):
-		super(DS1ChannelStripComponent, self).on_selected_track_changed(*a, **k)
-		self._update_device_selection()
-	
-
-	@subject_slot('devices')
-	def _update_device_selection(self):
-		track = self._track
-		device_to_select = None
-		if track and device_to_select == None and len(track.devices) > 0:
-			device_to_select = track.devices[0]
-		self._device_component and self._device_component.set_device(device_to_select)
-	
-
-	def update(self, *a, **k):
-		super(DS1ChannelStripComponent, self).update()
-		self._update_device_selection()
 	
 
 
@@ -317,7 +200,9 @@ class DS1(ControlSurface):
 		with self.component_guard():
 			self._setup_monobridge()
 			self._setup_controls()
+			self._setup_m4l_interface()
 			self._define_sysex()
+			self._initialize_hardware()
 			self._setup_mixer_control()
 			self._setup_session_control()
 			self._setup_transport_control()
@@ -325,14 +210,14 @@ class DS1(ControlSurface):
 			self._setup_session_recording_component()
 			#self._setup_translations()
 			self._setup_main_modes()
-			self._setup_m4l_interface()
 			#self._device.add_device_listener(self._on_new_device_set)
 		self.log_message("<<<<<<<<<<<<<<<<<= DS1 log opened =>>>>>>>>>>>>>>>>>>>>>") 
-		self.schedule_message(3, self._initialize_hardware)
+		#self.schedule_message(3, self._initialize_hardware)
 	
 
 	"""script initialization methods"""
 	def _initialize_hardware(self):
+		self.local_control_off.enter_mode()
 		self.encoder_absolute_mode.enter_mode()
 		self.encoder_speed_sysex.enter_mode()
 	
@@ -360,7 +245,7 @@ class DS1(ControlSurface):
 		self._side_dial = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, DS1_SIDE_DIALS[x], Live.MidiMap.MapMode.absolute, 'Side_Dial_' + str(x), x, self) for x in range(4)]
 		for dial in self._side_dial:
 			dial._mapping_feedback_delay = -1
-		self._encoder = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, DS1_ENCODERS[x], Live.MidiMap.MapMode.absolute, 'Side_Dial_' + str(x), x, self) for x in range(4)]
+		self._encoder = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, DS1_ENCODERS[x], Live.MidiMap.MapMode.absolute, 'Encoder_' + str(x), x, self) for x in range(4)]
 		for encoder in self._encoder:
 			encoder._mapping_feedback_delay = -1
 		self._encoder_button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, DS1_ENCODER_BUTTONS[index], 'EncoderButton_' + str(index), self, skin = self._skin) for index in range(4)]
@@ -386,6 +271,7 @@ class DS1(ControlSurface):
 		self._livid_settings = LividSettings(model = 16, control_surface = self)
 		self.encoder_speed_sysex = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_encoder_mapping', message = ENCODER_SPEED)
 		self.encoder_absolute_mode = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_encoder_encosion_mode', message = [2])
+		self.local_control_off = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_local_control', message = [0])
 
 		self.main_mode_message = DisplayMessageMode(self, 'Mute/Solo Mode')
 		self.select_mode_message = DisplayMessageMode(self, 'Arm/Select Mode')
@@ -399,7 +285,7 @@ class DS1(ControlSurface):
 
 	def _setup_mixer_control(self):
 		self._num_tracks = (8)
-		self._mixer = DS1MixerComponent(script = self, num_tracks = 8, num_returns = 4, invert_mute_feedback = True, autoname = True)
+		self._mixer = MixerComponent(script = self, num_tracks = 8, num_returns = 4, invert_mute_feedback = True, autoname = True)
 		self._mixer.name = 'Mixer'
 		self._mixer.set_track_offset(0)
 		self._mixer.master_strip().set_volume_control(self._master_fader)
@@ -491,8 +377,8 @@ class DS1(ControlSurface):
 		self._main_modes.add_mode('Select', [self._mixer.select_layer, self.select_mode_message],)
 		self._main_modes.add_mode('Clips', [self._session.clips_layer, self.clip_mode_message],)
 		self._main_modes.layer = Layer(priority = 4, toggle_button = self._grid[2][2])
-		self._main_modes.selected_mode = 'Main'
 		self._main_modes.set_enabled(True)
+		self._main_modes.selected_mode = 'Main'
 	
 
 	def _notify_descriptors(self):

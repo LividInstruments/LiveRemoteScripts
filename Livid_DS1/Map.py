@@ -41,16 +41,7 @@ class DS1Colors:
 	class ModeButtons:
 		Main = LividRGB.WHITE
 		Select = LividRGB.RED
-		Clips = LividRGB.MAGENTA
-	
-
-	class ModeButtons:
-		ModSwitcher = LividRGB.BlinkMedium.CYAN
-		ModSwitcherDisabled = LividRGB.CYAN
-		Translations = LividRGB.BlinkMedium.MAGENTA
-		TranslationsDisabled = LividRGB.MAGENTA
-		DeviceSelector = LividRGB.BlinkMedium.YELLOW
-		DeviceSelectorDisabled = LividRGB.YELLOW
+		Clips = LividRGB.GREEN
 	
 
 	class DefaultButton:
@@ -61,8 +52,8 @@ class DS1Colors:
 	
 
 	class Session:
-		StopClipTriggered = LividRGB.BlinkFast.BLUE
-		StopClip = LividRGB.WHITE
+		StopClipTriggered = LividRGB.BiColor.BLUE.WHITE
+		StopClip = LividRGB.BLUE
 		Scene = LividRGB.CYAN
 		NoScene = LividRGB.OFF
 		SceneTriggered = LividRGB.GREEN
@@ -95,13 +86,13 @@ class DS1Colors:
 	
 
 	class Transport:
-		PlayOn = LividRGB.BlinkMedium.GREEN
+		PlayOn = LividRGB.BiColor.WHITE.GREEN
 		PlayOff = LividRGB.GREEN
 		StopOn = LividRGB.BLUE
-		RecordOn = LividRGB.BlinkMedium.RED
+		RecordOn = LividRGB.BiColor.WHITE.RED
 		RecordOff = LividRGB.RED
-		OverdubOn = LividRGB.BlinkFast.RED
-		OverdubOff = LividRGB.RED	
+		OverdubOn = LividRGB.BiColor.WHITE.MAGENTA
+		OverdubOff = LividRGB.MAGENTA
 		SeekBackwardOn = LividRGB.BlinkMedium.CYAN
 		SeekBackwardOff = LividRGB.CYAN
 		LoopOn = LividRGB.BlinkMedium.YELLOW
@@ -115,9 +106,9 @@ class DS1Colors:
 		MuteOff = LividRGB.WHITE
 		ArmSelected = LividRGB.RED
 		ArmUnselected = LividRGB.RED
-		ArmOff = LividRGB.WHITE
+		ArmOff = LividRGB.GREEN
 		StopClip = LividRGB.BLUE
-		SelectedOn = LividRGB.GREEN
+		SelectedOn = LividRGB.BLUE
 		SelectedOff = LividRGB.MAGENTA
 	
 
@@ -132,10 +123,10 @@ class DS1Colors:
 		NewOff = LividRGB.YELLOW
 		FixedOn = LividRGB.BlinkMedium.CYAN
 		FixedOff = LividRGB.CYAN
-		RecordOn = LividRGB.BlinkMedium.MAGENTA
+		RecordOn = LividRGB.BiColor.WHITE.MAGENTA
 		RecordOff = LividRGB.MAGENTA
-		AutomationOn = LividRGB.BlinkMedium.CYAN
-		AutomationOff = LividRGB.CYAN
+		AutomationOn = LividRGB.BiColor.WHITE.YELLOW
+		AutomationOff = LividRGB.YELLOW
 		FixedAssigned = LividRGB.MAGENTA
 		FixedNotAssigned = LividRGB.OFF
 	
