@@ -709,7 +709,7 @@ class MonoInstrumentComponent(CompoundComponent):
 		self._scale_offset_component = ScrollingOffsetComponent(self._scale_offset_value)
 		self._scale_offset_component._minimum = 0
 		self._scale_offset_component._maximum = len(self._scalenames)-1
-		self._scales_modes._on_value = 'MonoInstrument.ScaleOffsetOnValue'
+		self._scale_offset_component._on_value = 'MonoInstrument.ScaleOffsetOnValue'
 		self.set_scale_up_button = self._scale_offset_component.set_up_button
 		self.set_scale_down_button = self._scale_offset_component.set_down_button
 

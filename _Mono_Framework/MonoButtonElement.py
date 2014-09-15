@@ -68,7 +68,7 @@ class MonoButtonElement(ButtonElement):
 	
 
 	def set_darkened_value(self, value = 0):
-		debug('setting darkened:', value)
+		#debug('setting darkened:', value)
 		if value:
 			value = self._color_map[value-1]
 		self._darkened = value

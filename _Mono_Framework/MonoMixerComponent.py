@@ -8,6 +8,7 @@ from _Framework.ChannelStripComponent import ChannelStripComponent as ChannelStr
 from _Framework.InputControlElement import ParameterSlot
 from _Framework.TrackArmState import TrackArmState
 from _Framework.DeviceComponent import DeviceComponent
+from _Framework.Util import nop
 from _Generic.Devices import *
 
 from Debug import *
@@ -54,15 +55,6 @@ class MixerComponent(MixerComponentBase):
 
 	def set_track_select_dial(self, dial):
 		self._on_track_select_dial_value.subject = dial
-	
-
-	@subject_slot('value')
-	def _on_track_select_dial_value(self, value):
-		debug('_on_track_select_dial_value', value)
-		if value > 64:
-			self.select_prev_track()
-		else:
-			self.select_next_track()
 	
 
 	def select_next_track(self):
@@ -141,6 +133,16 @@ class MixerComponent(MixerComponentBase):
 		return tuple(self.song().visible_tracks) + tuple(self.song().return_tracks)
 	
 
+	@subject_slot('value')
+	def _on_track_select_dial_value(self, value):
+		debug('_on_track_select_dial_value', value)
+		if value > 64:
+			self.select_prev_track()
+		else:
+			self.select_next_track()
+	
+
+
 
 class ChannelStripComponent(ChannelStripComponentBase):
 
@@ -159,63 +161,12 @@ class ChannelStripComponent(ChannelStripComponentBase):
 		self._arming_select_button = None
 	
 
-	@subject_slot('devices')
-	def _on_devices_changed(self):
-		debug(self.name, 'on devices changed')
-		self._update_device_selection()
-		self._detect_eq(self._track)
-		self.update()
-	
-
-	def _detect_eq(self, track = None):
-		self._eq_device = None
-		if not track is None:
-			for index in range(len(track.devices)):
-				device = track.devices[-1 * (index + 1)]
-				if device.class_name in EQ_DEVICES.keys():
-					self._eq_device = device
-					break
-	
-
 	def set_track(self, track):
 		assert(isinstance(track, (type(None), Live.Track.Track)))
 		self._on_devices_changed.subject = track
 		self._update_device_selection()
 		self._detect_eq(track)
 		super(ChannelStripComponent,self).set_track(track)
-	
-
-	def set_invert_mute_feedback(self, invert_feedback):
-		assert(isinstance(invert_feedback, type(False)))
-		self._invert_mute_feedback = invert_feedback
-		self.update()
-	
-
-	def _on_mute_changed(self):
-		if self.is_enabled() and self._mute_button != None:
-			if self._track != None or self.empty_color == None:
-				if self._track in chain(self.song().tracks, self.song().return_tracks) and self._track.mute != self._invert_mute_feedback:
-					self._mute_button.set_light('Mixer.MuteOn')
-				else:
-					self._mute_button.set_light('Mixer.MuteOff')
-			else:
-				self._mute_button.set_light(self.empty_color)
-	
-
-	def _on_solo_changed(self):
-		if self.is_enabled() and self._solo_button != None:
-			if self._track != None or self.empty_color == None:
-				if self._track in chain(self.song().tracks, self.song().return_tracks) and self._track.solo:
-					self._solo_button.set_light('Mixer.SoloOn')
-				else:
-					self._solo_button.set_light('Mixer.SoloOff')
-			else:
-				self._solo_button.set_light(self.empty_color)
-	
-
-	@subject_slot('selected_track')
-	def _on_selected_track_changed(self):
-		self.on_selected_track_changed()
 	
 
 	def on_selected_track_changed(self):
@@ -232,6 +183,24 @@ class ChannelStripComponent(ChannelStripComponentBase):
 		self._update_device_selection()
 	
 
+	def update(self, *a, **k):
+		super(ChannelStripComponent, self).update()
+		self._update_device_selection()
+	
+
+	def set_invert_mute_feedback(self, invert_feedback):
+		assert(isinstance(invert_feedback, type(False)))
+		self._invert_mute_feedback = invert_feedback
+		self.update()
+	
+
+	def set_eq_gain_controls(self, controls):
+		for control in list(self._eq_gain_controls or []):
+			release_control(control)
+		self._eq_gain_controls = controls
+		self.update()
+	
+
 	def set_parameter_controls(self, controls):
 		self._device_component and self._device_component.set_parameter_controls(controls)
 	
@@ -241,28 +210,10 @@ class ChannelStripComponent(ChannelStripComponentBase):
 		self._update_device_selection
 	
 
-	def _connect_parameters(self):
-		if self._pan_control != None:
-			self._pan_control.connect_to(self._track.mixer_device.panning)
-		if self._volume_control != None:
-			self._volume_control.connect_to(self._track.mixer_device.volume)
-		if self._send_controls != None:
-			index = 0
-			for send_control in self._send_controls:
-				if send_control != None:
-					if index < len(self._track.mixer_device.sends):
-						send_control.connect_to(self._track.mixer_device.sends[index])
-					else:
-						send_control.release_parameter()
-						send_control.send_value(0, True)
-						self._empty_control_slots.register_slot(send_control, nop, 'value')
-				index += 1
-	
-
-	def _disconnect_parameters(self):
-		for control in self._all_controls():
-			control and control.send_value(0, True)
-		super(ChannelStripComponent, self)._disconnect_parameters()
+	def set_arming_select_button(self, button):
+		self._arming_select_button = button
+		self._arming_select_value.subject = button
+		self._update_track_button()
 	
 
 	def set_stop_button(self, button):
@@ -271,16 +222,59 @@ class ChannelStripComponent(ChannelStripComponentBase):
 		button and button.set_light('Mixer.StopClip')
 	
 
+	@subject_slot('arm')
+	def _on_arm_state_changed(self):
+		if self.is_enabled() and self._track:
+			self._update_track_button()
+	
+
 	@subject_slot('value')
 	def _on_stop_value(self, value):
 		if self._track:
 			self._track.stop_all_clips()
 	
 
-	def set_invert_mute_feedback(self, invert_feedback):
-		assert(isinstance(invert_feedback, type(False)))
-		self._invert_mute_feedback = invert_feedback
+	@subject_slot('value')
+	def _arming_select_value(self, value):
+		if value and self.song().view.selected_track == self._track:
+			self._do_toggle_arm(exclusive=self.song().exclusive_arm)
+		else:
+			self.song().view.selected_track =  self.song().view.selected_track != self._track and self._track
+		if value and self._track.is_foldable and self._select_button.is_momentary():
+			self._fold_task.restart()
+		else:
+			self._fold_task.kill()
+	
+
+	@subject_slot('selected_track')
+	def _on_selected_track_changed(self):
+		self.on_selected_track_changed()
+	
+
+	@subject_slot('devices')
+	def _on_devices_changed(self):
+		debug(self.name, 'on devices changed')
+		self._update_device_selection()
+		self._detect_eq(self._track)
 		self.update()
+	
+
+	def _update_device_selection(self):
+		track = self._track
+		device_to_select = None
+		if track and device_to_select == None and len(track.devices) > 0:
+			device_to_select = track.devices[0]
+		self._device_component and self._device_component.set_device(device_to_select)
+	
+
+	def _detect_eq(self, track = None):
+		self._eq_device = None
+		if not track is None:
+			for index in range(len(track.devices)):
+				device = track.devices[-1 * (index + 1)]
+				if device.class_name in EQ_DEVICES.keys():
+					self._eq_device = device
+					break
 	
 
 	def _on_mute_changed(self):
@@ -317,19 +311,27 @@ class ChannelStripComponent(ChannelStripComponentBase):
 		self._update_track_button()
 	
 
-	def set_eq_gain_controls(self, controls):
-		for control in list(self._eq_gain_controls or []):
-			release_control(control)
-		self._eq_gain_controls = controls
-		self.update()
-	
-
 	def _all_controls(self):
 		return [self._pan_control, self._volume_control] + list(self._send_controls or []) + list(self._eq_gain_controls or [])
 	
 
 	def _connect_parameters(self):
-		super(ChannelStripComponent, self)._connect_parameters()
+		#super(ChannelStripComponent, self)._connect_parameters()
+		if self._pan_control != None:
+			self._pan_control.connect_to(self._track.mixer_device.panning)
+		if self._volume_control != None:
+			self._volume_control.connect_to(self._track.mixer_device.volume)
+		if self._send_controls != None:
+			index = 0
+			for send_control in self._send_controls:
+				if send_control != None:
+					if index < len(self._track.mixer_device.sends):
+						send_control.connect_to(self._track.mixer_device.sends[index])
+					else:
+						send_control.release_parameter()
+						send_control.send_value(0, True)
+						self._empty_control_slots.register_slot(send_control, nop, 'value')
+				index += 1
 		if not self._eq_device is None:
 			device_dict = EQ_DEVICES[self._eq_device.class_name]
 			if self._eq_gain_controls != None:
@@ -350,6 +352,12 @@ class ChannelStripComponent(ChannelStripComponentBase):
 					index += 1
 	
 
+	def _disconnect_parameters(self):
+		for control in self._all_controls():
+			control and control.send_value(0, True)
+		super(ChannelStripComponent, self)._disconnect_parameters()
+	
+
 	def _update_track_button(self):
 		if self.is_enabled():
 			if self._arming_select_button != None:
@@ -364,24 +372,6 @@ class ChannelStripComponent(ChannelStripComponentBase):
 					self._arming_select_button.turn_on()
 				else:
 					self._arming_select_button.turn_off()
-	
-
-	def set_arming_select_button(self, button):
-		self._arming_select_button = button
-		self._arming_select_value.subject = button
-		self._update_track_button()
-	
-
-	@subject_slot('value')
-	def _arming_select_value(self, value):
-		if value and self.song().view.selected_track == self._track:
-			self._do_toggle_arm(exclusive=self.song().exclusive_arm)
-		else:
-			self.song().view.selected_track =  self.song().view.selected_track != self._track and self._track
-		if value and self._track.is_foldable and self._select_button.is_momentary():
-			self._fold_task.restart()
-		else:
-			self._fold_task.kill()
 	
 
 	def _do_toggle_arm(self, exclusive = False):
@@ -400,26 +390,5 @@ class ChannelStripComponent(ChannelStripComponentBase):
 
 	def _do_select_track(self, track):
 		pass
-	
-
-	
-
-	@subject_slot('arm')
-	def _on_arm_state_changed(self):
-		if self.is_enabled() and self._track:
-			self._update_track_button()
-	
-
-	def _update_device_selection(self):
-		track = self._track
-		device_to_select = None
-		if track and device_to_select == None and len(track.devices) > 0:
-			device_to_select = track.devices[0]
-		self._device_component and self._device_component.set_device(device_to_select)
-	
-
-	def update(self, *a, **k):
-		super(ChannelStripComponent, self).update()
-		self._update_device_selection()
 	
 
