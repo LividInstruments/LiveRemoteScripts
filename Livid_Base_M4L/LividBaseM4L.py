@@ -27,7 +27,6 @@ from VCM600.TrackEQComponent import TrackEQComponent # Class representing a trac
 from VCM600.TrackFilterComponent import TrackFilterComponent # Class representing a track's filter, attaches to the last filter in the track
 from _Framework.TransportComponent import TransportComponent # Class encapsulating all functions in Live's transport section
 
-from _Mono_Framework.MonoButtonElement import MonoButtonElement
 
 """ Here we define some global variables """
 CHANNEL = 0   #main channel (0 - 15)
@@ -68,28 +67,28 @@ class LividBaseM4L(ControlSurface):
       self._tfader[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, BASE_TOUCHSTRIPS[index], Live.MidiMap.MapMode.absolute)
       self._tfader[index].name = 'fader[' + str(index) + ']'
     for index in range(9):
-      self._tfader_touch[index] = MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_TOUCHSTRIPS[index], script = self)
+      self._tfader_touch[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_TOUCHSTRIPS[index])
       self._tfader_touch[index].name = 'fadertouch[' + str(index) + ']'
     for index in range(32):
-      self._pad[index] = MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_PADS[index], script = self)
+      self._pad[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_PADS[index])
       self._pad[index].name = 'pad[' + str(index) + ']'
     for index in range(32):
       self._pad_cc[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, BASE_PADS[index], Live.MidiMap.MapMode.absolute)
       self._pad_cc[index].name = 'padcc[' + str(index) + ']'
     for index in range(8):
-      self._button[index] = MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_BUTTONS[index], script = self)
+      self._button[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_BUTTONS[index])
       self._button[index].name = 'btn[' + str(index) + ']'
     for index in range(8):
-      self._tbutton[index] = MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_TOUCHPADS[index], script = self)
+      self._tbutton[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_TOUCHPADS[index])
       self._tbutton[index].name = 'topbtn[' + str(index) + ']'   
     for index in range(8):
-      self._runnerled[index] = MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_RUNNERS[index], script = self)
+      self._runnerled[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_RUNNERS[index])
       self._runnerled[index].name = 'runnerled[' + str(index) + ']'
     for index in range(8):
-      self._sideled[index] = MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_SIDES[index], script = self)
+      self._sideled[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_SIDES[index])
       self._sideled[index].name = 'sideled[' + str(index) + ']'
     for index in range(2):
-      self._lcd[index] = MonoButtonElement(is_momentary, MIDI_CC_TYPE, CHANNEL, BASE_LCDS[index], script = self)
+      self._lcd[index] = ButtonElement(is_momentary, MIDI_CC_TYPE, CHANNEL, BASE_LCDS[index])
       self._lcd[index].name = 'lcd[' + str(index) + ']'
     
   def receive_value(self, value):
