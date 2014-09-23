@@ -497,7 +497,8 @@ class BaseModHandler(ModHandler):
 
 	def _receive_base_grid(self, x, y, value = -1, identifier = -1, channel = -1, *a, **k):
 		#debug('_receive_base_grid:', x, y, value, identifier, channel)
-		if self._active_mod and self._base_grid_value.subject:
+		mod = self.active_mod()
+		if mod and not mod.legacy and self._base_grid_value.subject:
 			value > -1 and self._base_grid_value.subject.send_value(x, y, value, True)
 			button = self._base_grid_value.subject.get_button(x, y)
 			if button:
@@ -528,8 +529,24 @@ class BaseModHandler(ModHandler):
 				self._receive_base_grid(x, y, *a, **k)
 	
 
+	def _receive_grid(self, x, y, value = -1, identifier = False, channel = False, *a, **k):
+		#debug('receive grid', x, y, value)
+		mod = self.active_mod()
+		if mod and mod.legacy and self._base_grid_value.subject:
+			x = x - self.x_offset
+			y = y - self.y_offset
+			if x in range(8) and y in range(4):
+				value > -1 and self._base_grid_value.subject.send_value(x, y, value, True)
+				if identifier or channel:
+					button = self._base_grid_value.subject.get_button(x, y)
+					if button:
+						identifier and button.set_identifier(identifier if identifier > -1 else button._original_identifier)
+						channel and button.set_channel(channel if channel > -1 else button._original_channel)
+						button.set_enabled(button._msg_identifier == button._original_identifier and button._msg_channel == button._original_channel)
+	
+
 	def set_base_grid(self, grid):
-		debug('set base grid:', grid)
+		#debug('set base grid:', grid)
 		old_grid = self._base_grid_value.subject
 		if old_grid:
 			for button, _ in old_grid.iterbuttons():

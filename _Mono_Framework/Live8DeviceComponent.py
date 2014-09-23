@@ -58,8 +58,10 @@ class Live8DeviceComponent(ControlSurfaceComponent):
 			if parameter != None:
 				if parameter.value_has_listener(self._on_on_off_changed):
 					parameter.remove_value_listener(self._on_on_off_changed)
-			self._device.remove_name_listener(self._on_device_name_changed)
-			self._device.remove_parameters_listener(self._on_parameters_changed)
+			if self._device.name_has_listener(self._on_device_name_changed):
+				self._device.remove_name_listener(self._on_device_name_changed)
+			if self._device.parameters_has_listener(self._on_parameters_changed):
+				self._device.remove_parameters_listener(self._on_parameters_changed)
 			self._device = None
 		return None
 	

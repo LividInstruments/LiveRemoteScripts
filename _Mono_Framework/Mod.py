@@ -213,7 +213,7 @@ class StoredElement(object):
 
 	def update_element(self):
 		for handler in self._active_handlers():
-			handler.receive_address(self._name, self._value)
+			handler.receive_address(self._name, value = self._value)
 	
 
 	def restore(self):
@@ -240,7 +240,7 @@ class Grid(object):
 
 	def update_element(self, element):
 		for handler in self._active_handlers():
-			handler.receive_address(self._name, element._x, element._y, element._value)
+			handler.receive_address(self._name, element._x, element._y, value = element._value)
 	
 
 	def value(self, x, y, value, *a):
@@ -338,6 +338,11 @@ class Grid(object):
 			self.value(index%width, row + int(index/width), values[index])
 	
 
+	def batch_column_fold(self, column, end, *values):
+		height = min(len(self._cell[0] if hasattr(self._cell, len) else 0, end))
+		for index in range(len(values)):
+			self.value(column + int(index/height), index%height, values[index])
+	
 
 class ButtonGrid(Grid):
 
@@ -348,18 +353,16 @@ class ButtonGrid(Grid):
 		self._cell = [[StoredElement(active_handlers, _name = self._name + '_' + str(x) + '_' + str(y), _x = x, _y = y, _identifier = -1, _channel = -1 ) for y in range(height)] for x in range(width)]
 	
 
-	def identifier(self, x, y, identifier = -1):
+	def identifier(self, x, y, identifier = -1, *a):
 		element = self._cell[x][y]
-		element._id = min(127, max(-1, identifier))
-		for handler in self._active_handlers():
-			handler.receive_address(self._name, element._x, element._y, element, True)
+		element._identifier = min(127, max(-1, identifier))
+		self.update_element(element)
 	
 
-	def channel(self, x, y, channel = -1):
+	def channel(self, x, y, channel = -1, *a):
 		element = self._cell[x][y]
 		element._channel = min(15, max(-1, channel))
-		for handler in self._active_handlers():
-			handler.receive_address(self._name, element._x, element._y, element, True)
+		self.update_element(element)
 	
 
 	def update_element(self, element):
@@ -384,7 +387,7 @@ class Array(object):
 
 	def update_element(self, element):
 		for handler in self._active_handlers():
-			handler.receive_address(self._name, element._num, element._value)
+			handler.receive_address(self._name, element._num, value = element._value)
 	
 
 	def value(self, num, value):
@@ -1210,7 +1213,7 @@ class ModClient(NotifyingControlElement):
 			try:
 				getattr(address, method)(*value_list)
 			except:
-				debug('receive method exception %(a)s %(m)s %(vl)s' % {'a':address_name, 'm':method, 'vl':values})
+				debug('receive method exception', address_name, method, values)
 	
 
 	def distribute(self, function_name, values = 0, *a, **k):
@@ -1220,7 +1223,7 @@ class ModClient(NotifyingControlElement):
 			try:
 				getattr(self, function_name)(*value_list)
 			except:
-				debug('distribute method exception %(fn)s %(vl)s' % {'fn':function_name, 'vl':value_list})
+				debug('distribute method exception', function_name, value_list)
 	
 
 	def receive_translation(self, translation_name, method = 'value', *values):
@@ -1229,7 +1232,7 @@ class ModClient(NotifyingControlElement):
 		try:
 			self._translations[translation_name].receive(method, *values)
 		except:
-			debug('receive_translation method exception %(n)s %(m)s %(vl)s' % {'n':translation_name, 'm':method, 'vl':values})
+			debug('receive_translation method exception', translation_name, method, values)
 	
 
 	def trans(self, translation_name, method = 'value', *values):
@@ -1238,7 +1241,7 @@ class ModClient(NotifyingControlElement):
 		try:
 			self._translations[translation_name].receive(method, *values)
 		except:
-			debug('receive_translation method exception %(n)s %(m)s %(vl)s' % {'n':translation_name, 'm':method, 'vl':values})
+			debug('receive_translation method exception', translation_name, method, values)
 	
 
 	def send(self, control_name, *a):
