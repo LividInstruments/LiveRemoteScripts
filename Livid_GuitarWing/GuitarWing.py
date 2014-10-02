@@ -629,6 +629,7 @@ class GuitarWing(ControlSurface):
 		self._touched = 0
 		self._last_selected_track = None
 		self._last_selected_track_arm = False
+		self._device_selection_follows_track_selection = True
 		with self.component_guard():
 			self._setup_monobridge()
 			self._setup_controls()
