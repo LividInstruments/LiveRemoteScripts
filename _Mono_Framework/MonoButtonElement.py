@@ -100,6 +100,7 @@ class MonoButtonElement(ButtonElement):
 
 	def turn_off(self, force = False):
 		self.force_next_send()
+		#debug('turn off:', self._off_value)
 		if self._off_value in range(0, 128):
 			self.send_value(self._off_value)
 		else:
@@ -113,6 +114,7 @@ class MonoButtonElement(ButtonElement):
 	
 
 	def reset(self, force = False):
+		self._darkened = 0;
 		self.force_next_send()
 		self.send_value(0)
 	
@@ -123,6 +125,7 @@ class MonoButtonElement(ButtonElement):
 		except SkinColorMissingError:
 			#debug('skin missing for', value)
 			pass
+		#debug('skin value:', value)
 		super(MonoButtonElement, self).set_light(value, *a, **k)
 	
 
@@ -179,5 +182,10 @@ class MonoButtonElement(ButtonElement):
 			 data_byte1,
 			 data_byte2))
 			
+	
+
+	def release_parameter(self):
+		self._darkened = 0
+		super(MonoButtonElement, self).release_parameter()
 	
 

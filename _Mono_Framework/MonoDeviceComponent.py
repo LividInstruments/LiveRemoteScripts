@@ -230,6 +230,7 @@ class MonoDeviceComponent(DeviceComponent):
 							host._parameter_controls[index].connect_to(parameter)
 						else:
 							host._parameter_controls[index].release_parameter()
+							host._parameter_controls[index].send_value(0, True)
 			else:
 				parameters = self._device_parameters_to_map()
 				if not host._parameter_controls is None:
@@ -240,6 +241,7 @@ class MonoDeviceComponent(DeviceComponent):
 							control.connect_to(parameters[index])
 						else:
 							control.release_parameter()
+							contro.send_value(0, True)
 						index += 1
 	
 
@@ -816,6 +818,7 @@ class NewMonoDeviceComponent(DeviceComponent):
 							host._parameter_controls[index].connect_to(parameter)
 						else:
 							host._parameter_controls[index].release_parameter()
+							host._parameter_controls[index].send_value(0, True)
 			else:
 				#debug('setting defautl parameters-------------------')
 				parameters = self._device_parameters_to_map()
@@ -827,6 +830,7 @@ class NewMonoDeviceComponent(DeviceComponent):
 							control.connect_to(parameters[index])
 						else:
 							control.release_parameter()
+							control.send_value(0, True)
 						index += 1
 	
 

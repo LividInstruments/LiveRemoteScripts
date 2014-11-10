@@ -157,7 +157,7 @@ class DeviceSelectorComponent(ModeSelectorComponent):
 class NewDeviceSelectorComponent(ControlSurfaceComponent):
 
 
-	def __init__(self, script, prefix = 'p', *a, **k):
+	def __init__(self, script, prefix = '@d', *a, **k):
 		super(NewDeviceSelectorComponent, self).__init__(*a, **k)
 		self.log_message = script.log_message
 		self._script = script
@@ -199,11 +199,56 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 		self.update()
 	
 
+	def set_assign_button(self, button):
+		debug('set assign button:', button)
+		self._on_assign_button_value.subject = button
+		self._update_assign_button()
+	
+
+	@subject_slot('value')
+	def _on_assign_button_value(self, value):
+		debug('device_selector._on_assign_button_value', value)
+		self._update_assign_button()
+	
+
+	def _update_assign_button(self):
+		button = self._on_assign_button_value.subject
+		if button:
+			button.is_pressed() and button.set_light('DeviceSelector.AssignOn') or button.set_light('DeviceSelector.AssignOff')
+	
+
 	@subject_slot_group('value')
 	def _on_button_value(self, value, sender):
 		if self.is_enabled():
 			if value:
-				self.select_device(self._buttons.index(sender))
+				if self._on_assign_button_value.subject and self._on_assign_button_value.subject.is_pressed():
+					self.assign_device(self._buttons.index(sender))
+				else:
+					self.select_device(self._buttons.index(sender))
+	
+
+	def assign_device(self, index):
+		device = self.song().appointed_device
+		if not device is None and hasattr(device, 'name'):
+			prefix = str(self._prefix)+':'
+			offset = self._offset
+			key =  prefix + str(index + 1 + offset)
+			name = device.name.split(' ')
+			if key in name:
+				name.remove(key)
+			else:
+				old_entry = self._device_registry[index]
+				if old_entry and hasattr(old_entry, 'name'):
+					old_name = old_entry.name.split(' ')
+					if key in old_name:
+						old_name.remove(key)
+						old_entry.name = ' '.join(old_name)
+				for sub in name:
+					sub.startswith(prefix) and name.remove(sub)
+				name.insert(0, key)
+			device.name = ' '.join(name)
+			self.scan_all()
+			self.update()
 	
 
 	def select_device(self, index):
@@ -224,31 +269,31 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 	def scan_all(self):
 		debug('scan all--------------------------------')
 		self._device_registry = [None for index in range(len(self._buttons))]
-		prefix = str(self._prefix)
+		prefix = str(self._prefix)+':'
 		offset = self._offset
 		preset = None
 		for track in self.song().tracks:
 			for device in self.enumerate_track_device(track):
 				for index, entry in enumerate(self._device_registry):
 					key = str(prefix + str(index + 1 + offset))
-					if device.name.startswith(key):
+					if device.name.startswith(key+' ') or device.name == key:
 						self._device_registry[index] = device
-					elif device.name.startswith('*' +key) and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
+					elif (device.name.startswith('*' +key+' ') or device.name == ('*' +key)) and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
 						self._device_registry[index] = device.chains[0].devices[0]
 		for return_track in self.song().return_tracks:
 			for device in self.enumerate_track_device(return_track):
 				for index, entry in enumerate(self._device_registry):
 					key = str(prefix + str(index + 1 + offset))
-					if device.name.startswith(key):
+					if device.name.startswith(key+' ') or device.name == key:
 						self._device_registry[index] = device
-					elif device.name.startswith('*' + key) and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
+					elif (device.name.startswith('*' +key+' ') or device.name == ('*' +key))  and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
 						self._device_registry[index] = device.chains[0].devices[0]
 		for device in self.enumerate_track_device(self.song().master_track):
 			for index, entry in enumerate(self._device_registry):
-				key = str(prefix + str(index + 1 + offset) + ' ')
-				if device.name.startswith(key):
+				key = str(prefix + str(index + 1 + offset))
+				if device.name.startswith(key+' ') or device.name == key:
 					self._device_registry[index] = device
-				elif device.name.startswith('*' + key) and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
+				elif (device.name.startswith('*' +key+' ') or device.name == ('*' +key))  and device.can_have_chains and len(device.chains) and len(device.chains[0].devices):
 					self._device_registry[index] = device.chains[0].devices[0]
 		self.update()
 		#debug('device registry: ' + str(self._device_registry))
@@ -309,32 +354,4 @@ class NewDeviceSelectorComponent(ControlSurfaceComponent):
 						else:
 							button.send_value(0)
 	
-
-	def _current_device_offsets(self, dict_entry):
-		#self.log_message('finding current device offsets')
-		selected_device = self._top_device()
-
-		if not selected_device is None and hasattr(selected_device, 'name'):
-			name = selected_device.name
-			self.log_message('device name: ' + str(name.split(' ')))
-			for item in name.split(' '):
-				if len(str(item)) and str(item)[0]=='@':
-					vals = item[1:].split(':')
-					if len(vals) < 2:
-						def_assignments = {'scale':'Auto', 'sequencer':False, 'split':False, 'offset':36, 'vertoffset':4, 'drumoffset':0}
-						if vals[0] in def_assignments:
-							vals.append([vals[0]])
-					if vals[0] in dict_entry.keys():
-						if vals[0] == 'scale' and vals[1] in SCALES.keys():
-							dict_entry[vals[0]] = str(vals[1])
-						elif vals[0] in ['sequencer', 'split']:
-							if vals[1] in ['False', 'True']:
-								dict_entry[vals[0]] = bool(['False', 'True'].index(vals[1]))
-						elif vals[0] in ['offset', 'vertoffset', 'drumoffset']:
-							dict_entry[vals[0]] = int(vals[1])
-			#for key in dict_entry.keys():
-			#	self.log_message('key: ' + str(key) + ' entry:' + str(dict_entry[key]))
-		return dict_entry
-	
-
 

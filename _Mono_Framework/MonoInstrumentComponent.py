@@ -64,6 +64,7 @@ SCALES = 	{'Mod':[0,1,2,3,4,5,6,7,8,9,10,11],
 			'Keys':[0,2,4,5,7,9,11,12,1,3,3,6,8,10,10,13],
 			'Auto':[0,1,2,3,4,5,6,7,8,9,10,11],
 			'Chromatic':[0,1,2,3,4,5,6,7,8,9,10,11],
+			'DrumRack':[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
 			'DrumPad':[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
 			'Major':[0,2,4,5,7,9,11],
 			'Minor':[0,2,3,5,7,8,10],
@@ -102,7 +103,7 @@ SCALES = 	{'Mod':[0,1,2,3,4,5,6,7,8,9,10,11],
 			'Spanish':[0,1,3,4,5,6,8,10]
 			}
 
-SCALEABBREVS = {'Auto':'-A','Keys':'-K','Chromatic':'12','DrumPad':'-D','Major':'M-','Minor':'m-','Dorian':'II','Mixolydian':'V',
+SCALEABBREVS = {'Auto':'-A','Keys':'-K','Chromatic':'12','DrumPad':'-D','DrumRack':'D-','Major':'M-','Minor':'m-','Dorian':'II','Mixolydian':'V',
 			'Lydian':'IV','Phrygian':'IH','Locrian':'VH','Diminished':'d-','Whole-half':'Wh','Whole_Tone':'WT','Minor_Blues':'mB',
 			'Minor_Pentatonic':'mP','Major_Pentatonic':'MP','Harmonic_Minor':'mH','Melodic_Minor':'mM','Dominant_Sus':'D+','Super_Locrian':'SL',
 			'Neopolitan_Minor':'mN','Neopolitan_Major':'MN','Enigmatic_Minor':'mE','Enigmatic':'ME','Composite':'Cp','Bebop_Locrian':'lB',
@@ -417,7 +418,6 @@ class ScrollingOffsetComponent(ControlSurfaceComponent):
 							self._scroll_octave_up_ticks_delay,
 							self._scroll_octave_down_ticks_delay]
 			if (scroll_delays.count(-1) < 4):
-				debug('count is good')
 				offset_increment = 0
 				if (self._scroll_down_ticks_delay > -1):
 					if self._is_scrolling():
@@ -425,9 +425,7 @@ class ScrollingOffsetComponent(ControlSurfaceComponent):
 						self._scroll_down_ticks_delay = INTERVAL_SCROLLING_DELAY
 					self._scroll_down_ticks_delay -= 1
 				if (self._scroll_up_ticks_delay > -1):
-					debug('up delay...')
 					if self._is_scrolling():
-						debug('is scrolling....')
 						offset_increment += 1
 						self._scroll_up_ticks_delay = INTERVAL_SCROLLING_DELAY
 					self._scroll_up_ticks_delay -= 1
@@ -742,8 +740,8 @@ class MonoInstrumentComponent(CompoundComponent):
 		self._selected_session = ScaleSessionComponent(1, 32, self, enable_skinning = True)
 		self._selected_session.name = "SelectedSession"
 		self._selected_session.set_offsets(0, 0)
-		for row in range(32):
-			clip_slot = self._selected_session.scene(row).clip_slot(0)
+		#for row in range(32):
+		#	clip_slot = self._selected_session.scene(row).clip_slot(0)
 	
 
 	def _setup_shift_mode(self):
@@ -816,7 +814,7 @@ class MonoInstrumentComponent(CompoundComponent):
 	
 
 	def set_octave_enable_button(self, button):
-		debug('octave toggle button:', button)
+		#debug('octave toggle button:', button)
 		self._on_octave_enable_value.subject = button
 	
 
@@ -878,6 +876,7 @@ class MonoInstrumentComponent(CompoundComponent):
 					self._offsets[cur_chan]['vert_offset'] = 8
 					self._keypad._vertoffset = 8
 				self._keypad.set_scale_offset(self._scalenames[offset])
+				self._drumpad._explicit_drumpad = self._scalenames[offset] is 'DrumPad'
 				self.update()
 	
 
@@ -912,7 +911,7 @@ class MonoInstrumentComponent(CompoundComponent):
 	
 
 	def on_selected_track_changed(self):
-		#debug('instrument track changed, updating')
+		debug('instrument track changed, updating')
 		self._selected_session.update_current_track()
 		self.update_settings()
 		#make sure other components are ready, namely drumpad selector
@@ -935,6 +934,7 @@ class MonoInstrumentComponent(CompoundComponent):
 				self._cur_chan = cur_chan
 				self._drumpad._channel = cur_chan
 				self._keypad._channel = cur_chan
+				self._drumpad._explicit_drumpad = scale is 'DrumPad'
 	
 
 	def update(self):
@@ -951,7 +951,7 @@ class MonoInstrumentComponent(CompoundComponent):
 				scale, split, sequencer = offsets['scale'], offsets['split'], offsets['sequencer']
 				if scale == 'Auto':
 					scale = detect_instrument_type(cur_track)
-				new_mode = ['keypad', 'drumpad'][int(scale is 'DrumPad')]
+				new_mode = ['keypad', 'drumpad'][int(scale in ['DrumPad', 'DrumRack'])]
 				if split:
 					new_mode += '_split'
 				elif sequencer:
@@ -1089,7 +1089,7 @@ class MonoScaleComponent(CompoundComponent):
 	
 
 	def set_playhead(self, playhead):
-		debug('keys set playhead: ' + str(playhead))
+		#debug('keys set playhead: ' + str(playhead))
 		self._note_sequencer.set_playhead(playhead)
 	
 
@@ -1113,11 +1113,10 @@ class MonoScaleComponent(CompoundComponent):
 	
 
 	def set_keypad_matrix(self, matrix):
-		#debug('================================set keypad matrix: ' + str(matrix) + str(self.is_enabled()))
+		#debug('set keypad matrix: ' + str(matrix) + str(self.is_enabled()))
 		reset_matrix(self._on_keypad_matrix_value.subject)
 		self._on_keypad_matrix_value.subject = matrix
 		if matrix:
-			debug('ok here')
 			width = matrix.width()
 			height = matrix.height()
 			#CC_matrix = self._on_note_CC_matrix_value.subject
@@ -1244,6 +1243,7 @@ class MonoDrumpadComponent(CompoundComponent):
 		self._grid_resolution = grid_resolution
 		self._offset = 0
 		self._channel = 1
+		self._explicit_drumpad = False
 		self.main_layer = LayerMode(self, Layer(priority = 0))
 		self.split_layer = LayerMode(self, Layer(priority = 0))
 		self.sequencer_layer = LayerMode(self, Layer(priority = 0))
@@ -1273,9 +1273,10 @@ class MonoDrumpadComponent(CompoundComponent):
 	
 
 	def _drum_group_update_pad_led(self, pad, button, soloed_pads):
-		DrumGroupComponent._update_pad_led(self._step_sequencer._drum_group, pad, button, soloed_pads)
-		#debug('updating leds:' + str(button.name))
-		button.turn_off()
+		if self._on_drumpad_matrix_value.subject:
+			DrumGroupComponent._update_pad_led(self._step_sequencer._drum_group, pad, button, soloed_pads)
+			#debug('updating leds:' + str(button.name))
+			button.turn_off()
 	
 
 	def _update_control_from_script(self):
@@ -1341,7 +1342,7 @@ class MonoDrumpadComponent(CompoundComponent):
 			height = matrix.height()
 			width = matrix.width()
 			self.set_pad_translations(make_pad_translations(cur_chan))
-			if width > 3 and height > 3 and not self._parent._drum_group_finder.drum_group is None:
+			if width > 3 and height > 3 and not self._parent._drum_group_finder.drum_group is None and not self._explicit_drumpad:
 				#debug('setting Live drum matrix')
 				self.set_pad_translations(make_pad_translations(cur_chan))
 				for button, (x, y) in matrix.iterbuttons():

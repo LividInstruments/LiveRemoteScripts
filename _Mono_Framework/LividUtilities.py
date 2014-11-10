@@ -4,6 +4,8 @@ from Debug import *
 
 debug = initialize_debug()
 
+#PRODUCTS:  BRAIN="01", OHM64="02", BLOCK="03", CODE="04", MCD="05", MCP="06", OHMRGB="07", CNTRLR="08", BRAIN2="09", ENLIGHTEN="0A", ALIAS8="0B", BASE="0C", BRAINJR="0D", DS1="10", BASEII="11"
+
 LIVID_RGB_COLORMAP = [2, 64, 4, 8, 16, 127, 32]
 
 QUERYSURFACE = (240, 126, 127, 6, 1, 247)
@@ -32,6 +34,7 @@ def get_call_type(call_type):
 
 
 class LividSettings(object):
+
 
 	def __init__(self, prefix = [240, 0, 1, 97], model = None, control_surface = None, *a, **k):
 		super(LividSettings, self).__init__()

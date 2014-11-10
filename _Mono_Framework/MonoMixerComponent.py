@@ -129,6 +129,17 @@ class MixerComponent(MixerComponentBase):
 				strip.set_eq_gain_controls(None)
 	
 
+	def set_parameter_controls(self, controls):
+		self._parameter_controls = controls
+		if controls:
+			for index in range(len(self._channel_strips)):
+				parameter_controls = [controls.get_button(index, row) for row in range(controls.height())]
+				self._channel_strips[index].set_parameter_controls(parameter_controls)
+		else:
+			for strip in self._channel_strips:
+				strip.set_parameter_controls(None)
+	
+
 	def tracks_to_use(self):
 		return tuple(self.song().visible_tracks) + tuple(self.song().return_tracks)
 	
@@ -150,6 +161,7 @@ class ChannelStripComponent(ChannelStripComponentBase):
 	def __init__(self, *a, **k):
 		super(ChannelStripComponent, self).__init__(*a, **k)
 		self._device_component = DeviceComponent()
+		self._device_component._show_msg_callback = lambda message: None
 		self._on_selected_track_changed.subject = self.song().view
 		self._fold_task = self._tasks.add(Task.sequence(Task.wait(TRACK_FOLD_DELAY), Task.run(self._do_fold_track))).kill()
 		#self._cue_volume_slot = self.register_disconnectable(ParameterSlot())
@@ -213,6 +225,7 @@ class ChannelStripComponent(ChannelStripComponentBase):
 	def set_arming_select_button(self, button):
 		self._arming_select_button = button
 		self._arming_select_value.subject = button
+		button and button.set_on_off_values('DefaultButton.On', 'DefaultButton.Off')
 		self._update_track_button()
 	
 
@@ -239,7 +252,8 @@ class ChannelStripComponent(ChannelStripComponentBase):
 		if value and self.song().view.selected_track == self._track:
 			self._do_toggle_arm(exclusive=self.song().exclusive_arm)
 		else:
-			self.song().view.selected_track =  self.song().view.selected_track != self._track and self._track
+			if self.song().view.selected_track != self._track:
+				self.song().view.selected_track = self._track
 		if value and self._track.is_foldable and self._select_button.is_momentary():
 			self._fold_task.restart()
 		else:
@@ -365,7 +379,10 @@ class ChannelStripComponent(ChannelStripComponentBase):
 					self._arming_select_button.set_light(self.empty_color)
 				elif self._track.can_be_armed and (self._track.arm or self._track.implicit_arm):
 					if self._track == self.song().view.selected_track:
-						self._arming_select_button.set_light('Mixer.ArmSelected')
+						if self._track.arm:
+							self._arming_select_button.set_light('Mixer.ArmSelected')
+						else:
+							self._arming_select_button.set_light('Mixer.ArmSelectedImplicit')
 					else:
 						self._arming_select_button.set_light('Mixer.ArmUnselected')
 				elif self._track == self.song().view.selected_track:

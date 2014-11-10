@@ -141,12 +141,12 @@ class CodecEncoderElement(EncoderElement):
 		else:
 			self.receive_value(int(value))
 	
-	
+
+
 	def connect_to(self, parameter):
 		if parameter == None:
 			self.release_parameter()
 		else:
-			assert isinstance(parameter, Live.DeviceParameter.DeviceParameter)
 			self._mapped_to_midi_velocity = False
 			assignment = parameter
 			if(str(parameter.name) == str('Track Volume')):		#checks to see if parameter is track volume
@@ -155,7 +155,9 @@ class CodecEncoderElement(EncoderElement):
 						if(str(parameter.canonical_parent.canonical_parent.devices[0].class_name)==str('MidiVelocity')):	#if not, looks for velicty as first plugin
 							assignment = parameter.canonical_parent.canonical_parent.devices[0].parameters[6]				#if found, assigns fader to its 'outhi' parameter
 							self._mapped_to_midi_velocity = True
-			self._parameter_to_map_to = assignment
+			if not self._parameter_to_map_to is assignment:
+				self.send_value(0, True)
+			super(CodecEncoderElement, self).connect_to(assignment)
 			self.add_parameter_listener(self._parameter_to_map_to)
 			if(not (type(self._parameter) is type(None))):
 				self._parameter_last_num_value = (self._parameter.value - self._parameter.min) / (self._parameter.max - self._parameter.min)

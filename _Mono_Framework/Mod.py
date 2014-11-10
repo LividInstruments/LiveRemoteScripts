@@ -344,6 +344,27 @@ class Grid(object):
 			self.value(column + int(index/height), index%height, values[index])
 	
 
+	def map(self, x_offset, y_offset, *values):
+		if len(values) is 8:
+			if x_offset % 8 is 0 and y_offset % 8 is 0:
+				for row in range(8):
+					for column in range(8):
+						self.value(x_offset+column, y_offset+row, (values[row]>>column)&1)
+	
+
+	def monome_row(self, x_offset, y, value = 0, *a):
+		if x_offset % 8 is 0:
+			for column in range(8):
+				self.value(x_offset+column, y, (value>>column)&1)
+	
+
+	def monome_col(self, y_offset, x, value = 0, *a):
+		if y_offset % 8 is 0:
+			for row in range(8):
+				self.value(x, y_offset+row, (value>>row)&1)
+	
+
+
 class ButtonGrid(Grid):
 
 
@@ -505,6 +526,7 @@ class RingedGrid(Grid):
 
 	def local(self, value):
 		#if not self._local == bool(value):
+		#debug(self._name, 'internal receive local', value)
 		self._local = bool(value)
 		self.restore()
 	
@@ -770,7 +792,7 @@ class ModHandler(CompoundComponent):
 	
 
 	def _receive_channel(self, x, value):
-		#debug('_receive_channel: %s %s' % (x, value))
+		#debug('_receive_channel:', x, value)
 		if not self._channel_value.subject is None and x < self._channel_value.subject.width():
 			self._channel_value.subject.send_value(x, 0, self._colors[value], True)
 	
@@ -1184,6 +1206,9 @@ class ModClient(NotifyingControlElement):
 		#self._device_listener.subject = self.device.canonical_parent
 		#self._device_parent.add_devices_listener(self._device_listener)
 		#self._parent._host.schedule_message(5, update_handlers())
+		if self._device_parent.devices_has_listener(self._device_listener):
+			self._device_parent.remove_devices_listener(self._device_listener)
+		self._device_parent.add_devices_listener(self._device_listener)
 		self._parent._task_group.add(sequence(delay(5), self._parent.update_handlers))
 	
 
