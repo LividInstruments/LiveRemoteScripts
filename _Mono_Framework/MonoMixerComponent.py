@@ -98,7 +98,10 @@ class MixerComponent(MixerComponentBase):
 				self._channel_strips[index].set_send_controls(send_controls)
 		else:
 			for strip in self._channel_strips:
-				strip.set_send_controls([None for _ in range(self.send_index)])
+				if self.send_index is None:
+					strip.set_send_controls([None])
+				else:
+					strip.set_send_controls([None for _ in range(self.send_index)])
 	
 
 	def set_return_controls(self, controls):
