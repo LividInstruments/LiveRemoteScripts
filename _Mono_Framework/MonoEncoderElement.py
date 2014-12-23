@@ -44,18 +44,24 @@ class MonoEncoderElement(EncoderElement):
 	
 
 	def connect_to(self, parameter):
-		self._mapped_to_midi_velocity = False
-		assignment = parameter
-		if(str(parameter.name) == str('Track Volume')):		#checks to see if parameter is track volume
-			if(parameter.canonical_parent.canonical_parent.has_audio_output is False):		#checks to see if track has audio output
-				if(len(parameter.canonical_parent.canonical_parent.devices) > 0):
-					if(str(parameter.canonical_parent.canonical_parent.devices[0].class_name)==str('MidiVelocity')):	#if not, looks for velicty as first plugin
-						assignment = parameter.canonical_parent.canonical_parent.devices[0].parameters[6]				#if found, assigns fader to its 'outhi' parameter
-						self._mapped_to_midi_velocity = True
-		if not self._parameter_to_map_to is assignment:
-			self.send_value(0, True)
-		super(MonoEncoderElement, self).connect_to(assignment)
-		self.add_parameter_listener(self._parameter_to_map_to)
+		if parameter == None:
+			self.release_parameter()
+		else:
+			self._mapped_to_midi_velocity = False
+			assignment = parameter
+			try:
+				if(str(parameter.name) == str('Track Volume')):		#checks to see if parameter is track volume
+					if(parameter.canonical_parent.canonical_parent.has_audio_output is False):		#checks to see if track has audio output
+						if(len(parameter.canonical_parent.canonical_parent.devices) > 0):
+							if(str(parameter.canonical_parent.canonical_parent.devices[0].class_name)==str('MidiVelocity')):	#if not, looks for velicty as first plugin
+								assignment = parameter.canonical_parent.canonical_parent.devices[0].parameters[6]				#if found, assigns fader to its 'outhi' parameter
+								self._mapped_to_midi_velocity = True
+			except:
+				assignment = parameter
+			if not self._parameter_to_map_to is assignment:
+				self.send_value(0, True)
+			super(MonoEncoderElement, self).connect_to(assignment)
+			self.add_parameter_listener(self._parameter_to_map_to)
 	
 
 	def set_enabled(self, enabled):
