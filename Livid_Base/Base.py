@@ -11,7 +11,6 @@ from itertools import imap, chain, starmap
 from _Framework.Dependency import inject
 from _Framework.ButtonElement import ButtonElement
 from _Framework.ButtonMatrixElement import ButtonMatrixElement
-#from _Framework.ChannelStripComponent import ChannelStripComponent
 from _Framework.ClipSlotComponent import ClipSlotComponent
 from _Framework.CompoundComponent import CompoundComponent
 from _Framework.ControlElement import ControlElement, ControlElementClient
@@ -21,7 +20,6 @@ from _Framework.DisplayDataSource import DisplayDataSource
 from _Framework.DeviceComponent import DeviceComponent
 from _Framework.EncoderElement import EncoderElement
 from _Framework.InputControlElement import *
-#from _Framework.MixerComponent import MixerComponent
 from _Framework.ModeSelectorComponent import ModeSelectorComponent
 from _Framework.NotifyingControlElement import NotifyingControlElement
 from _Framework.SceneComponent import SceneComponent
@@ -56,6 +54,7 @@ from _Mono_Framework.Mod import *
 from _Mono_Framework.Debug import *
 from _Mono_Framework.LividColors import *
 from _Mono_Framework.MonoInstrumentComponent import *
+from _Mono_Framework.OSCDisplay import OSCDisplay
 
 import _Mono_Framework.modRemixNet as RemixNet
 import _Mono_Framework.modOSC
@@ -546,7 +545,7 @@ class BaseModHandler(ModHandler):
 	
 
 	def set_base_grid(self, grid):
-		#debug('set base grid:', grid)
+		#debug('set base grid:', grid,)
 		old_grid = self._base_grid_value.subject
 		if old_grid:
 			for button, _ in old_grid.iterbuttons():
@@ -697,7 +696,7 @@ class Base(ControlSurface):
 		self._host_name = 'Base'
 		self._color_type = 'OhmRGB'
 		self.monomodular = None
-		self.oscServer = None
+		self.oscDisplay = None
 		self._rgb = 0
 		self._timer = 0
 		self._current_nav_buttons = []
@@ -708,8 +707,7 @@ class Base(ControlSurface):
 		self._skin = Skin(BaseColors)
 		with self.component_guard():
 			self._setup_monobridge()
-			if OSC_TRANSMIT:
-				self._setup_OSC_layer()
+			self._setup_OSC_layer()
 			self._setup_controls()
 			self._setup_background()
 			self._define_sysex()
@@ -954,12 +952,12 @@ class Base(ControlSurface):
 													alt_button = self._button[6],
 													lock_button = self._button[7],
 													key_buttons = self._runner_matrix,)
-		self.modhandler.alt_layer = AddLayerMode(self.modhandler, Layer(priority = 8,
+		self.modhandler.alt_layer = AddLayerMode(self.modhandler, Layer(priority = 6,
 													device_selector_matrix = self._touchpad_matrix,))
-		self.modhandler.legacy_shift_layer = AddLayerMode(self.modhandler, Layer(priority = 7,
+		self.modhandler.legacy_shift_layer = AddLayerMode(self.modhandler, Layer(priority = 6,
 													channel_buttons = self._base_grid.submatrix[:6, :1],
 													nav_matrix = self._base_grid.submatrix[6:8, :],))
-		self.modhandler.shift_layer = AddLayerMode(self.modhandler, Layer(priority = 7,
+		self.modhandler.shift_layer = AddLayerMode(self.modhandler, Layer(priority = 6,
 													key_buttons = self._touchpad_matrix,
 													background_buttons = self._runner_matrix))
 		self.modhandler._device_selector._selection_layer = AddLayerMode(self.modhandler._device_selector, Layer(priority = 6,
@@ -1029,19 +1027,8 @@ class Base(ControlSurface):
 	
 
 	def _setup_OSC_layer(self):
-		self._OSC_id = 0
-		if hasattr(__builtins__, 'control_surfaces') or (isinstance(__builtins__, dict) and 'control_surfaces' in __builtins__.keys()):
-			for cs in __builtins__['control_surfaces']:
-				if cs is self:
-					break
-				elif isinstance(cs, Base):
-					self._OSC_id += 1
-
-		self._prefix = '/Live/Base/'+str(self._OSC_id)
-		self._outPrt = OSC_OUTPORT
-		if not self.oscServer is None:
-			self.oscServer.shutdown()
-		self.oscServer = RemixNet.OSCServer('localhost', self._outPrt, 'localhost', 10001)
+		self.oscDisplay = OSCDisplay(prefix = 'Live', model_name = 'Base', model = Base, outport = OSC_OUTPORT)
+		self.oscDisplay.set_enabled(OSC_TRANSMIT)
 	
 
 	def _setup_modswitcher(self):
@@ -1125,13 +1112,12 @@ class Base(ControlSurface):
 	
 
 	def _notify_descriptors(self):
-		if OSC_TRANSMIT:
-			for pad in self._pad:
-				self.oscServer.sendOSC(self._prefix+'/'+pad.name+'/lcd_name/', str(self.generate_strip_string(pad._descriptor)))
-			for touchpad in self._touchpad:
-				self.oscServer.sendOSC(self._prefix+'/'+touchpad.name+'/lcd_name/', str(self.generate_strip_string(touchpad._descriptor)))
-			for button in self._button:
-				self.oscServer.sendOSC(self._prefix+'/'+button.name+'/lcd_name/', str(self.generate_strip_string(button._descriptor)))
+		for pad in self._pad:
+			self.oscDisplay.sendOSC(pad.name+'lcd_name/', str(self.generate_strip_string(pad._descriptor)))
+		for touchpad in self._touchpad:
+			self.oscDisplay.sendOSC(touchpad.name+'lcd_name/', str(self.generate_strip_string(touchpad._descriptor)))
+		for button in self._button:
+			self.oscDisplay.sendOSC(button.name+'/cd_name/', str(self.generate_strip_string(button._descriptor)))
 	
 
 	def _get_devices(self, track):
@@ -1206,7 +1192,7 @@ class Base(ControlSurface):
 		self._monobridge._send('Device_Name', 'lcd_value', str(self.generate_strip_string(name)))
 		self.touched()
 		if OSC_TRANSMIT:
-			self.oscServer.sendOSC(self._prefix+'/glob/device/', str(self.generate_strip_string(name)))
+			self.oscDisplay.sendOSC('glob/device/', str(self.generate_strip_string(name)))
 	
 
 	def _on_device_bank_changed(self):
@@ -1264,16 +1250,16 @@ class Base(ControlSurface):
 		#self.log_message('monobridge:' + str(name) + str(value))
 		if isinstance(sender, MonoEncoderElement):
 			if OSC_TRANSMIT:
-				self.oscServer.sendOSC(self._prefix+'/'+sender.name+'/lcd_name/', str(self.generate_strip_string(name)))
-				self.oscServer.sendOSC(self._prefix+'/'+sender.name+'/lcd_value/', str(self.generate_strip_string(value)))
+				self.oscDisplay.sendOSC(sender.name+'/lcd_name/', str(self.generate_strip_string(name)))
+				self.oscDisplay.sendOSC(sender.name+'/lcd_value/', str(self.generate_strip_string(value)))
 			self._monobridge._send(sender.name, 'lcd_name', str(self.generate_strip_string(name)))
 			self._monobridge._send(sender.name, 'lcd_value', str(self.generate_strip_string(value)))
 		else:
 			self._monobridge._send(name, 'lcd_name', str(self.generate_strip_string(name)))
 			self._monobridge._send(name, 'lcd_value', str(self.generate_strip_string(value)))
 			if OSC_TRANSMIT:
-				self.oscServer.sendOSC(self._prefix+'/'+name+'/lcd_name/', str(self.generate_strip_string(name)))
-				self.oscServer.sendOSC(self._prefix+'/'+name+'/lcd_value/', str(self.generate_strip_string(value)))
+				self.oscDisplay.sendOSC(name+'/lcd_name/', str(self.generate_strip_string(name)))
+				self.oscDisplay.sendOSC(name+'/lcd_value/', str(self.generate_strip_string(value)))
 	
 
 	def touched(self):
@@ -1298,9 +1284,6 @@ class Base(ControlSurface):
 	"""general functionality"""
 	def disconnect(self):
 		self._send_midi(STREAMINGOFF)
-		if not self.oscServer is None:
-			self.oscServer.shutdown()
-		self.oscServer = None
 		self.log_message("--------------= Base log closed =--------------")
 		super(Base, self).disconnect()
 		#rebuild_sys()

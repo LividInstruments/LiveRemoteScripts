@@ -88,4 +88,37 @@ class MonoBridgeElement(NotifyingControlElement):
 		pass
 	
 
+	def generate_strip_string(self, display_string):
+		NUM_CHARS_PER_DISPLAY_STRIP = 12
+		if (not display_string):
+			return (' ' * NUM_CHARS_PER_DISPLAY_STRIP)
+		else:
+			display_string = str(display_string)
+		if ((len(display_string.strip()) > (NUM_CHARS_PER_DISPLAY_STRIP - 1)) and (display_string.endswith('dB') and (display_string.find('.') != -1))):
+			display_string = display_string[:-2]
+		if (len(display_string) > (NUM_CHARS_PER_DISPLAY_STRIP - 1)):
+			for um in [' ',
+			 'i',
+			 'o',
+			 'u',
+			 'e',
+			 'a']:
+				while ((len(display_string) > (NUM_CHARS_PER_DISPLAY_STRIP - 1)) and (display_string.rfind(um, 1) != -1)):
+					um_pos = display_string.rfind(um, 1)
+					display_string = (display_string[:um_pos] + display_string[(um_pos + 1):])
+		else:
+			display_string = display_string.center((NUM_CHARS_PER_DISPLAY_STRIP - 1))
+		ret = u''
+		for i in range((NUM_CHARS_PER_DISPLAY_STRIP - 1)):
+			if ((ord(display_string[i]) > 127) or (ord(display_string[i]) < 0)):
+				ret += ' '
+			else:
+				ret += display_string[i]
+
+		ret += ' '
+		ret = ret.replace(' ', '_')
+		assert (len(ret) == NUM_CHARS_PER_DISPLAY_STRIP)
+		return ret
+	
+
 

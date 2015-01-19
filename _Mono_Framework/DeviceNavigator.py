@@ -117,17 +117,14 @@ class DeviceNavigator(ControlSurfaceComponent):
 		if value:
 			track = self._get_track()
 			if track and self._device._device and self._device._device in track.devices:
-				if self._device._device.can_have_chains and [device for device in track.devices].index(self._device._device) == (len(track.devices)-1):
-					self._on_enter_value(1)
-				else:
-					device = track.devices[min(len(track.devices)-1, max(0, [item for item in track.devices].index(self._device._device)+1))]
-					self._script.set_appointed_device(device)
-					self.song().view.select_device(device)
+				device = track.devices[min(len(track.devices)-1, max(0, [item for item in track.devices].index(self._device._device)+1))]
+				self._script.set_appointed_device(device)
+				self.song().view.select_device(device)
 	
 
 	@subject_slot('value')
 	def _on_device_select_dial_value(self, value):
-		#debug('_on_scene_bank_dial_value', value)
+		debug('_on_scene_bank_dial_value', value)
 		if value > 64:
 			self._on_prev_value(1)
 		else:
@@ -141,11 +138,9 @@ class DeviceNavigator(ControlSurfaceComponent):
 			if track and self._device._device and isinstance(self._device._device.canonical_parent, Live.Chain.Chain):
 				parent_chain = self._device._device.canonical_parent
 				parent = parent_chain.canonical_parent
-				new_chain_index = min(len(parent.chains)-1, max(0, [item for item in parent.chains].index(parent_chain)-1))
-				device = parent.chains[new_chain_index].devices[0] if len(parent.chains[new_chain_index].devices) else None
-				if device:
-					self._script.set_appointed_device(device)
-					self.song().view.select_device(device)
+				device = parent.chains[min(len(parent.chains)-1, max(0, [item for item in parent.chains].index(parent_chain)-1))].devices[0]
+				self._script.set_appointed_device(device)
+				self.song().view.select_device(device)
 	
 
 	@subject_slot('value')
@@ -155,11 +150,9 @@ class DeviceNavigator(ControlSurfaceComponent):
 			if track and self._device._device and isinstance(self._device._device.canonical_parent, Live.Chain.Chain):
 				parent_chain = self._device._device.canonical_parent
 				parent = parent_chain.canonical_parent
-				new_chain_index = min(len(parent.chains)-1, max(0, [item for item in parent.chains].index(parent_chain)+1))
-				device = parent.chains[new_chain_index].devices[0] if len(parent.chains[new_chain_index].devices) else None
-				if device:
-					self._script.set_appointed_device(device)
-					self.song().view.select_device(device)
+				device = parent.chains[min(len(parent.chains)-1, max(0, [item for item in parent.chains].index(parent_chain)+1))].devices[0]
+				self._script.set_appointed_device(device)
+				self.song().view.select_device(device)
 	
 
 	@subject_slot('value')
