@@ -1113,11 +1113,11 @@ class Base(ControlSurface):
 
 	def _notify_descriptors(self):
 		for pad in self._pad:
-			self.oscDisplay.sendOSC(pad.name+'lcd_name/', str(self.generate_strip_string(pad._descriptor)))
+			self.oscDisplay.sendOSC(pad.name+'lcd_name', str(self.generate_strip_string(pad._descriptor)))
 		for touchpad in self._touchpad:
-			self.oscDisplay.sendOSC(touchpad.name+'lcd_name/', str(self.generate_strip_string(touchpad._descriptor)))
+			self.oscDisplay.sendOSC(touchpad.name+'lcd_name', str(self.generate_strip_string(touchpad._descriptor)))
 		for button in self._button:
-			self.oscDisplay.sendOSC(button.name+'/cd_name/', str(self.generate_strip_string(button._descriptor)))
+			self.oscDisplay.sendOSC(button.name+'/lcd_name', str(self.generate_strip_string(button._descriptor)))
 	
 
 	def _get_devices(self, track):
