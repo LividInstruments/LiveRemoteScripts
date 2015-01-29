@@ -1027,7 +1027,7 @@ class Base(ControlSurface):
 	
 
 	def _setup_OSC_layer(self):
-		self.oscDisplay = OSCDisplay(prefix = 'Live', model_name = 'Base', model = Base, outport = OSC_OUTPORT)
+		self.oscDisplay = OSCDisplay(prefix = '/Live/0', model_name = 'Base', model = Base, outport = OSC_OUTPORT)
 		self.oscDisplay.set_enabled(OSC_TRANSMIT)
 	
 
@@ -1250,16 +1250,16 @@ class Base(ControlSurface):
 		#self.log_message('monobridge:' + str(name) + str(value))
 		if isinstance(sender, MonoEncoderElement):
 			if OSC_TRANSMIT:
-				self.oscDisplay.sendOSC(sender.name+'/lcd_name/', str(self.generate_strip_string(name)))
-				self.oscDisplay.sendOSC(sender.name+'/lcd_value/', str(self.generate_strip_string(value)))
+				self.oscDisplay.sendOSC(sender.name+'/lcd_name', str(self.generate_strip_string(name)))
+				self.oscDisplay.sendOSC(sender.name+'/lcd_value', str(self.generate_strip_string(value)))
 			self._monobridge._send(sender.name, 'lcd_name', str(self.generate_strip_string(name)))
 			self._monobridge._send(sender.name, 'lcd_value', str(self.generate_strip_string(value)))
 		else:
 			self._monobridge._send(name, 'lcd_name', str(self.generate_strip_string(name)))
 			self._monobridge._send(name, 'lcd_value', str(self.generate_strip_string(value)))
 			if OSC_TRANSMIT:
-				self.oscDisplay.sendOSC(name+'/lcd_name/', str(self.generate_strip_string(name)))
-				self.oscDisplay.sendOSC(name+'/lcd_value/', str(self.generate_strip_string(value)))
+				self.oscDisplay.sendOSC(name+'/lcd_name', str(self.generate_strip_string(name)))
+				self.oscDisplay.sendOSC(name+'/lcd_value', str(self.generate_strip_string(value)))
 	
 
 	def touched(self):

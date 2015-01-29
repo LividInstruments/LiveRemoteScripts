@@ -14,7 +14,7 @@ debug = initialize_debug()
 class OSCDisplay(ControlSurfaceComponent):
 
 
-	def __init__(self, prefix = '/Live', model_name = 'ControlSurface', model = ControlSurface, outport = 10001, *a, **k):
+	def __init__(self, prefix = '/Live/0', model_name = 'ControlSurface', model = ControlSurface, outport = 10001, *a, **k):
 		super(OSCDisplay, self).__init__(*a, **k)
 		self._prefix = prefix
 		self._outPrt = outport

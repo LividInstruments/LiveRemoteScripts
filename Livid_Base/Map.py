@@ -9,7 +9,7 @@ Buttons are Note #'s and Faders/Rotaries are Controller #'s
 """
 OSC_TRANSMIT = True
 
-OSC_OUTPORT = 9001
+OSC_OUTPORT = 7400
 
 SHIFT_LATCHING = False
 
