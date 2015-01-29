@@ -1192,7 +1192,7 @@ class Base(ControlSurface):
 		self._monobridge._send('Device_Name', 'lcd_value', str(self.generate_strip_string(name)))
 		self.touched()
 		if OSC_TRANSMIT:
-			self.oscDisplay.sendOSC('glob/device/', str(self.generate_strip_string(name)))
+			self.oscDisplay.sendOSC('glob/device', str(self.generate_strip_string(name)))
 	
 
 	def _on_device_bank_changed(self):
