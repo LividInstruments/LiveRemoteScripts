@@ -183,7 +183,7 @@ class BasePhysicalDisplayElement(PhysicalDisplayElement):
 	
 
 	def display_message(self, message, *a, **k):
-		debug('display_message', message)
+		#debug('display_message', message)
 		if not self._block_messages:
 			message = str(message) + '  '
 			self._message_to_send = [tuple([176, 34, self._translate_char(message[0])]), tuple([176, 35, self._translate_char(message[1])])]
@@ -222,7 +222,7 @@ class BasePhysicalDisplayElement(PhysicalDisplayElement):
 	def send_midi(self, messages):
 		if messages != self._last_sent_messages:
 			for message in  messages:
-				debug('sending message:', message)
+				#debug('sending message:', message)
 				ControlElement.send_midi(self, message)
 			self._last_sent_message = messages
 	
@@ -236,12 +236,12 @@ class BasePhysicalDisplayElement(PhysicalDisplayElement):
 		messages = []
 		if len(displays) is 1:
 			message = self._translate_string(' ' + str(displays[0].display_string))
-			debug('message len:', len(message), 'message:', message)
+			#debug('message len:', len(message), 'message:', message)
 			messages = [tuple([176, 34, message[-2]]), tuple([176, 35, message[-1]])]
 		elif len(displays):
 			for i in range(2):
 				messages.append(tuple([176, 34 + i, self._translate_char(self._build_display_message(displays[i]))]))
-		debug('messages to send:', messages)
+		#debug('messages to send:', messages)
 		return messages
 	
 
@@ -274,6 +274,30 @@ class BaseDisplayingModesComponent(ModesComponent):
 		if self.is_enabled():
 			#debug('setting data string to:', self._mode_data_string[selected])
 			self._data_source.set_display_string(self._mode_data_string[selected])
+	
+
+	def set_display(self, display, *a, **k):
+		if display:
+			display.set_data_sources([self._data_source])
+	
+
+
+class BaseDisplayingTranslationComponent(TranslationComponent):
+
+
+	def __init__(self, *a, **k):
+		super(BaseDisplayingTranslationComponent, self).__init__(*a, **k)
+		self._data_source = DisplayDataSource()
+	
+
+	def update(self):
+		super(BaseDisplayingTranslationComponent, self).update()
+		self._update_data_sources()
+	
+
+	def _update_data_sources(self):
+		if self.is_enabled():
+			self._data_source.set_display_string('U' + str(min(9, max(1, (self._channel-self._user_channel_offset+1)))))
 	
 
 	def set_display(self, display, *a, **k):
@@ -737,12 +761,6 @@ class Base(ControlSurface):
 
 	"""script initialization methods"""
 	def _initialize_hardware(self):
-		#self._send_sysex((240, 0, 1, 97, 12, 22, 16, 247))
-		#self._send_midi(STREAMINGON)
-		#self._send_midi(LINKFUNCBUTTONS)
-		#self._send_midi(DISABLECAPFADERNOTES)
-		#self._send_midi(ATONBUTTONMODE if AFTERTOUCH is True else ATOFFBUTTONMODE)
-		
 		self._livid_settings.send('set_streaming_enabled', STREAMINGON)
 		self._livid_settings.send('set_function_button_leds_linked', [1])
 		self._livid_settings.send('set_capacitive_fader_note_output_enabled', [1])
@@ -934,10 +952,13 @@ class Base(ControlSurface):
 			controls.append(button)
 		for fader, _ in self._fader_matrix.iterbuttons():
 			controls.append(fader)
-		self._translations = TranslationComponent(controls, 10)
+		if CAP_BUTTON_TRANSLATIONS:
+			for button, _ in self._touchpad_matrix.iterbuttons():
+				controls.append(button)
+		self._translations = BaseDisplayingTranslationComponent(controls, 10)
 		self._translations.name = 'TranslationComponent'
 		self._translations._channel = 10
-		self._translations.layer = Layer(priority = 10, channel_selector_buttons = self._nav_buttons)
+		self._translations.layer = Layer(priority = 10, channel_selector_buttons = self._nav_buttons, display = self._display)
 		self._translations.set_enabled(False)
 	
 
@@ -1283,7 +1304,7 @@ class Base(ControlSurface):
 
 	"""general functionality"""
 	def disconnect(self):
-		self._send_midi(STREAMINGOFF)
+		self._livid_settings.send('set_streaming_enabled', STREAMINGOFF)
 		self.log_message("--------------= Base log closed =--------------")
 		super(Base, self).disconnect()
 		#rebuild_sys()

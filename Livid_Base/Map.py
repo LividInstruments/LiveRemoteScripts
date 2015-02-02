@@ -13,6 +13,8 @@ OSC_OUTPORT = 7400
 
 SHIFT_LATCHING = False
 
+CAP_BUTTON_TRANSLATIONS = False   #include the top 8 capacitive touch buttons in UserMode translations.
+
 CHANNEL = 0		#main channel (0 - 15)
 
 AFTERTOUCH = True   #when True, sends AT in instrument modes and UserMode.  When false, turns CC's off for instrument modes and transmits CC's in UserModes.
