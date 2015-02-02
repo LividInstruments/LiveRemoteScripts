@@ -17,9 +17,11 @@ class ModInputSignal(Signal):
 	value-dependent properties should use this kind of signal.
 	"""
 
+
 	def __init__(self, sender = None, *a, **k):
 		super(ModInputSignal, self).__init__(sender=sender, *a, **k)
 		self._input_control = sender
+	
 
 	@contextlib.contextmanager
 	def _listeners_update(self):
@@ -30,6 +32,7 @@ class ModInputSignal(Signal):
 		listener_count = self._input_control._input_signal_listener_count
 		if diff_count > 0 and listener_count == diff_count or diff_count < 0 and listener_count == 0:
 			self._input_control._request_rebuild()
+	
 
 	@contextlib.contextmanager
 	def _listeners_update(self):
@@ -43,14 +46,17 @@ class ModInputSignal(Signal):
 			control._input_signal_listener_count += diff_count
 			if old_wants_forwarding != control.script_wants_forwarding():
 				self._input_control._request_rebuild()
+	
 
 	def connect(self, *a, **k):
 		with self._listeners_update():
 			super(ModInputSignal, self).connect(*a, **k)
+	
 
 	def disconnect(self, *a, **k):
 		with self._listeners_update():
 			super(ModInputSignal, self).disconnect(*a, **k)
+	
 
 	def disconnect_all(self, *a, **k):
 		with self._listeners_update():
@@ -68,7 +74,8 @@ class MonoBridgeElement(NotifyingControlElement):
 	def __init__(self, script, *a, **k):
 		super(MonoBridgeElement, self).__init__(*a, **k)
 		self._script = script
-		
+	
+
 	def refresh_state(self, *a, **k):
 		#self._script.schedule_message(2, self._script.update)
 		#self._script.log_message('refresh_state')
@@ -86,6 +93,15 @@ class MonoBridgeElement(NotifyingControlElement):
 
 	def reset(self):
 		pass
+	
+
+	def notification_to_bridge(self, name, value, sender):
+		if hasattr(sender, 'name'):
+			self._send(sender.name, 'lcd_name', str(self.generate_strip_string(name)))
+			self._send(sender.name, 'lcd_value', str(self.generate_strip_string(value)))
+		else:
+			self._send(name, 'lcd_name', str(self.generate_strip_string(name)))
+			self._send(name, 'lcd_value', str(self.generate_strip_string(value)))
 	
 
 	def generate_strip_string(self, display_string):
@@ -122,3 +138,13 @@ class MonoBridgeElement(NotifyingControlElement):
 	
 
 
+class MonoBridgeProxy(object):
+
+
+	def __init__(self, *a, **k):
+		super(MonoBridgeProxy, self).__init__()
+	
+
+	def notification_to_bridge(self, *a, **k):
+		pass
+	

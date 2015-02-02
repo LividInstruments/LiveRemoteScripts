@@ -793,12 +793,12 @@ class Base(ControlSurface):
 
 	def _setup_controls(self):
 		is_momentary = True
-		self._fader = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, BASE_TOUCHSTRIPS[index], Live.MidiMap.MapMode.absolute, 'Fader_' + str(index), index, self, mapping_feedback_delay = -1) for index in range(9)]
+		self._fader = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, BASE_TOUCHSTRIPS[index], Live.MidiMap.MapMode.absolute, 'Fader_' + str(index), index, self, mapping_feedback_delay = -1, monobridge = self._monobridge) for index in range(9)]
 		self._fader_matrix = ButtonMatrixElement(name = 'FaderMatrix', rows = [self._fader[:8]])
 		self._button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_BUTTONS[index], name = 'Button_' + str(index), script = self, skin = self._skin) for index in range(8)]
 		self._pad = [BlockingMonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_PADS[index], name = 'Pad_' + str(index), script = self, skin = self._skin) for index in range(32)]
 		self._pad_doublepress = [DoublePressElement(pad) for pad in self._pad]
-		self._pad_CC = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, BASE_PADS[index], Live.MidiMap.MapMode.absolute, 'Pad_CC_' + str(index), index, self) for index in range(32)]
+		self._pad_CC = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, BASE_PADS[index], Live.MidiMap.MapMode.absolute, 'Pad_CC_' + str(index), index, self, monobridge = self._monobridge) for index in range(32)]
 		self._touchpad = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_TOUCHPADS[index], name = 'TouchPad_' + str(index), script = self, resource_type = PrioritizedResource, skin = self._skin) for index in range(8)]
 		self._touchpad_matrix = ButtonMatrixElement(name = 'TouchPadMatrix', rows = [self._touchpad],)
 		self._touchpad_multi = MultiElement(self._touchpad[0], self._touchpad[1], self._touchpad[2], self._touchpad[3], self._touchpad[4], self._touchpad[5], self._touchpad[6], self._touchpad[7],)
@@ -1267,7 +1267,7 @@ class Base(ControlSurface):
 		return ret
 	
 
-	def notification_to_bridge(self, name, value, sender):
+	"""def notification_to_bridge(self, name, value, sender):
 		#self.log_message('monobridge:' + str(name) + str(value))
 		if isinstance(sender, MonoEncoderElement):
 			if OSC_TRANSMIT:
@@ -1280,7 +1280,7 @@ class Base(ControlSurface):
 			self._monobridge._send(name, 'lcd_value', str(self.generate_strip_string(value)))
 			if OSC_TRANSMIT:
 				self.oscDisplay.sendOSC(name+'/lcd_name', str(self.generate_strip_string(name)))
-				self.oscDisplay.sendOSC(name+'/lcd_value', str(self.generate_strip_string(value)))
+				self.oscDisplay.sendOSC(name+'/lcd_value', str(self.generate_strip_string(value)))"""
 	
 
 	def touched(self):
