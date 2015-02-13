@@ -757,9 +757,7 @@ class Base(ControlSurface):
 			self.set_feedback_channels(range(14, 15))
 		self.log_message("<<<<<<<<<<<<<<<<<= Base log opened =>>>>>>>>>>>>>>>>>>>>>")
 		self.schedule_message(3, self._check_connection)
-		#self._setup_descriptors()
 	
-
 
 	def set_feedback_channels(self, channels, *a, **k):
 		debug('set feedback channels: ' + str(channels))

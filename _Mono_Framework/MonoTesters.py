@@ -46,3 +46,59 @@ class AumPCMonomodComponent(MonomodComponent):
 		super(AumPCMonomodComponent, self)._send_grid(column, row, value)
 		self._script.log_message('send grid: ' + str(column) + ' ' + str(row) + ' ' + str(value))"""
 	
+
+
+from _Framework.SubjectSlot import subject_slot, subject_slot_group
+
+class DescriptiveSubjectSlot(SubjectSlot):
+
+
+	def connect(self):
+		super(DescriptiveSubjectSlot, self).connect()
+		self._notify_descriptor()
+	
+
+	def disconnect(self):
+		super(DescriptiveSubjectSlot, self).disconnect()
+		self._notify_descriptor()
+	
+
+	def soft_disconnect(self):
+		super(DescriptiveSubjectSlot, self).soft_disconnect()
+		self._notify_descriptor()
+	
+
+	def _notify_descriptor(self):
+		debug('connecting:', self._subject, 'to', self._listener)
+		if hasattr(self._subject, '_descriptor'):
+			if self._subject:
+				self._subject._descriptor = self._listener
+	
+
+
+
+def make_register_slot(original):
+	def register_slot(*a, **k):
+		debug('REGISTER SLOT:', *a, **k)
+		if a and isinstance(a[0], SubjectSlot):
+			slot = a[0]
+			slot.connect = DescriptiveSubjectSlot.connect
+			slot.disconnect = DescriptiveSubjectSlot.disconnect
+			slot.soft_disconnect = DescriptiveSubjectSlot.soft_disconnect
+			slot.notify_descriptor = DescriptiveSubjectSlot.notify_descriptor
+		else:
+			slot = DescriptiveSubjectSlot(*a, **k)
+		original.register_disconnectable(slot)
+		return slot
+	return register_slot
+	
+
+"""def _setup_descriptors(self):
+	debug('setup descriptors...')
+	for component in self.components:
+		if hasattr(component, '_registered_disconnectables'):
+			debug('------------name:', component.name if hasattr(component, 'name') else component)
+			for item in component._registered_disconnectables:
+				item.register_slot = make_register_slot(item)
+				debug('item:', item._listener if hasattr(item, '_listener') else item)"""
+

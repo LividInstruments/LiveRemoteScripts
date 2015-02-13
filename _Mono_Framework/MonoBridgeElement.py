@@ -152,7 +152,7 @@ class OSCMonoBridgeElement(MonoBridgeElement):
 
 	def _send(self, args1 = None, args2 = None, args3 = None, args4 = None):
 		super(OSCMonoBridgeElement, self)._send(args1, args2, args3, args4)
-		self._osc_display and hasattr(args3, 'name') and self._osc_display.sendOSC(args3.name, args2)
+		self._osc_display and self._osc_display.sendOSC(str(args1 + '/' + args2), args3)
 	
 
 
