@@ -63,6 +63,14 @@ class LividSettings(object):
 	
 
 
+class DescriptorBank(object):
+
+
+	def __init__(self, name = None, *a, **k):
+		super(DescriptorBank, self).__init__()
+	
+
+
 
 
 

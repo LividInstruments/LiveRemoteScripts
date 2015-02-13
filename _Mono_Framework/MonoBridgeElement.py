@@ -10,6 +10,10 @@ from _Framework.Debug import debug_print
 from _Framework.Disconnectable import Disconnectable
 from _Framework.InputControlElement import InputSignal
 
+from Debug import *
+
+debug = initialize_debug()
+
 class ModInputSignal(Signal):
 	"""
 	Special signal type that makes sure that interaction with input
@@ -67,9 +71,10 @@ class ModInputSignal(Signal):
 class MonoBridgeElement(NotifyingControlElement):
 	__module__ = __name__
 	__doc__ = ' Class representing a 2-dimensional set of buttons '
-
 	__subject_events__ = (SubjectEvent(name='value', signal=InputSignal, override=True),)
 	_input_signal_listener_count = 0
+	
+
 
 	def __init__(self, script, *a, **k):
 		super(MonoBridgeElement, self).__init__(*a, **k)
@@ -83,7 +88,6 @@ class MonoBridgeElement(NotifyingControlElement):
 	
 
 	def _send(self, args1 = None, args2 = None, args3 = None, args4 = None):
-		#self._button_value(args1, args2, args3, args4)
 		self.notify_value(args1, args2, args3)
 	
 
@@ -95,7 +99,7 @@ class MonoBridgeElement(NotifyingControlElement):
 		pass
 	
 
-	def notification_to_bridge(self, name, value, sender):
+	def notification_to_bridge(self, name = None, value = None, sender = None):
 		if hasattr(sender, 'name'):
 			self._send(sender.name, 'lcd_name', str(self.generate_strip_string(name)))
 			self._send(sender.name, 'lcd_value', str(self.generate_strip_string(value)))
@@ -138,6 +142,20 @@ class MonoBridgeElement(NotifyingControlElement):
 	
 
 
+class OSCMonoBridgeElement(MonoBridgeElement):
+
+
+	def __init__(self, *a, **k):
+		super(OSCMonoBridgeElement, self).__init__(*a, **k)
+		self._osc_display = k['osc_display'] if 'osc_display' in k else None
+	
+
+	def _send(self, args1 = None, args2 = None, args3 = None, args4 = None):
+		super(OSCMonoBridgeElement, self)._send(args1, args2, args3, args4)
+		self._osc_display and hasattr(args3, 'name') and self._osc_display.sendOSC(args3.name, args2)
+	
+
+
 class MonoBridgeProxy(object):
 
 
@@ -146,5 +164,9 @@ class MonoBridgeProxy(object):
 	
 
 	def notification_to_bridge(self, *a, **k):
-		pass
+		debug('proxy bridge call:', a)
+	
+
+	def _send(self, *a, **k):
+		debug('proxy send call:', a)
 	
