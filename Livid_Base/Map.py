@@ -64,6 +64,17 @@ class BaseColors:
 		Alert = LividRGB.BlinkFast.WHITE
 	
 
+	class MainModes:
+		Clips = LividRGB.WHITE
+		Clips_shifted = LividRGB.BlinkFast.WHITE
+		Sends = LividRGB.MAGENTA
+		Sends_shifted = LividRGB.BlinkFast.MAGENTA
+		Device = LividRGB.CYAN
+		Device_shifted = LividRGB.BlinkFast.CYAN
+		User = LividRGB.RED
+		User_shifted = LividRGB.BlinkFast.RED
+	
+
 	class Session:
 		StopClipTriggered = LividRGB.BlinkFast.BLUE
 		StopClip = LividRGB.BLUE

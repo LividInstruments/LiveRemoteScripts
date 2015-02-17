@@ -201,7 +201,6 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 		super(DescriptiveMonoButtonElement, self).__init__(*a, **k)
 
 		self._descriptor = None
-		self._explicit_descriptor = False
 		self._last_reported_descriptor = None
 
 		monobridge = k['monobridge'] if 'monobridge' in k else None
@@ -214,13 +213,23 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 	
 
 	def set_descriptor(self, descriptor):
-		self._descriptor = descriptor
-		self._explicit_descriptor = not descriptor is None
+		self._descriptor = '.' + descriptor if descriptor else ''
 	
+
+	def _set_descriptor(self, descriptor):
+		self.set_desriptor(descriptor)
+	
+
+	def _get_descriptor(self):
+		debug('_get_descriptor:', '' if self._descriptor is None else str(self._descriptor))
+		return '' if self._descriptor is None else str(self._descriptor)
+	
+	
+	descriptor = property(_get_descriptor, _set_descriptor)
 
 	def report_descriptor(self, descriptor = None, force = False):
 		if force or (descriptor != self._last_reported_descriptor):
-			self._monobridge._send(self.name, 'button_function', descriptor)
+			self._monobridge._send(self.name, 'button_function', str(descriptor)+str(self._descriptor) if not self._descriptor is None else str(descriptor))
 		self._last_reported_descriptor = descriptor
 	
 
@@ -230,13 +239,14 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 		except SkinColorMissingError:
 			pass
 		super(MonoButtonElement, self).set_light(value, *a, **k)
-		self._explicit_descriptor or self.report_descriptor(value)
+		self.report_descriptor(value)
 	
 
 	def turn_on(self, force = False):
 		self.force_next_send()
 		if self._on_value in range(0, 128):
 			self.send_value(self._on_value)
+			self.report_descriptor('on')
 		else:
 			try:
 				color = self._skin[self._on_value]
@@ -245,7 +255,7 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 				#super(MonoButtonElement, self).turn_on()
 				debug('skin color missing', self._on_value)
 				self.send_value(127)
-			self._explicit_descriptor or self.report_descriptor(self._on_value)
+			self.report_descriptor(self._on_value)
 	
 
 	def turn_off(self, force = False):
@@ -253,6 +263,7 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 		#debug('turn off:', self._off_value)
 		if self._off_value in range(0, 128):
 			self.send_value(self._off_value)
+			self.report_descriptor('off')
 		else:
 			try:
 				color = self._skin[self._off_value]
@@ -261,5 +272,5 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 				#super(MonoButtonElement, self).turn_off()
 				debug('skin color missing', self._off_value)
 				self.send_value(0)
-			self._explicit_descriptor or self.report_descriptor(self._off_value)
+			self.report_descriptor(self._off_value)
 	

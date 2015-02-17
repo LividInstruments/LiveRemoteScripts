@@ -824,9 +824,8 @@ class Base(ControlSurface):
 		self._lt_button = self._nav_buttons[UDLR[2]]
 		self._rt_button = self._nav_buttons[UDLR[3]]
 
-		"""We'll use this to store descriptor strings of control functions so we can send them to an LCD application"""
 		for control in self.controls:
-			control._descriptor = 'None'
+			hasattr(control, 'report_descriptor') and control.report_descriptor('', True)
 
 		#self._on_nav_button_value.subject = self._nav_buttons
 	
@@ -1068,14 +1067,14 @@ class Base(ControlSurface):
 	def _setup_main_modes(self):
 		self._main_modes = BaseDisplayingModesComponent(name = 'MainModes')
 		self._main_modes.add_mode('disabled', [self._background])
-		self._main_modes.add_mode('Clips_shifted', [self._set_nav_colors, self._mixer.volume_layer, self._mixer.select_layer, self._mixer.channel_controls_layer, self.clips_layer_sysex, self.live_mode_sysex], groups = ['shifted'], behaviour = self._shift_latching(color = 8), display_string = MODE_DATA['Clips_shifted'])
-		self._main_modes.add_mode('Clips', [self._set_nav_colors, self._mixer.volume_layer, self._mixer.select_layer,  self._session.cliplaunch_layer, self._session.navigation_layer, self.clips_layer_sysex, self.live_mode_sysex ], behaviour = self._shift_latching(color = 1), display_string = MODE_DATA['Clips'])
-		self._main_modes.add_mode('Sends_shifted', [self._set_fixed_length_colors, self.sends_layer_sysex, self._instrument, self._recorder.alt_layer, self._instrument.octave_toggle, tuple([self._send_instrument_shifted, self._send_instrument_unshifted]),], groups = ['shifted'], behaviour = self._shift_latching(color = 11), display_string = MODE_DATA['Sends_shifted'])
-		self._main_modes.add_mode('Sends', [self._set_clip_creator_colors, self.sends_layer_sysex, self._instrument, self._mixer.select_layer, self._mixer.selected_sends_layer, self._mixer.returns_layer,  self._transport.overdub_layer, self._recorder.main_layer,], behaviour = self._shift_latching(color = 4), display_string = MODE_DATA['Sends'])
-		self._main_modes.add_mode('Device_shifted', [self._set_device_shift_nav_colors, self.device_layer_sysex, self._modswitcher, tuple([self._send_instrument_shifted, self._send_instrument_unshifted]), self._device, self._device.parameters_layer, self._device_navigator.alt_layer,  ], groups = ['shifted'], behaviour = self._shift_latching(color = 10), display_string = MODE_DATA['Device_shifted'])
-		self._main_modes.add_mode('Device', [self._set_device_nav_colors, self.device_layer_sysex, self._modswitcher, self._mixer.select_layer, self._mixer.select_layer, self._device, self._device.parameters_layer, self._device.nav_layer, self._device_navigator.main_layer,], behaviour = self._shift_latching(color = 3), display_string = MODE_DATA['Device'])
-		self._main_modes.add_mode('User_shifted', [self._set_user_page_colors, self._translations, self._mixer.select_layer, self.user_layer_sysex, self.user_mode_sysex ], groups = ['shifted'], behaviour = self._shift_latching(color = 12), display_string = MODE_DATA['User_shifted'])
-		self._main_modes.add_mode('User', [self._set_user_page_colors, self._translations, self._mixer.select_layer, self.user_layer_sysex, self.user_mode_sysex], behaviour = self._shift_latching(color = 5), display_string = MODE_DATA['User'])
+		self._main_modes.add_mode('Clips_shifted', [self._set_nav_colors, self._mixer.volume_layer, self._mixer.select_layer, self._mixer.channel_controls_layer, self.clips_layer_sysex, self.live_mode_sysex], groups = ['shifted'], behaviour = self._shift_latching(color = 'MainModes.Clip'), display_string = MODE_DATA['Clips_shifted'])
+		self._main_modes.add_mode('Clips', [self._set_nav_colors, self._mixer.volume_layer, self._mixer.select_layer,  self._session.cliplaunch_layer, self._session.navigation_layer, self.clips_layer_sysex, self.live_mode_sysex ], behaviour = self._shift_latching(color = 'MainModes.Clip'), display_string = MODE_DATA['Clips'])
+		self._main_modes.add_mode('Sends_shifted', [self._set_fixed_length_colors, self.sends_layer_sysex, self._instrument, self._recorder.alt_layer, self._instrument.octave_toggle, tuple([self._send_instrument_shifted, self._send_instrument_unshifted]),], groups = ['shifted'], behaviour = self._shift_latching(color = 'MainModes.Sends'), display_string = MODE_DATA['Sends_shifted'])
+		self._main_modes.add_mode('Sends', [self._set_clip_creator_colors, self.sends_layer_sysex, self._instrument, self._mixer.select_layer, self._mixer.selected_sends_layer, self._mixer.returns_layer,  self._transport.overdub_layer, self._recorder.main_layer,], behaviour = self._shift_latching(color = 'MainModes.Sends'), display_string = MODE_DATA['Sends'])
+		self._main_modes.add_mode('Device_shifted', [self._set_device_shift_nav_colors, self.device_layer_sysex, self._modswitcher, tuple([self._send_instrument_shifted, self._send_instrument_unshifted]), self._device, self._device.parameters_layer, self._device_navigator.alt_layer,  ], groups = ['shifted'], behaviour = self._shift_latching(color = 'MainModes.Device'), display_string = MODE_DATA['Device_shifted'])
+		self._main_modes.add_mode('Device', [self._set_device_nav_colors, self.device_layer_sysex, self._modswitcher, self._mixer.select_layer, self._mixer.select_layer, self._device, self._device.parameters_layer, self._device.nav_layer, self._device_navigator.main_layer,], behaviour = self._shift_latching(color = 'MainModes.Device'), display_string = MODE_DATA['Device'])
+		self._main_modes.add_mode('User_shifted', [self._set_user_page_colors, self._translations, self._mixer.select_layer, self.user_layer_sysex, self.user_mode_sysex ], groups = ['shifted'], behaviour = self._shift_latching(color = 'MainModes.User'), display_string = MODE_DATA['User'])
+		self._main_modes.add_mode('User', [self._set_user_page_colors, self._translations, self._mixer.select_layer, self.user_layer_sysex, self.user_mode_sysex], behaviour = self._shift_latching(color = 'MainModes.User'), display_string = MODE_DATA['User'])
 		self._main_modes.add_mode('Select', [self.modhandler._device_selector._selection_layer, self._mixer.select_layer, self._mixer.volume_layer, self._mixer.selected_channel_controls_layer, self._session.overlay_cliplaunch_layer, self.clips_layer_sysex], behaviour = DelayedExcludingMomentaryBehaviour(excluded_groups = ['shifted']), display_string = MODE_DATA['Select'])
 		self._main_modes.layer = Layer(priority = 4, Clips_button=self._button[0], Sends_button=self._button[1], Device_button=self._button[2], User_button=self._button[3], Select_button=self._touchpad_multi, display = self._display)
 		self._main_modes.selected_mode = 'disabled'

@@ -120,7 +120,7 @@ class ShiftedBehaviour(ModeButtonBehaviour):
 	
 
 	def press_immediate(self, component, mode):
-		debug('selected_mode:', component.selected_mode, 'mode:', mode, 'chosen_mode:', self._chosen_mode,)
+		#debug('selected_mode:', component.selected_mode, 'mode:', mode, 'chosen_mode:', self._chosen_mode,)
 		if mode is component.selected_mode and not component.get_mode(mode+'_shifted') is None:
 			self._chosen_mode = mode+'_shifted'
 		else:
@@ -129,7 +129,7 @@ class ShiftedBehaviour(ModeButtonBehaviour):
 	
 
 	def release_immediate(self, component, mode):
-		debug('chosen mode is:', self._chosen_mode)
+		#debug('chosen mode is:', self._chosen_mode)
 		if component.selected_mode.endswith('_shifted'):
 			component.pop_groups(['shifted'])
 		elif len(component.active_modes) > 1:
@@ -137,7 +137,7 @@ class ShiftedBehaviour(ModeButtonBehaviour):
 	
 
 	def release_delayed(self, component, mode):
-		debug('chosen mode is:', self._chosen_mode)
+		#debug('chosen mode is:', self._chosen_mode)
 		component.pop_mode(self._chosen_mode)
 	
 
@@ -147,11 +147,11 @@ class ShiftedBehaviour(ModeButtonBehaviour):
 		selected_groups = component.get_mode_groups(selected_mode)
 		#debug('--------mode:', mode, 'selected:', selected_mode, 'chosen:', self._chosen_mode)
 		if mode == selected_mode:
-			button.send_value(self._color, True)
+			button.set_light(self._color)
 		elif mode+'_shifted' == selected_mode:
-			button.send_value(self._color + 7, True)
+			button.set_light(self._color+'_shifted')
 		else:
-			button.send_value(0, True)
+			button.turn_off()
 	
 
 
