@@ -170,6 +170,7 @@ def reset_matrix(matrix):
 	if matrix:
 		for button, (x, y) in matrix.iterbuttons():
 			if button:
+				button.descriptor = None
 				button.display_press = False
 				button._force_forwarding = False
 				button.set_force_next_value()
