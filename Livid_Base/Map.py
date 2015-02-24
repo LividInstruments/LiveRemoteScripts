@@ -88,6 +88,7 @@ class BaseColors:
 		ClipStarted = LividRGB.GREEN
 		ClipRecording = LividRGB.RED
 		NavigationButtonOn = LividRGB.BLUE
+		Empty = LividRGB.OFF
 	
 
 	class NoteEditor:
@@ -192,6 +193,15 @@ class BaseColors:
 		ChainNavOff = LividRGB.OFF
 		ContainNavOn = LividRGB.CYAN
 		ContainNavOff = LividRGB.OFF
+	
+
+	class DeviceNavigator:
+		DeviceNavOn = LividRGB.MAGENTA
+		DeviceNavOff = LividRGB.OFF
+		ChainNavOn = LividRGB.RED
+		ChainNavOff = LividRGB.OFF
+		LevelNavOn = LividRGB.CYAN
+		LevelNavOff = LividRGB.OFF
 	
 
 	class Mod:

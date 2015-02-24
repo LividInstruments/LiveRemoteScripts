@@ -395,8 +395,37 @@ class BlockingMonoButtonElement(MonoButtonElement):
 	
 
 
+class BaseClipSlotComponent(ClipSlotComponent):
+
+
+	def update(self):
+		super(BaseClipSlotComponent, self).update()
+		self._has_fired_slot = False
+		button = self._launch_button_value.subject
+		if self._allow_updates:
+			if self.is_enabled() and button != None:
+				value_to_send = self._feedback_value()
+				if value_to_send in (None, -1):
+					button.set_light('Session.Empty')
+				elif in_range(value_to_send, 0, 128):
+					button.send_value(value_to_send)
+				else:
+					button.set_light(value_to_send)
+		else:
+			self._update_requests += 1
+	
+
+
+class BaseSceneComponent(SceneComponent):
+
+
+	clip_slot_component_type = BaseClipSlotComponent
+
+
 class BaseSessionComponent(SessionComponent):
 
+
+	scene_component_type = BaseSceneComponent
 
 	def __init__(self, num_tracks, num_scenes, *a, **k):
 		super(BaseSessionComponent, self).__init__(num_tracks, num_scenes, *a, **k)
@@ -692,24 +721,28 @@ class BaseMonoInstrumentComponent(MonoInstrumentComponent):
 	def _offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._offset_value(offset)
 		self._keys_offset_data.set_display_string(str(NOTENAMES[offset]))
+		self._script._monobridge._send('special', 'offset', str(NOTENAMES[offset]))
 		self._base_display and self._base_display.set_data_sources([self._keys_offset_data])
 	
 
 	def _drum_offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._drum_offset_value(offset)
 		self._drum_offset_data.set_display_string(str(offset))
+		self._script._monobridge._send('special', 'drum_offset', str(offset))
 		self._base_display and self._base_display.set_data_sources([self._drum_offset_data])
 	
 
 	def _vertical_offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._vertical_offset_value(offset)	
 		self._vertical_offset_data.set_display_string(str(offset))
+		self._script._monobridge._send('special', 'vert_offset', str(offset))
 		self._base_display and self._base_display.set_data_sources([self._vertical_offset_data])	
 	
 
 	def _scale_offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._scale_offset_value(offset)
 		self._scale_offset_data.set_display_string(str(SCALEABBREVS[self._scalenames[offset]]))
+		self._script._monobridge._send('special', 'scale_offset', str(SCALEABBREVS[self._scalenames[offset]]))
 		self._base_display and self._base_display.set_data_sources([self._scale_offset_data])
 	
 
@@ -925,6 +958,12 @@ class Base(ControlSurface):
 		self.set_device_component(self._device)
 		self._device_navigator = DeviceNavigator(self._device, self._mixer, self)
 		self._device_navigator.name = 'Device_Navigator'
+		self._device_navigator._device_color_on = 'DeviceNavigator.DeviceNavOn'
+		self._device_navigator._device_color_off = 'DeviceNavigator.DeviceNavOff'
+		self._device_navigator._chain_color_on = 'DeviceNavigator.ChainNavOn'
+		self._device_navigator._chain_color_off = 'DeviceNavigator.ChainNavOff'
+		self._device_navigator._level_color_on = 'DeviceNavigator.LevelNavOn'
+		self._device_navigator._level_color_off = 'DeviceNavigator.LevelNavOff'
 		self._device_navigator.main_layer = AddLayerMode(self._device_navigator, Layer(priority = 6, prev_button = self._button[4], next_button = self._button[5]))
 		self._device_navigator.alt_layer = AddLayerMode(self._device_navigator, Layer(priority = 6, prev_chain_button = self._button[4], next_chain_button = self._button[5], enter_button = self._button[7], exit_button = self._button[6]))
 		self._device.device_name_data_source().set_update_callback(self._on_device_name_changed)
@@ -1134,16 +1173,6 @@ class Base(ControlSurface):
 	def _set_user_page_colors(self):
 		for button in self._button[4:8]:
 			button.set_on_off_values('DefaultButton.On', 'DefaultButton.Off')
-	
-
-	def _notify_descriptors(self):
-		"""for pad in self._pad:
-			self.oscDisplay.sendOSC(pad.name+'lcd_name', str(self.generate_strip_string(pad._descriptor)))
-		for touchpad in self._touchpad:
-			self.oscDisplay.sendOSC(touchpad.name+'lcd_name', str(self.generate_strip_string(touchpad._descriptor)))
-		for button in self._button:
-			self.oscDisplay.sendOSC(button.name+'/lcd_name', str(self.generate_strip_string(button._descriptor)))
-		"""
 	
 
 	def _get_devices(self, track):

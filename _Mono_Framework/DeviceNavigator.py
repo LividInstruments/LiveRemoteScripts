@@ -186,40 +186,40 @@ class DeviceNavigator(ControlSurfaceComponent):
 		if track != None:
 			if not self._on_prev_value.subject is None:
 				if self._device._device and len(track.devices)>0 and self._device._device in track.devices and [t for t in track.devices].index(self._device._device)>0:
-					self._on_prev_value.subject.send_value(self._device_color_on, True)
+					self._on_prev_value.subject.set_light(self._device_color_on)
 				else:
-					self._on_prev_value.subject.send_value(self._device_color_off, True)
+					self._on_prev_value.subject.set_light(self._device_color_off)
 			if not self._on_next_value.subject is None:
 				if self._device._device and len(track.devices)>0 and self._device._device in track.devices and [t for t in track.devices].index(self._device._device)<(len(track.devices)-1):
-					self._on_next_value.subject.send_value(self._device_color_on, True)
+					self._on_next_value.subject.set_light(self._device_color_on)
 				else:
-					self._on_next_value.subject.send_value(self._device_color_off, True)
+					self._on_next_value.subject.set_light(self._device_color_off)
 			if not self._on_prev_chain_value.subject is None:
 				if self._device._device and isinstance(self._device._device.canonical_parent, Live.Chain.Chain):
 					parent_chain = self._device._device.canonical_parent
 					parent = parent_chain.canonical_parent
 					if len(parent.chains)>0 and parent_chain in parent.chains and [c for c in parent.chains].index(parent_chain)>0:
-						self._on_prev_chain_value.subject.turn_on()
+						self._on_prev_chain_value.subject.set_light(self._chain_color_on)
 					else:
-						self._on_prev_chain_value.subject.turn_off()
+						self._on_prev_chain_value.subject.set_light(self._chain_color_off)
 			if not self._on_next_chain_value.subject is None:
 				if self._device._device and isinstance(self._device._device.canonical_parent, Live.Chain.Chain):
 					parent_chain = self._device._device.canonical_parent
 					parent = parent_chain.canonical_parent
 					if len(parent.chains)>0 and parent_chain in parent.chains and [c for c in parent.chains].index(parent_chain)<(len(parent.chains)-1):
-						self._on_next_chain_value.subject.turn_on()
+						self._on_next_chain_value.subject.set_light(self._chain_color_on)
 					else:
-						self._on_next_chain_value.subject.turn_off()
+						self._on_next_chain_value.subject.set_light(self._chain_color_off)
 			if not self._on_enter_value.subject is None:
 				if self._device._device and self._device._device.can_have_chains and len(self._device._device.chains):
-					self._on_enter_value.subject.turn_on()
+					self._on_enter_value.subject.set_light(self._level_color_on)
 				else:
-					self._on_enter_value.subject.turn_off()
+					self._on_enter_value.subject.set_light(self._level_color_off)
 			if not self._on_exit_value.subject is None:
 				if self._device._device and self._device._device.canonical_parent and isinstance(self._device._device.canonical_parent, Live.Chain.Chain):
-					self._on_exit_value.subject.turn_on()
+					self._on_exit_value.subject.set_light(self._level_color_on)
 				else:
-					self._on_exit_value.subject.turn_off()
+					self._on_exit_value.subject.set_light(self._level_color_off)
 	
 
 	def disconnect(self):

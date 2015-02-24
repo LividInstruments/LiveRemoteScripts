@@ -226,7 +226,12 @@ class SplitModeSelector(ModeSelectorComponent):
 	
 
 	def set_mode_toggle(self, button):
+		debug('setting mode toggle...')
+		if not self._mode_toggle is None:
+			self._mode_toggle.descriptor = None
 		self._mode_toggle = button
+		if not self._mode_toggle is None:
+			self._mode_toggle.descriptor = 'SplitMode'
 		self._toggle_value.subject = button
 		self.update()
 	
@@ -1083,9 +1088,16 @@ class MonoScaleComponent(CompoundComponent):
 		#self.set_playhead = self._note_sequencer.set_playhead
 		self.set_loop_selector_matrix = self._note_sequencer.set_loop_selector_matrix 
 		self.set_quantization_buttons = self._note_sequencer.set_quantization_buttons
-		self.set_follow_button = self._note_sequencer.set_follow_button
+		#self.set_follow_button = self._note_sequencer.set_follow_button
 		self.register_component(self._note_sequencer)
 
+	
+
+	def set_follow_button(self, button):
+		if not self._note_sequencer._loop_selector._follow_button is None:
+			self._note_sequencer._loop_selector._follow_button.set_descriptor(None)
+		button and hasattr(button, 'set_descriptor') and button.set_descriptor('LoopSelector.Follow')
+		self._note_sequencer.set_follow_button(button)
 	
 
 	def set_playhead(self, playhead):
@@ -1257,8 +1269,15 @@ class MonoDrumpadComponent(CompoundComponent):
 		self.set_playhead = self._step_sequencer.set_playhead
 		self.set_loop_selector_matrix = self._step_sequencer.set_loop_selector_matrix 
 		self.set_quantization_buttons = self._step_sequencer.set_quantization_buttons
-		self.set_follow_button = self._step_sequencer.set_follow_button
+		#self.set_follow_button = self._step_sequencer.set_follow_button
 		self.register_component(self._step_sequencer)
+	
+
+	def set_follow_button(self, button):
+		if not self._step_sequencer._loop_selector._follow_button is None:
+			self._step_sequencer._loop_selector._follow_button.set_descriptor(None)
+		button and hasattr(button, 'set_descriptor') and button.set_descriptor('LoopSelector.Follow')
+		self._step_sequencer.set_follow_button(button)
 	
 
 	"""Push only supports full rows of 8 buttons for playhead display....this is a hack"""
