@@ -213,7 +213,7 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 	
 
 	def set_descriptor(self, descriptor):
-		self._descriptor = descriptor + '.' if descriptor else ''
+		self._descriptor = '.' + str(descriptor) if descriptor else ''
 	
 
 	def _set_descriptor(self, descriptor):
@@ -230,7 +230,7 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 
 	def report_descriptor(self, descriptor = None, force = False):
 		if force or (descriptor != self._last_reported_descriptor):
-			self._monobridge._send(self.name, 'button_function', self.descriptor + str(descriptor))
+			self._monobridge._send(self.name, 'button_function', str(descriptor) + self.descriptor)
 		self._last_reported_descriptor = descriptor
 	
 

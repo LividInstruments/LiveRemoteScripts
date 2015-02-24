@@ -1151,12 +1151,12 @@ class MonoScaleComponent(CompoundComponent):
 						button.scale_color = KEYCOLORS[(note%12 in WHITEKEYS) + (((note_pos%scale_len)==0)*2)]
 					button.display_press = True
 					button._last_flash = 0
-					#button._descriptor = str(NOTENAMES[self._pad[x + (y*8)]._msg_identifier])
 					if shifted:
 						button.use_default_message()
 						button.set_enabled(True)
 					else:
 						button.set_identifier(note%127)
+						button.descriptor = str(NOTENAMES[button._msg_identifier])
 						button.set_enabled(False)
 						button.set_channel(cur_chan)
 					button.set_light(button.scale_color)
@@ -1394,7 +1394,7 @@ class MonoDrumpadComponent(CompoundComponent):
 							button.scale_color = DRUMCOLORS[int((note-4)/16)%2]
 						button.display_press = True
 						button._last_flash = 0
-						#button._descriptor = str(NOTENAMES[button._msg_identifier])
+						button.descriptor = str(NOTENAMES[button._msg_identifier])
 						if shifted:
 							button.use_default_message()
 							button.set_enabled(True)

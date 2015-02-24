@@ -345,6 +345,14 @@ class BaseSessionRecordingComponent(FixedLengthSessionRecordingComponent):
 		self._length_buttons = []
 	
 
+	def set_length_button(self, button):
+		if self._on_length_value.subject:
+			self._on_length_value.subject.descriptor = None
+		if button:
+			button.descriptor = 'Recorder.FixedLength'
+		super(BaseSessionRecordingComponent, self).set_length_button(button)
+	
+
 	def _get_selected_length(self):
 		song = self.song()
 		length = 2.0 ** (LENGTH_VALUES[self._length_value])
