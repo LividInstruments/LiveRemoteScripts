@@ -179,6 +179,18 @@ def reset_matrix(matrix):
 				button.set_enabled(True)
 
 
+def new_reset_matrix(matrix):
+	if matrix:
+		for element in matrix:
+			button = element._control_element
+			if button:
+				button.descriptor = None
+				button.display_press = False
+				button._force_forwarding = False
+				button.set_force_next_value()
+				button.use_default_message()
+				button.set_enabled(True)
+
 def _add_to_mode(mode, add):
 	return mode + add
 
@@ -1097,8 +1109,9 @@ class MonoScaleComponent(CompoundComponent):
 
 	def set_follow_button(self, button):
 		if not self._note_sequencer._loop_selector._follow_button is None:
-			self._note_sequencer._loop_selector._follow_button.set_descriptor(None)
-		button and hasattr(button, 'set_descriptor') and button.set_descriptor('LoopSelector.Follow')
+			self._note_sequencer._loop_selector._follow_button.descriptor = None
+		if button:
+			button.descriptor = 'LoopSelector.Follow'
 		self._note_sequencer.set_follow_button(button)
 	
 
@@ -1263,10 +1276,9 @@ class MonoDrumpadComponent(CompoundComponent):
 		self.sequencer_layer = LayerMode(self, Layer(priority = 0))
 		self.sequencer_shift_layer = LayerMode(self, Layer(priority = 0))
 		self._step_sequencer = StepSeqComponent(ClipCreator(), skin, grid_resolution, name='Drum_Sequencer')
-		self._step_sequencer._drum_group = DrumGroupComponent()
 		self._step_sequencer._note_editor._visible_steps = self._visible_steps
-		self._step_sequencer._drum_group._update_pad_led = self._drum_group_update_pad_led
-		self._step_sequencer._drum_group._update_control_from_script = self._update_control_from_script
+		#self._step_sequencer._drum_group._update_pad_led = self._drum_group_update_pad_led
+		#self._step_sequencer._drum_group._update_control_from_script = self._update_control_from_script
 		self._step_sequencer._playhead_component._notes=tuple(range(16))
 		self._step_sequencer._playhead_component._triplet_notes=tuple(chain(*starmap(range, ((0, 3), (4, 7), (8, 11), (12, 15)))))
 		self.set_playhead = self._step_sequencer.set_playhead
@@ -1278,8 +1290,9 @@ class MonoDrumpadComponent(CompoundComponent):
 
 	def set_follow_button(self, button):
 		if not self._step_sequencer._loop_selector._follow_button is None:
-			self._step_sequencer._loop_selector._follow_button.set_descriptor(None)
-		button and hasattr(button, 'set_descriptor') and button.set_descriptor('LoopSelector.Follow')
+			self._step_sequencer._loop_selector._follow_button.descriptor = None
+		if button:
+			button.descriptor = 'LoopSelector.Follow'
 		self._step_sequencer.set_follow_button(button)
 	
 
@@ -1298,21 +1311,22 @@ class MonoDrumpadComponent(CompoundComponent):
 		if self._on_drumpad_matrix_value.subject:
 			DrumGroupComponent._update_pad_led(self._step_sequencer._drum_group, pad, button, soloed_pads)
 			#debug('updating leds:' + str(button.name))
-			button.turn_off()
+			#button.turn_off()
+			button.color = 'DefaultButton.Off'
 	
 
-	def _update_control_from_script(self):
+	"""def _update_control_from_script(self):
 		takeover_drums = self._step_sequencer._drum_group._takeover_drums or self._step_sequencer._drum_group._selected_pads
 		profile = 'default' if takeover_drums else 'drums'
-		if self._step_sequencer._drum_group._drum_matrix:
-			#for button, _ in self._step_sequencer._drum_group._drum_matrix.iterbuttons():
-			for button, _ in ifilter(first, self._step_sequencer._drum_group._drum_matrix.iterbuttons()):
+		if self._step_sequencer._drum_group.drum_matrix:
+			#for button, _ in self._step_sequencer._drum_group.drum_matrix.iterbuttons():
+			for button, _ in ifilter(first, self._step_sequencer._drum_group.drum_matrix.iterbuttons()):
 				if button:
 					translation_channel = self._parent._get_current_channel()
 					button.set_channel(translation_channel)
 					button.set_enabled(takeover_drums)
 					#debug('button name: ' + str(button.name) + ' ch: ' + str(translation_channel) + ' takeover drums is' + str(takeover_drums))
-					button.sensitivity_profile = profile
+					button.sensitivity_profile = profile"""
 	
 
 	def set_offset(self, offset):
@@ -1356,7 +1370,7 @@ class MonoDrumpadComponent(CompoundComponent):
 
 	def set_drumpad_matrix(self, matrix):
 		#debug('set drumpad matrix: ' + str(matrix))
-		reset_matrix(self._step_sequencer._drum_group._drum_matrix)
+		new_reset_matrix(self._step_sequencer._drum_group.drum_matrix)
 		reset_matrix(self._on_drumpad_matrix_value.subject)
 		self._on_drumpad_matrix_value.subject = matrix
 		if matrix:
@@ -1381,8 +1395,8 @@ class MonoDrumpadComponent(CompoundComponent):
 				self._control_surface.reset_controlled_track()
 				self._step_sequencer.set_drum_matrix(matrix.submatrix[:4, :4])
 			else:
-				self._step_sequencer._drum_group._mute_button and self._step_sequencer._drum_group._mute_button.send_value(0, True)
-				self._step_sequencer._drum_group._solo_button and self._step_sequencer._drum_group._solo_button.send_value(0, True)
+				#self._step_sequencer._drum_group.mute_button and self._step_sequencer._drum_group.mute_button.send_value(0, True)
+				#self._step_sequencer._drum_group.solo_button and self._step_sequencer._drum_group.solo_button.send_value(0, True)
 				offset = self._offset
 				current_note = self._step_sequencer._note_editor.editing_note
 				shifted = self._parent.is_shifted()
