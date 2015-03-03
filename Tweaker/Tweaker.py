@@ -1100,17 +1100,21 @@ class Tweaker(ControlSurface):
 
 	def _update_device(self, channelstrip):
 		try:
+			#self.log_message('update device ' + str(channelstrip))
 			if channelstrip in self._mixer._channel_strips[:2]:
+				#self.log_message('in mixer...')
 				for control in channelstrip._device_component._parameter_controls:
 					control.send_value(0, True)
 				if channelstrip._device_component._on_off_button != None:
 					channelstrip._device_component._on_off_button.turn_off()
 				if not channelstrip._track is None:
+					#self.log_message('channelstrip not none')
 					if not channelstrip._device_component._device in channelstrip._track.devices:
 						track = channelstrip._track
 						device_to_select = track.view.selected_device
 						if (device_to_select == None) and (len(track.devices) > 0):
 							device_to_select = track.devices[0]
+							channelstrip._device_component.set_device(device_to_select)
 						elif channelstrip._device_component and not type(channelstrip._device_component) is type(None):
 							channelstrip._device_component.set_device(device_to_select)
 						else:
@@ -1121,7 +1125,8 @@ class Tweaker(ControlSurface):
 					channelstrip._device_component.set_device(None) 
 				channelstrip._device_component._on_on_off_changed() 
 		except:
-			self.log_message('cant update device')
+			#self.log_message('cant update device')
+			pass
 	
 
 	"""m4l bridge"""

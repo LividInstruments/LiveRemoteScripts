@@ -1097,8 +1097,9 @@ class MonoScaleComponent(CompoundComponent):
 
 	def set_follow_button(self, button):
 		if not self._note_sequencer._loop_selector._follow_button is None:
-			self._note_sequencer._loop_selector._follow_button.set_descriptor(None)
-		button and hasattr(button, 'set_descriptor') and button.set_descriptor('LoopSelector.Follow')
+			self._note_sequencer._loop_selector._follow_button.descriptor = None
+		if button:
+			button.descriptor = 'LoopSelector.Follow'
 		self._note_sequencer.set_follow_button(button)
 	
 
@@ -1278,8 +1279,9 @@ class MonoDrumpadComponent(CompoundComponent):
 
 	def set_follow_button(self, button):
 		if not self._step_sequencer._loop_selector._follow_button is None:
-			self._step_sequencer._loop_selector._follow_button.set_descriptor(None)
-		button and hasattr(button, 'set_descriptor') and button.set_descriptor('LoopSelector.Follow')
+			self._step_sequencer._loop_selector._follow_button.descriptor = None
+		if button:
+			button.descriptor = 'LoopSelector.Follow'
 		self._step_sequencer.set_follow_button(button)
 	
 
