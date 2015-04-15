@@ -1006,9 +1006,9 @@ class Base(ControlSurface):
 		if CAP_BUTTON_TRANSLATIONS:
 			for button, _ in self._touchpad_matrix.iterbuttons():
 				controls.append(button)
-		self._translations = BaseDisplayingTranslationComponent(controls, 10)
+		self._translations = BaseDisplayingTranslationComponent(controls, USER_OFFSET)
 		self._translations.name = 'TranslationComponent'
-		self._translations._channel = 10
+		self._translations._channel = USER_OFFSET
 		self._translations.layer = Layer(priority = 10, channel_selector_buttons = self._nav_buttons, display = self._display)
 		self._translations.set_enabled(False)
 	
@@ -1048,10 +1048,11 @@ class Base(ControlSurface):
 
 		self._instrument = BaseMonoInstrumentComponent(self, self._skin, grid_resolution = self._grid_resolution, scalenames = SCALENAMES if SCALENAMES else None)
 		self._instrument.name = 'InstrumentModes'
-		self._instrument.layer = Layer(priority = 5, base_display = self._display)
+		self._instrument.layer = Layer(priority = 6, base_display = self._display)
 		self._instrument.audioloop_layer = LayerMode(self._instrument, Layer(priority = 6, loop_selector_matrix = self._base_grid))
 		self._instrument.octave_toggle = AddLayerMode(self._instrument, Layer(octave_enable_button = self._button[4]))
 		self._instrument.keypad_shift_layer = AddLayerMode(self._instrument, Layer(priority = 6, 
+									base_display = self._display,
 									scale_up_button = self._touchpad[7], 
 									scale_down_button = self._touchpad[6],
 									offset_up_button = self._touchpad[5], 
@@ -1061,6 +1062,7 @@ class Base(ControlSurface):
 									split_button = self._touchpad[0], 
 									sequencer_button = self._touchpad[1]))
 		self._instrument.drumpad_shift_layer = AddLayerMode(self._instrument, Layer(priority = 6, 
+									base_display = self._display,
 									scale_up_button = self._touchpad[7],
 									scale_down_button = self._touchpad[6],
 									drum_offset_up_button = self._touchpad[5], 
