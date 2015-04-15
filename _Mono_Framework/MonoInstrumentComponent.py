@@ -22,6 +22,7 @@ from _Framework.SessionComponent import SessionComponent
 from _Framework.ClipCreator import ClipCreator
 from _Framework.ModesComponent import AddLayerMode, LayerMode, MultiEntryMode, ModesComponent, SetAttributeMode, ModeButtonBehaviour, CancellableBehaviour, AlternativeBehaviour, ReenterBehaviour, DynamicBehaviourMixin, ExcludingBehaviourMixin, ImmediateBehaviour, LatchingBehaviour, ModeButtonBehaviour
 from _Framework.Layer import Layer
+from _Framework.Task import *
 
 from Push.SessionRecordingComponent import *
 from Push.ViewControlComponent import ViewControlComponent
@@ -1001,6 +1002,16 @@ class MonoInstrumentComponent(CompoundComponent):
 	
 
 	def _set_device_attribute(self, device, attribute, value, force = False):
+		atts = {'device':device, 'attribute':attribute, 'value':value, 'force':force}
+		self._script.schedule_message(1, self._deferred_set_device_attribute, atts) 
+	
+
+	def _deferred_set_device_attribute(self, atts):
+		debug('_deferred_set_device_attribute', atts)
+		device = atts['device']
+		attribute = atts['attribute']
+		value = atts['value']
+		force = atts['force']
 		if not device is None and hasattr(device, 'name'):
 			name = device.name.split(' ')
 			for index in range(len(name)):
@@ -1013,6 +1024,11 @@ class MonoInstrumentComponent(CompoundComponent):
 	
 
 	def _remove_device_attribute(self, device, attribute, force = False):
+		atts = {'device':device, 'attribute':attribute, 'force':force}
+		self._script.schedule_message(1, self._deferred_remove_device_attribute, atts) 
+	
+
+	def _deferred_remove_device_attribute(self, device, attribute, force = False):
 		if not device is None and hasattr(device, 'name'):
 			name = device.name.split(' ')
 			for index in range(len(name)):
@@ -1040,12 +1056,21 @@ class MonoInstrumentComponent(CompoundComponent):
 							vals.append([vals[0]])
 					if vals[0] in dict_entry.keys():
 						if vals[0] == 'scale' and vals[1] in SCALES.keys():
-							dict_entry[vals[0]] = str(vals[1])
+							try:
+								dict_entry[vals[0]] = str(vals[1])
+							except:
+								dict_entry[vals[0]] = 'Auto'
 						elif vals[0] in ['sequencer', 'split']:
 							if vals[1] in ['False', 'True']:
-								dict_entry[vals[0]] = bool(['False', 'True'].index(vals[1]))
+								try:
+									dict_entry[vals[0]] = bool(['False', 'True'].index(vals[1]))
+								except:
+									dict_entry[vals[0]] = False
 						elif vals[0] in ['offset', 'vertoffset', 'drumoffset']:
-							dict_entry[vals[0]] = int(vals[1])
+							try:
+								dict_entry[vals[0]] = int(vals[1])
+							except:
+								dict_entry[vals[0]] = 0
 			#for key in dict_entry.keys():
 			#	debug('key: ' + str(key) + ' entry:' + str(dict_entry[key]))
 		return dict_entry
