@@ -729,28 +729,28 @@ class BaseMonoInstrumentComponent(MonoInstrumentComponent):
 	def _offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._offset_value(offset)
 		self._keys_offset_data.set_display_string(str(NOTENAMES[offset]))
-		self._script._monobridge._send('special', 'offset', str(NOTENAMES[offset]))
+		self._script._monobridge._send('display2', 'offset', str(NOTENAMES[offset]))
 		self._base_display and self._base_display.set_data_sources([self._keys_offset_data])
 	
 
 	def _drum_offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._drum_offset_value(offset)
 		self._drum_offset_data.set_display_string(str(offset))
-		self._script._monobridge._send('special', 'drum_offset', str(offset))
+		self._script._monobridge._send('display2', 'drum_offset', str(offset))
 		self._base_display and self._base_display.set_data_sources([self._drum_offset_data])
 	
 
 	def _vertical_offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._vertical_offset_value(offset)	
 		self._vertical_offset_data.set_display_string(str(offset))
-		self._script._monobridge._send('special', 'vert_offset', str(offset))
+		self._script._monobridge._send('display1', 'vert_offset', str(offset))
 		self._base_display and self._base_display.set_data_sources([self._vertical_offset_data])	
 	
 
 	def _scale_offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._scale_offset_value(offset)
 		self._scale_offset_data.set_display_string(str(SCALEABBREVS[self._scalenames[offset]]))
-		self._script._monobridge._send('special', 'scale_offset', str(SCALEABBREVS[self._scalenames[offset]]))
+		self._script._monobridge._send('display3', 'scale_offset', str(SCALEABBREVS[self._scalenames[offset]]))
 		self._base_display and self._base_display.set_data_sources([self._scale_offset_data])
 	
 
