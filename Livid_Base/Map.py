@@ -7,15 +7,13 @@ Created by amounra on 2014-7-26.
 This file allows the reassignment of the controls from their default arrangement.  The order is from left to right; 
 Buttons are Note #'s and Faders/Rotaries are Controller #'s
 """
-OSC_TRANSMIT = False
+OSC_TRANSMIT = True
 
 OSC_OUTPORT = 7400
 
 SHIFT_LATCHING = False
 
 CAP_BUTTON_TRANSLATIONS = False   #include the top 8 capacitive touch buttons in UserMode translations.
-
-USER_OFFSET = 10  #defines the starting channel offset for UserMode....use with caution.  In order to use this option, you'll also need to rename the Translation classes to reflect the new channels
 
 CHANNEL = 0		#main channel (0 - 15)
 
@@ -34,7 +32,6 @@ BASE_RUNNERS = [68, 69, 70, 71, 72, 73, 74, 75]
 BASE_LCDS = [34, 35]
 
 COLOR_MAP = [2, 64, 4, 8, 16, 127, 32]
-
 
 """You can change the orientation of the Up, Down, Left, and Right buttons (where applicable) by changing the array.  The values correspond to the buttons from top to bottom."""
 UDLR = [0, 1, 2, 3]

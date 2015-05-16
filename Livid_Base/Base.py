@@ -1048,11 +1048,10 @@ class Base(ControlSurface):
 
 		self._instrument = BaseMonoInstrumentComponent(self, self._skin, grid_resolution = self._grid_resolution, scalenames = SCALENAMES if SCALENAMES else None)
 		self._instrument.name = 'InstrumentModes'
-		self._instrument.layer = Layer(priority = 6, base_display = self._display)
+		self._instrument.layer = Layer(priority = 5, base_display = self._display)
 		self._instrument.audioloop_layer = LayerMode(self._instrument, Layer(priority = 6, loop_selector_matrix = self._base_grid))
 		self._instrument.octave_toggle = AddLayerMode(self._instrument, Layer(octave_enable_button = self._button[4]))
 		self._instrument.keypad_shift_layer = AddLayerMode(self._instrument, Layer(priority = 6, 
-									base_display = self._display,
 									scale_up_button = self._touchpad[7], 
 									scale_down_button = self._touchpad[6],
 									offset_up_button = self._touchpad[5], 
@@ -1062,7 +1061,6 @@ class Base(ControlSurface):
 									split_button = self._touchpad[0], 
 									sequencer_button = self._touchpad[1]))
 		self._instrument.drumpad_shift_layer = AddLayerMode(self._instrument, Layer(priority = 6, 
-									base_display = self._display,
 									scale_up_button = self._touchpad[7],
 									scale_down_button = self._touchpad[6],
 									drum_offset_up_button = self._touchpad[5], 
@@ -1114,10 +1112,12 @@ class Base(ControlSurface):
 	
 
 	def _setup_main_modes(self):
+		for index in range(4):
+			self._button[index]._last_reported_descriptor = ['MainModes.Clip', 'MainModes.Send', 'MainModes.Device', 'MainModes.User'][index]
 		self._main_modes = BaseDisplayingModesComponent(name = 'MainModes')
 		self._main_modes.add_mode('disabled', [self._background])
 		self._main_modes.add_mode('Clips_shifted', [self._set_nav_colors, self._mixer.volume_layer, self._mixer.select_layer, self._mixer.channel_controls_layer, self.clips_layer_sysex, self.live_mode_sysex], groups = ['shifted'], behaviour = self._shift_latching(color = 'MainModes.Clip'), display_string = MODE_DATA['Clips_shifted'])
-		self._main_modes.add_mode('Clips', [self._set_nav_colors, self._mixer.volume_layer, self._mixer.select_layer,  self._session.cliplaunch_layer, self._session.navigation_layer, self.clips_layer_sysex, self.live_mode_sysex ], behaviour = self._shift_latching(color = 'MainModes.Clip'), display_string = MODE_DATA['Clips'])
+		self._main_modes.add_mode('Clips', [self._set_nav_colors, self._mixer.volume_layer, self._mixer.select_layer,  self._session.cliplaunch_layer, self._session.navigation_layer, self.clips_layer_sysex, self.live_mode_sysex, self.refresh_OSC ], behaviour = self._shift_latching(color = 'MainModes.Clip'), display_string = MODE_DATA['Clips'])
 		self._main_modes.add_mode('Sends_shifted', [self._set_fixed_length_colors, self.sends_layer_sysex, self._instrument, self._recorder.alt_layer, self._instrument.octave_toggle, tuple([self._send_instrument_shifted, self._send_instrument_unshifted]),], groups = ['shifted'], behaviour = self._shift_latching(color = 'MainModes.Sends'), display_string = MODE_DATA['Sends_shifted'])
 		self._main_modes.add_mode('Sends', [self._set_clip_creator_colors, self.sends_layer_sysex, self._instrument, self._mixer.select_layer, self._mixer.selected_sends_layer, self._mixer.returns_layer,  self._transport.overdub_layer, self._recorder.main_layer,], behaviour = self._shift_latching(color = 'MainModes.Sends'), display_string = MODE_DATA['Sends'])
 		self._main_modes.add_mode('Device_shifted', [self._set_device_shift_nav_colors, self.device_layer_sysex, self._modswitcher, tuple([self._send_instrument_shifted, self._send_instrument_unshifted]), self._device, self._device.parameters_layer, self._device_navigator.alt_layer,  ], groups = ['shifted'], behaviour = self._shift_latching(color = 'MainModes.Device'), display_string = MODE_DATA['Device_shifted'])
@@ -1413,5 +1413,19 @@ class Base(ControlSurface):
 		self._display.display_message(message)
 	
 
+	def refresh_OSC(self):
+		if OSC_TRANSMIT:
+			for control in self.controls:
+				if isinstance(control, MonoEncoderElement):
+					control.forward_parameter_value()
+				elif isinstance(control, MonoButtonElement):
+					control.report_descriptor(control._last_reported_descriptor, True)
+			for index in range(4):
+				self._button[index].report_descriptor(['MainModes.Clip', 'MainModes.Send', 'MainModes.Device', 'MainModes.User'][index], True)
+			self._on_device_name_changed()
+			self._on_device_bank_changed()
+			self._on_device_chain_changed()
+			
+	
 
 #	a
