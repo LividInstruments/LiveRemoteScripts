@@ -406,6 +406,17 @@ class BlockingMonoButtonElement(MonoButtonElement):
 class BaseClipSlotComponent(ClipSlotComponent):
 
 
+
+	def set_launch_button(self, button):
+		if self._launch_button_value.subject:
+			self._launch_button_value.subject.descriptor = ''
+		self._launch_button_value.subject = button
+		if self._launch_button_value.subject and self._clip_slot != None:
+			clip_name = '' if not self.has_clip() else self._clip_slot.clip.name
+			self._launch_button_value.subject.descriptor = str(clip_name)
+		self.update()
+	
+
 	def update(self):
 		super(BaseClipSlotComponent, self).update()
 		self._has_fired_slot = False
@@ -1048,10 +1059,11 @@ class Base(ControlSurface):
 
 		self._instrument = BaseMonoInstrumentComponent(self, self._skin, grid_resolution = self._grid_resolution, scalenames = SCALENAMES if SCALENAMES else None)
 		self._instrument.name = 'InstrumentModes'
-		self._instrument.layer = Layer(priority = 5, base_display = self._display)
+		self._instrument.layer = Layer(priority = 6, base_display = self._display)
 		self._instrument.audioloop_layer = LayerMode(self._instrument, Layer(priority = 6, loop_selector_matrix = self._base_grid))
 		self._instrument.octave_toggle = AddLayerMode(self._instrument, Layer(octave_enable_button = self._button[4]))
 		self._instrument.keypad_shift_layer = AddLayerMode(self._instrument, Layer(priority = 6, 
+									base_display = self._display,
 									scale_up_button = self._touchpad[7], 
 									scale_down_button = self._touchpad[6],
 									offset_up_button = self._touchpad[5], 
@@ -1061,6 +1073,7 @@ class Base(ControlSurface):
 									split_button = self._touchpad[0], 
 									sequencer_button = self._touchpad[1]))
 		self._instrument.drumpad_shift_layer = AddLayerMode(self._instrument, Layer(priority = 6, 
+									base_display = self._display,
 									scale_up_button = self._touchpad[7],
 									scale_down_button = self._touchpad[6],
 									drum_offset_up_button = self._touchpad[5], 

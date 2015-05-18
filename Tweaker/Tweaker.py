@@ -929,10 +929,10 @@ class Tweaker(ControlSurface):
 		for index in range(4):
 			self._pad[index].set_enabled(False)
 			self._pad[index].set_channel(PAD_CHANNEL)
-			self._pad[index].set_identifier(index + 4)
+			self._pad[index].set_identifier(index + 4 + (self._pad_offset._mode_index * 8))
 			self._pad[index+4].set_enabled(False)
 			self._pad[index+4].set_channel(PAD_CHANNEL)
-			self._pad[index+4].set_identifier(index)
+			self._pad[index+4].set_identifier(index + (self._pad_offset._mode_index * 8))
 	
 
 	def _setup_navigation_lock(self):
