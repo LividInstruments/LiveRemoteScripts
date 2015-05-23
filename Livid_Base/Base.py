@@ -406,21 +406,40 @@ class BlockingMonoButtonElement(MonoButtonElement):
 class BaseClipSlotComponent(ClipSlotComponent):
 
 
+	@subject_slot('name')
+	def _on_clip_name_changed(self):
+		debug('clipname changed')
+		if OSC_TRANSMIT:
+			self.update()
+	
+
+	def _update_clip_property_slots(self):
+		clip = self._clip_slot.clip if self._clip_slot else None
+		self._on_clip_color_changed.subject = clip
+		self._on_clip_name_changed.subject = clip
+		self._on_clip_playing_state_changed.subject = clip
+		self._on_recording_state_changed.subject = clip
+
+	def report_clip_name(self):
+		button = self._launch_button_value.subject
+		if button and self._clip_slot != None:
+			clip_name = '' if not self.has_clip() else self._clip_slot.clip.name
+			button.descriptor = str(clip_name)
+			button._last_reported_descriptor = None
+	
 
 	def set_launch_button(self, button):
 		if self._launch_button_value.subject:
 			self._launch_button_value.subject.descriptor = ''
 		self._launch_button_value.subject = button
-		if self._launch_button_value.subject and self._clip_slot != None:
-			clip_name = '' if not self.has_clip() else self._clip_slot.clip.name
-			self._launch_button_value.subject.descriptor = str(clip_name)
 		self.update()
 	
 
 	def update(self):
-		super(BaseClipSlotComponent, self).update()
+		#super(BaseClipSlotComponent, self).update()
 		self._has_fired_slot = False
 		button = self._launch_button_value.subject
+		self.report_clip_name()
 		if self._allow_updates:
 			if self.is_enabled() and button != None:
 				value_to_send = self._feedback_value()
@@ -954,6 +973,7 @@ class Base(ControlSurface):
 			for column in range(8):
 				clip_slot = self._scene[row].clip_slot(column)
 				clip_slot.name = str(column) + '_Clip_Slot_' + str(row)
+				clip_slot._cs = self
 		self._session.set_mixer(self._mixer)
 		self._session.cliplaunch_layer = AddLayerMode(self._session, Layer(priority = 4, clip_launch_buttons = self._base_grid))
 		self._session.overlay_cliplaunch_layer = AddLayerMode(self._session, Layer(priority = 9, clip_launch_buttons = self._base_grid.submatrix[:7, :], scene_launch_buttons = self._base_grid.submatrix[7:, :]))
