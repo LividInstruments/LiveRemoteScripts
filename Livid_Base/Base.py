@@ -391,6 +391,15 @@ class BaseSessionRecordingComponent(FixedLengthSessionRecordingComponent):
 						button.turn_off()
 	
 
+	def _update_generic_new_button(self, new_button):
+		if new_button and self.is_enabled():
+			song = self.song()
+			selected_track = song.view.selected_track
+			clip_slot = song.view.highlighted_clip_slot
+			can_new = (clip_slot != None and clip_slot.clip) or (selected_track.can_be_armed and selected_track.playing_slot_index >= 0)
+			debug('new button color:', 'Recorder.NewOn' if can_new else 'Recorder.NewOff')
+			new_button.set_light('Recorder.NewOn' if can_new else 'Recorder.NewOff')
+
 
 class BlockingMonoButtonElement(MonoButtonElement):
 
@@ -759,14 +768,16 @@ class BaseMonoInstrumentComponent(MonoInstrumentComponent):
 	def _offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._offset_value(offset)
 		self._keys_offset_data.set_display_string(str(NOTENAMES[offset]))
-		self._script._monobridge._send('display2', 'offset', str(NOTENAMES[offset]))
+		if not self._main_modes.selected_mode is None and self._main_modes.selected_mode.startswith('keypad'):
+			self._script._monobridge._send('display2', 'offset', str(NOTENAMES[offset]))
 		self._base_display and self._base_display.set_data_sources([self._keys_offset_data])
 	
 
 	def _drum_offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._drum_offset_value(offset)
 		self._drum_offset_data.set_display_string(str(offset))
-		self._script._monobridge._send('display2', 'drum_offset', str(offset))
+		if not self._main_modes.selected_mode is None and self._main_modes.selected_mode.startswith('drumpad'):
+			self._script._monobridge._send('display2', 'drum_offset', str(offset))
 		self._base_display and self._base_display.set_data_sources([self._drum_offset_data])
 	
 
@@ -933,6 +944,7 @@ class Base(ControlSurface):
 		self._display.set_translation_table(_base_translations)
 	
 	
+
 	def _setup_autoarm(self):
 		self._auto_arm = AutoArmComponent(name='Auto_Arm')
 		self._auto_arm.can_auto_arm_track = self._can_auto_arm_track
