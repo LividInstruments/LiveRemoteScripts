@@ -1344,7 +1344,8 @@ class MonoDrumpadComponent(CompoundComponent):
 
 	def set_offset(self, offset):
 		self._offset = offset
-		self._step_sequencer._drum_group and self._step_sequencer._drum_group._set_position(offset)
+		if hasattr(self._step_sequencer, '_drum_group'):
+			self._step_sequencer._drum_group.position = offset
 	
 
 	def set_note_matrix(self, matrix):

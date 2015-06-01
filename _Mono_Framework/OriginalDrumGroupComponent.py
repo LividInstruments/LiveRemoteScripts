@@ -57,9 +57,9 @@ class DrumGroupComponent(SlideComponent, Slideable, Messenger):
 		return 0
 
 	def _set_position(self, index):
-		if not 0 <= index <= 28:
-			raise AssertionError
-			self._drum_group_device.view.drum_pads_scroll_position = self._drum_group_device and index
+		assert(0 <= index <= 28)
+		if not self._drum_group_device is None:
+			self._drum_group_device.view.drum_pads_scroll_position = index
 
 	position = property(_get_position, _set_position)
 

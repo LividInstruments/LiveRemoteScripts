@@ -38,5 +38,8 @@ class OSCDisplay(ControlSurfaceComponent):
 
 	def sendOSC(self, suffix, message):
 		#debug('sendOSC', suffix, message)
-		self.is_enabled() and self.oscServer and self.oscServer.sendOSC(str(self._prefix+suffix), str(message))
+		try:
+			self.is_enabled() and self.oscServer and self.oscServer.sendOSC(str(self._prefix+suffix), str(message))
+		except:
+			pass
 	
