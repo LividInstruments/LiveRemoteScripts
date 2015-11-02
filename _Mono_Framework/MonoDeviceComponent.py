@@ -628,6 +628,7 @@ class NewMonoDeviceComponent(DeviceComponent):
 	
 
 	def set_device_defs(self, bank_dict={}, mod_types={}):
+		debug('set device defs', bank_dict, mod_types)
 		self._MOD_BANK_DICT = bank_dict
 		self._MOD_TYPES = mod_types
 		self.update()
@@ -1171,6 +1172,32 @@ class NewMonoDeviceComponent(DeviceComponent):
 		self.update()
 	
 
+	def set_all_params_to_defaults(self, *a):
+		debug('set all parmas to default')
+		if self._params:
+			for holder in self._params:
+				name = None
+				try:
+					param = holder._parameter
+				except:
+					param = None
+				if param:
+					name = param.name
+					#debug('param name:', name)
+					if name:
+						for item in name.split(' '):
+							if len(str(item)) and str(item)[0]=='@':
+								vals = item[1:].split(':')
+								if vals[0] in ['def', 'rst']:
+									#self.set_param_to_default(param, vals[1])
+									rst_val = float(vals[1])/100
+									newval = float(rst_val * (param.max - param.min)) + param.min
+									param.value = newval
+								else:
+									debug('no def value...')
+	
+
+	
 
 class ParamHolder(object):
 	
@@ -1183,7 +1210,7 @@ class ParamHolder(object):
 		self._parent = parent
 		self._parameter = None	
 		self._feedback = True
-
+	
 
 	def _value_change(self):
 		control_name = self._control_name
@@ -1214,7 +1241,7 @@ class NoDevice(object):
 		self.canonical_parent = None
 		self.can_have_chains = False
 		self.name = 'NoDevice'
-
+	
 
 	def add_name_listener(self, callback=None):
 		pass
@@ -1245,5 +1272,9 @@ class NoDevice(object):
 	
 
 	
+
+
+
+
+
 	
-				

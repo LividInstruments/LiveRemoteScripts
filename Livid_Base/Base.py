@@ -38,6 +38,10 @@ from _Framework.ClipCreator import ClipCreator
 from _Framework.Resource import PrioritizedResource
 from _Framework.Util import mixin
 from _Framework.BackgroundComponent import BackgroundComponent
+from _Framework.SessionRecordingComponent import *
+from _Framework.ViewControlComponent import ViewControlComponent
+from _Framework.DrumGroupComponent import DrumGroupComponent
+
 
 """Custom files, overrides, and files from other scripts"""
 from _Mono_Framework.MonoButtonElement import *
@@ -61,17 +65,16 @@ import _Mono_Framework.modRemixNet as RemixNet
 import _Mono_Framework.modOSC
 
 
-from Push.AutoArmComponent import AutoArmComponent
-from Push.SessionRecordingComponent import *
-from Push.ViewControlComponent import ViewControlComponent
-from Push.DrumGroupComponent import DrumGroupComponent
-from Push.StepSeqComponent import StepSeqComponent
-from Push.PlayheadElement import PlayheadElement
-from Push.PlayheadComponent import PlayheadComponent
-from Push.GridResolution import GridResolution
-from Push.ConfigurableButtonElement import ConfigurableButtonElement
-from Push.LoopSelectorComponent import LoopSelectorComponent
-from Push.Actions import CreateInstrumentTrackComponent, CreateDefaultTrackComponent, CaptureAndInsertSceneComponent, DuplicateDetailClipComponent, DuplicateLoopComponent, SelectComponent, DeleteComponent, DeleteSelectedClipComponent, DeleteSelectedSceneComponent, CreateDeviceComponent
+from _Mono_Framework._deprecated.AutoArmComponent import AutoArmComponent
+#from _Mono_Framework._deprecated.PlayheadElement import PlayheadElement
+from _Mono_Framework._deprecated.GridResolution import GridResolution
+from _Mono_Framework._deprecated.SessionRecordingComponent import FixedLengthSessionRecordingComponent
+
+#from Push.StepSeqComponent import StepSeqComponent
+#from Push.PlayheadComponent import PlayheadComponent
+#from Push.ConfigurableButtonElement import ConfigurableButtonElement
+#from Push.LoopSelectorComponent import LoopSelectorComponent
+#from Push.Actions import CreateInstrumentTrackComponent, CreateDefaultTrackComponent, CaptureAndInsertSceneComponent, DuplicateDetailClipComponent, DuplicateLoopComponent, SelectComponent, DeleteComponent, DeleteSelectedClipComponent, DeleteSelectedSceneComponent, CreateDeviceComponent
 
 
 DIRS = [47, 48, 50, 49]
@@ -391,15 +394,6 @@ class BaseSessionRecordingComponent(FixedLengthSessionRecordingComponent):
 						button.turn_off()
 	
 
-	def _update_generic_new_button(self, new_button):
-		if new_button and self.is_enabled():
-			song = self.song()
-			selected_track = song.view.selected_track
-			clip_slot = song.view.highlighted_clip_slot
-			can_new = (clip_slot != None and clip_slot.clip) or (selected_track.can_be_armed and selected_track.playing_slot_index >= 0)
-			debug('new button color:', 'Recorder.NewOn' if can_new else 'Recorder.NewOff')
-			new_button.set_light('Recorder.NewOn' if can_new else 'Recorder.NewOff')
-
 
 class BlockingMonoButtonElement(MonoButtonElement):
 
@@ -428,6 +422,7 @@ class BaseClipSlotComponent(ClipSlotComponent):
 		self._on_clip_name_changed.subject = clip
 		self._on_clip_playing_state_changed.subject = clip
 		self._on_recording_state_changed.subject = clip
+	
 
 	def report_clip_name(self):
 		button = self._launch_button_value.subject
@@ -768,16 +763,14 @@ class BaseMonoInstrumentComponent(MonoInstrumentComponent):
 	def _offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._offset_value(offset)
 		self._keys_offset_data.set_display_string(str(NOTENAMES[offset]))
-		if not self._main_modes.selected_mode is None and self._main_modes.selected_mode.startswith('keypad'):
-			self._script._monobridge._send('display2', 'offset', str(NOTENAMES[offset]))
+		self._script._monobridge._send('display2', 'offset', str(NOTENAMES[offset]))
 		self._base_display and self._base_display.set_data_sources([self._keys_offset_data])
 	
 
 	def _drum_offset_value(self, offset):
 		super(BaseMonoInstrumentComponent, self)._drum_offset_value(offset)
 		self._drum_offset_data.set_display_string(str(offset))
-		if not self._main_modes.selected_mode is None and self._main_modes.selected_mode.startswith('drumpad'):
-			self._script._monobridge._send('display2', 'drum_offset', str(offset))
+		self._script._monobridge._send('display2', 'drum_offset', str(offset))
 		self._base_display and self._base_display.set_data_sources([self._drum_offset_data])
 	
 
@@ -842,8 +835,15 @@ class Base(ControlSurface):
 	
 
 	def set_feedback_channels(self, channels, *a, **k):
+		#channels = [0,1]
 		debug('set feedback channels: ' + str(channels))
 		super(Base, self).set_feedback_channels(channels, *a, **k)
+		try:
+			self._playhead_element._feedback_channels = channels
+			self._playhead_element and hasattr(self._playhead_element, 'update') and self._playhead_element.update()
+		except:
+			debug('not setting playhead feedback channels!')
+			pass
 	
 
 	"""script initialization methods"""
@@ -944,7 +944,6 @@ class Base(ControlSurface):
 		self._display.set_translation_table(_base_translations)
 	
 	
-
 	def _setup_autoarm(self):
 		self._auto_arm = AutoArmComponent(name='Auto_Arm')
 		self._auto_arm.can_auto_arm_track = self._can_auto_arm_track
@@ -1415,6 +1414,8 @@ class Base(ControlSurface):
 	
 
 	def set_controlled_track(self, track = None, *a):
+		dtrack = track.name if track and hasattr(track, 'name') else track
+		debug('set_controlled_track:', dtrack)
 		if isinstance(track, Live.Track.Track):
 			super(Base, self).set_controlled_track(track)
 		else:

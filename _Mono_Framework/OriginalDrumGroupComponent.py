@@ -1,9 +1,9 @@
 from itertools import imap, ifilter
 from _Framework.SubjectSlot import subject_slot
 from _Framework.Util import find_if, first
-from Push.consts import MessageBoxText
-from Push.MatrixMaps import PAD_FEEDBACK_CHANNEL
-from Push.MessageBoxComponent import Messenger
+from pushbase.consts import MessageBoxText
+from pushbase.matrix_maps import PAD_FEEDBACK_CHANNEL
+from pushbase.message_box_component import Messenger
 
 try:
 	from _Framework.SlideComponent import SlideComponent, Slideable

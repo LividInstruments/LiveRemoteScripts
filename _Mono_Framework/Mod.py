@@ -27,6 +27,7 @@ from _Mono_Framework.MonoDeviceComponent import NewMonoDeviceComponent as MonoDe
 from _Mono_Framework.ModDevices import *
 from _Mono_Framework.Debug import *
 
+from ableton.v2.control_surface import ControlSurface as ControlSurface_v2
 
 INITIAL_SCROLLING_DELAY = 5
 INTERVAL_SCROLLING_DELAY = 1
@@ -975,7 +976,10 @@ class NavigationBox(ControlSurfaceComponent):
 		self.off_value = 1
 		self.x_offset = 0
 		self.y_offset = 0
-		self._register_timer_callback(self._on_timer)
+		debug('timer is callable:', callable(self._on_timer))
+		self._task_group = TaskGroup(auto_kill=False)
+		self._task_group.add(totask(self._on_timer))
+		#self._register_timer_callback(self._on_timer)
 	
 
 	def width(self):
@@ -1420,6 +1424,7 @@ class ModRouter(CompoundComponent):
 	def __init__(self, *a, **k):
 		super(ModRouter, self).__init__(*a, **k)
 		self._host = None
+		self._task_group = TaskGroup(auto_kill=False)
 		self._handlers = []
 		self._mods = []
 		self.log_message = self._log_message
@@ -1427,9 +1432,9 @@ class ModRouter(CompoundComponent):
 	
 
 	def set_host(self, host):
-		assert isinstance(host, ControlSurface)
+		assert isinstance(host, ControlSurface) or isinstance(host, ControlSurface_v2)
 		self._host = host
-		self._task_group = host._task_group
+		#self._task_group = host._task_group
 		self._host.log_message('host registered: ' + str(host))
 		self.log_message = host.log_message
 	

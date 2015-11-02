@@ -37,6 +37,7 @@ from _Framework.ModesComponent import Mode, DisableMode, EnablingModesComponent,
 from _Framework.ClipCreator import ClipCreator
 from _Framework.Resource import PrioritizedResource
 from _Framework.Util import mixin
+from _Framework.ViewControlComponent import ViewControlComponent
 
 """Custom files, overrides, and files from other scripts"""
 
@@ -51,6 +52,7 @@ from _Mono_Framework.TranslationComponent import TranslationComponent
 from _Mono_Framework.LividUtilities import LividSettings
 from _Mono_Framework.MonoModes import SendLividSysexMode, DisplayMessageMode
 from _Mono_Framework.Debug import *
+from _Mono_Framework._deprecated.AutoArmComponent import AutoArmComponent
 
 
 from Map import *
@@ -59,17 +61,16 @@ import _Mono_Framework.modRemixNet as RemixNet
 import _Mono_Framework.modOSC
 
 
-from Push.AutoArmComponent import AutoArmComponent
-from Push.ViewControlComponent import ViewControlComponent
-from Push.DrumGroupComponent import DrumGroupComponent
-from Push.StepSeqComponent import StepSeqComponent
-from Push.PlayheadElement import PlayheadElement
-from Push.PlayheadComponent import PlayheadComponent
-from Push.GridResolution import GridResolution
-from Push.ConfigurableButtonElement import ConfigurableButtonElement
-from Push.LoopSelectorComponent import LoopSelectorComponent
-from Push.Actions import CreateInstrumentTrackComponent, CreateDefaultTrackComponent, CaptureAndInsertSceneComponent, DuplicateDetailClipComponent, DuplicateLoopComponent, SelectComponent, DeleteComponent, DeleteSelectedClipComponent, DeleteSelectedSceneComponent, CreateDeviceComponent
-from Push.SkinDefault import make_default_skin
+
+#from Push.DrumGroupComponent import DrumGroupComponent
+#from Push.StepSeqComponent import StepSeqComponent
+#from Push.PlayheadElement import PlayheadElement
+#from Push.PlayheadComponent import PlayheadComponent
+#from Push.GridResolution import GridResolution
+#from Push.ConfigurableButtonElement import ConfigurableButtonElement
+#from Push.LoopSelectorComponent import LoopSelectorComponent
+#from Push.Actions import CreateInstrumentTrackComponent, CreateDefaultTrackComponent, CaptureAndInsertSceneComponent, DuplicateDetailClipComponent, DuplicateLoopComponent, SelectComponent, DeleteComponent, DeleteSelectedClipComponent, DeleteSelectedSceneComponent, CreateDeviceComponent
+#from Push.SkinDefault import make_default_skin
 
 
 ENCODER_SPEED = [0, 0, 1, 0, 2, 0, 3, 0, 4, 0, 5, 0, 6, 0, 7, 0, 8, 0, 9, 0, 10, 0, 11, 0, 12, 0, 13, 0, 14, 0, 15, 0, 16, 0, 17, 0, 18, 0, 19, 0, 20, 0, 21, 0, 22, 0, 23, 0, 24, 0, 127, 1, 26, 0, 127, 1, 127, 1]
