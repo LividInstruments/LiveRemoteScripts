@@ -64,18 +64,11 @@ from _Mono_Framework.OSCDisplay import OSCDisplay
 import _Mono_Framework.modRemixNet as RemixNet
 import _Mono_Framework.modOSC
 
-
 from _Mono_Framework._deprecated.AutoArmComponent import AutoArmComponent
-#from _Mono_Framework._deprecated.PlayheadElement import PlayheadElement
 from _Mono_Framework._deprecated.GridResolution import GridResolution
 from _Mono_Framework._deprecated.SessionRecordingComponent import FixedLengthSessionRecordingComponent
 
-#from Push.StepSeqComponent import StepSeqComponent
-#from Push.PlayheadComponent import PlayheadComponent
-#from Push.ConfigurableButtonElement import ConfigurableButtonElement
-#from Push.LoopSelectorComponent import LoopSelectorComponent
-#from Push.Actions import CreateInstrumentTrackComponent, CreateDefaultTrackComponent, CaptureAndInsertSceneComponent, DuplicateDetailClipComponent, DuplicateLoopComponent, SelectComponent, DeleteComponent, DeleteSelectedClipComponent, DeleteSelectedSceneComponent, CreateDeviceComponent
-
+debug = initialize_debug()
 
 DIRS = [47, 48, 50, 49]
 _NOTENAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B']
@@ -835,15 +828,7 @@ class Base(ControlSurface):
 	
 
 	def set_feedback_channels(self, channels, *a, **k):
-		#channels = [0,1]
-		debug('set feedback channels: ' + str(channels))
 		super(Base, self).set_feedback_channels(channels, *a, **k)
-		try:
-			self._playhead_element._feedback_channels = channels
-			self._playhead_element and hasattr(self._playhead_element, 'update') and self._playhead_element.update()
-		except:
-			debug('not setting playhead feedback channels!')
-			pass
 	
 
 	"""script initialization methods"""
@@ -1083,6 +1068,7 @@ class Base(ControlSurface):
 		self._grid_resolution = self.register_disconnectable(GridResolution())
 		self._c_instance.playhead.enabled = True
 		self._playhead_element = PlayheadElement(self._c_instance.playhead)
+
 		self._playhead_element.reset()
 		self._skin = make_default_skin()
 

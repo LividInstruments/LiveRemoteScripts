@@ -29,7 +29,7 @@ from _Framework.TransportComponent import TransportComponent # Class encapsulati
 
 
 """ Here we define some global variables """
-CHANNEL = 0   #main channel (0 - 15)
+CHANNEL = 0	  #main channel (0 - 15)
 ALIAS8_KNOBS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
 ALIAS8_FADERS = [17,18,19,20,21,22,23,24]
 ALIAS8_BUTTONS = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
@@ -42,48 +42,51 @@ class LividAlias8M4L(ControlSurface):
   __doc__ = " LividAlias8M4L controller script "
 
   def __init__(self, c_instance):
-    super(LividAlias8M4L, self).__init__(c_instance)
-    with self.component_guard():
-      self._host_name = 'LividAlias8M4L'
-      self._color_type = 'Base'
-      self.log_message("--------------= LividAlias8M4L log BEGIN SCRIPT =--------------")
-      self._setup_controls()
-      
+	super(LividAlias8M4L, self).__init__(c_instance)
+	with self.component_guard():
+	  self._host_name = 'LividAlias8M4L'
+	  self._color_type = 'Base'
+	  self.log_message("--------------= LividAlias8M4L log BEGIN SCRIPT =--------------")
+	  self._setup_controls()
+	  
   """script initialization methods"""
   
   def _setup_controls(self):
-    is_momentary = True
-    self._knob = [None for index in range(16)]
-    self._fader = [None for index in range(8)]
-    self._button = [None for index in range(16)]
-    self._mfader = [None for index in range(1)]
-    self._lcd = [None for index in range(2)]
-    self._encoder = [None for index in range(1)]
-    for index in range(16):
-      self._tfader[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, ALIAS8_KNOBS[index], Live.MidiMap.MapMode.absolute)
-      self._tfader[index].name = 'knob[' + str(index) + ']'
-    for index in range(8):
-      self._tfader_touch[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, ALIAS8_FADERS[index], Live.MidiMap.MapMode.absolute)
-      self._tfader_touch[index].name = 'fader[' + str(index) + ']'
-    for index in range(16):
-      self._pad[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, ALIAS8_BUTTONS[index])
-      self._pad[index].name = 'btn[' + str(index) + ']'
-    for index in range(1):
-      self._pad_cc[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, ALIAS8_MFADER[index], Live.MidiMap.MapMode.absolute)
-      self._pad_cc[index].name = 'mfader[' + str(index) + ']'
-    for index in range(1):
-      self._tbutton[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, ALIAS8_ENCODER[index], Live.MidiMap.MapMode.absolute)
-      self._tbutton[index].name = 'enc[' + str(index) + ']'
-    for index in range(2):
-      self._button[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, ALIAS8_LCD[index])
-      self._button[index].name = 'lcd[' + str(index) + ']' 
-    
+	is_momentary = True
+	self._knob = [None for index in range(16)]
+	self._fader = [None for index in range(8)]
+	self._button = [None for index in range(16)]
+	self._mfader = [None for index in range(1)]
+	self._lcd = [None for index in range(2)]
+	self._encoder = [None for index in range(1)]
+	self._tfader = [None for index in range(16)]
+	self._tfader_touch = [None for index in range(8)]
+	self._tbutton = [None for index in range(1)]
+	for index in range(16):
+	  self._tfader[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, ALIAS8_KNOBS[index], Live.MidiMap.MapMode.absolute)
+	  self._tfader[index].name = 'knob[' + str(index) + ']'
+	for index in range(8):
+	  self._tfader_touch[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, ALIAS8_FADERS[index], Live.MidiMap.MapMode.absolute)
+	  self._tfader_touch[index].name = 'fader[' + str(index) + ']'
+	for index in range(16):
+	  self._pad[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, ALIAS8_BUTTONS[index])
+	  self._pad[index].name = 'btn[' + str(index) + ']'
+	for index in range(1):
+	  self._pad_cc[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, ALIAS8_MFADER[index], Live.MidiMap.MapMode.absolute)
+	  self._pad_cc[index].name = 'mfader[' + str(index) + ']'
+	for index in range(1):
+	  self._tbutton[index] = EncoderElement(MIDI_CC_TYPE, CHANNEL, ALIAS8_ENCODER[index], Live.MidiMap.MapMode.absolute)
+	  self._tbutton[index].name = 'enc[' + str(index) + ']'
+	for index in range(2):
+	  self._button[index] = ButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, ALIAS8_LCD[index])
+	  self._button[index].name = 'lcd[' + str(index) + ']' 
+	
   def receive_value(self, value):
-    self._value = value
+	self._value = value
 
-    
+	
   """LividAlias8M4L script disconnection"""
   def disconnect(self):
-    self.log_message("--------------= LividAlias8M4L log END =--------------")
-    ControlSurface.disconnect(self)
-    return None
+	self.log_message("--------------= LividAlias8M4L log END =--------------")
+	ControlSurface.disconnect(self)
+	return None
