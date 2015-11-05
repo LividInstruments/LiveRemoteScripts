@@ -72,7 +72,8 @@ from Map import *
 from _Mono_Framework._deprecated.AutoArmComponent import AutoArmComponent
 #from _Mono_Framework._deprecated.DrumGroupComponent import DrumGroupComponent
 #from _Mono_Framework._deprecated.StepSeqComponent import StepSeqComponent
-from _Mono_Framework._deprecated.PlayheadElement import PlayheadElement
+#from _Mono_Framework._deprecated.PlayheadElement import PlayheadElement
+from _Mono_Framework.MonoInstrumentComponent import PlayheadElement
 #from _Mono_Framework._deprecated.PlayheadComponent import PlayheadComponent
 from _Mono_Framework._deprecated.GridResolution import GridResolution
 #from _Mono_Framework._deprecated.ConfigurableButtonElement import ConfigurableButtonElement
