@@ -32,7 +32,7 @@ class DrumGroupComponent(SlideComponent, Slideable, Messenger):
 		self._selected_drum_pad = None
 		self._selected_pads = []
 		self._takeover_drums = False
-		super(DrumGroupComponent, self).__init__(dragging_enabled=True, *a, **k)
+		super(DrumGroupComponent, self).__init__()
 		self._visible_drum_pad_slots = self.register_slot_manager()
 
 	position_count = 32

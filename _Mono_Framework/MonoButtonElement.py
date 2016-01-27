@@ -28,6 +28,8 @@ class MonoButtonElement(ButtonElement):
 
 
 	def __init__(self, is_momentary, msg_type, channel, identifier, name = 'Button', script = None, color_map = None, *a, **k):
+		if 'monobridge' in k:
+			monobridge = k.pop('monobridge')
 		super(MonoButtonElement, self).__init__(is_momentary, msg_type, channel, identifier, name = name, *a, **k)
 		self._script = script
 		self._color_map = color_map or [2, 64, 4, 8, 16, 127, 32]
@@ -198,6 +200,7 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 
 
 	def __init__(self, *a, **k):
+
 		super(DescriptiveMonoButtonElement, self).__init__(*a, **k)
 
 		self._descriptor = None

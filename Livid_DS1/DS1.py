@@ -4,7 +4,8 @@ from __future__ import with_statement
 import Live
 import math
 import sys
-from _Tools.re import *
+#from _Tools.re import *
+import re
 from itertools import imap, chain, starmap
 
 """ _Framework files """
@@ -286,7 +287,7 @@ class DS1(ControlSurface):
 
 	def _setup_mixer_control(self):
 		self._num_tracks = (8)
-		self._mixer = MixerComponent(script = self, num_tracks = 8, num_returns = 4, invert_mute_feedback = True, autoname = True)
+		self._mixer = MixerComponent(num_tracks = 8, num_returns = 4, invert_mute_feedback = True, auto_name = True)
 		self._mixer.name = 'Mixer'
 		self._mixer.set_track_offset(0)
 		self._mixer.master_strip().set_volume_control(self._master_fader)

@@ -944,14 +944,7 @@ class OhmModes(ControlSurface):
 
 	def _update_selected_device(self):
 		if self._device_selection_follows_track_selection is True:
-			track = self.song().view.selected_track
-			device_to_select = track.view.selected_device
-			if device_to_select == None and len(track.devices) > 0:
-				device_to_select = track.devices[0]
-			if device_to_select != None:
-				self.song().view.select_device(device_to_select)
-			self.set_appointed_device(device_to_select)
-			self.request_rebuild_midi_map()
+			self._update_device_selection()
 	
 
 	def handle_sysex(self, midi_bytes):

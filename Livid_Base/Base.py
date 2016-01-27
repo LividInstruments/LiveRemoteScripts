@@ -4,7 +4,8 @@ from __future__ import with_statement
 import Live
 import math
 import sys
-from _Tools.re import *
+import re
+#from _Tools.re import *
 from itertools import imap, chain, starmap
 
 """ _Framework files """
@@ -14,7 +15,7 @@ from _Framework.ButtonMatrixElement import ButtonMatrixElement
 from _Framework.ClipSlotComponent import ClipSlotComponent
 from _Framework.CompoundComponent import CompoundComponent
 from _Framework.ControlElement import ControlElement, ControlElementClient
-from _Framework.ControlSurface import ControlSurface
+from _Framework.ControlSurface import ControlSurface, OptimizedControlSurface
 from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
 from _Framework.DisplayDataSource import DisplayDataSource
 from _Framework.DeviceComponent import DeviceComponent
@@ -127,9 +128,9 @@ STREAMINGOFF = [0]
 MIDIBUTTONMODE = [1 for index in range(32)]
 USERBUTTONMODE = [3 for index in range(32)]
 LIVEBUTTONMODE = [5 for index in range(32)]
-SPLITVERTICAL = [1, 1, 1, 1, 5, 5, 5, 5, 1, 1, 1, 1, 5, 5, 5, 5, 1, 1, 1, 1, 5, 5, 5, 5, 1, 1, 1, 1, 5, 5, 5, 5]
+SPLITVERTICAL = [5, 5, 5, 5, 1, 1, 1, 1, 5, 5, 5, 5, 1, 1, 1, 1, 5, 5, 5, 5, 1, 1, 1, 1, 5, 5, 5, 5, 1, 1, 1, 1]
 SPLITHORIZONTAL = [1 for index in range(16)] + [5 for index in range(16)]
-SPLITVERTICALATON = [3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3, 5, 5, 5, 5]
+SPLITVERTICALATON = [5, 5, 5, 5, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3, 5, 5, 5, 5, 3, 3, 3, 3,]
 SPLITHORIZONTALATON = [3 for index in range(16)] + [5 for index in range(16)]
 CLIPS_FADER_COLORS = [7, 7, 7, 7, 7, 7, 7, 7, 2]
 SENDS_FADER_COLORS = [5, 5, 5, 5, 4, 4, 4, 4, 2]
@@ -937,7 +938,7 @@ class Base(ControlSurface):
 	def _setup_mixer_control(self):
 		is_momentary = True
 		self._num_tracks = (8)
-		self._mixer = MixerComponent(num_tracks = 8, num_returns = 4, invert_mute_feedback = True, autoname = True)
+		self._mixer = MixerComponent(num_tracks = 8, num_returns = 4, invert_mute_feedback = True, auto_name = True)
 		self._mixer.name = 'Mixer'
 		self._mixer.set_track_offset(0)
 		self._mixer.master_strip().set_volume_control(self._fader[8])

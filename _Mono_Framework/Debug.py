@@ -5,7 +5,7 @@ import Live
 
 #import os, __builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _types, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, fcntl, gc, imp, itertools, marshal, math, operator, posix, pwd, select, signal, sys, thread, time, unicodedata, xxsubtype, zipimport, zlib
 
-import os, __builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _types, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, gc, imp, itertools, marshal, math, sys, time
+import os, __builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, gc, imp, itertools, marshal, math, sys, time  #_types
 
 #modules = [__builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _types, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, fcntl, gc, imp, itertools, marshal, math, operator, posix, pwd, select, signal, sys, thread, time, unicodedata, xxsubtype, zipimport, zlib]
 
@@ -15,7 +15,7 @@ DIRS_TO_REBUILD = ['Debug', 'AumPC20_b995_9', 'AumPC40_b995_9', 'AumPush_b995', 
 
 MODS_TO_REBUILD = ['Debug', 'AumPC20', 'AumPC40', 'AumPush', 'AumTroll', 'AumTroll_G', 'Base', 'BlockMod', 'Codec', 'LaunchMod', 'Lemur256', 'LemurPad', 'Alias8', 'Block', 'CNTRLR', 'CodeGriid', 'Ohm64', 'MonOhm', 'Monomodular']
 
-from _Tools.re import *
+#from _Tools.re import *
 
 from _Framework.ControlSurface import * 
 from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
@@ -281,9 +281,9 @@ class Debug(ControlSurface):
 		super(Debug, self).__init__(*a, **k)
 		self.mtimes = {}
 		self.changed_files = []
-		self.reloader = Reloader()
-		self.reloader.enable()
-		#self._log_version_data()
+		#self.reloader = Reloader()
+		#self.reloader.enable()
+		self._log_version_data()
 		#self._log_sys_modules()
 		#self._log_paths()
 		#self._log_dirs()
@@ -451,7 +451,7 @@ class Debug(ControlSurface):
 	
 
 	def disconnect(self):
-		self.reloader.disable()
+		#self.reloader.disable()
 		super(Debug, self).disconnect()
 	
 

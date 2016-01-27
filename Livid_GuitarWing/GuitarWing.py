@@ -7,7 +7,8 @@ from __future__ import with_statement
 import Live
 import math
 import sys
-from _Tools.re import *
+#from _Tools.re import *
+import re
 from itertools import imap, chain, starmap
 
 """ _Framework files """

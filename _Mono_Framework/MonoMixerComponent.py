@@ -31,8 +31,8 @@ def release_control(control):
 class MixerComponent(MixerComponentBase):
 
 
-	def __init__(self, *a, **k):
-		super(MixerComponent,self).__init__( *a, **k)
+	def __init__(self, num_tracks, num_returns, invert_mute_feedback, auto_name):
+		super(MixerComponent,self).__init__(num_tracks, num_returns, invert_mute_feedback, auto_name)
 	
 
 	def _create_strip(self):
