@@ -79,18 +79,18 @@ class TranslationComponent(CompoundComponent):
 	def update(self):
 		if self.is_enabled():
 			for control in self._controls:
-				control.clear_send_cache()
-				control.release_parameter()
-				try:
-					control.set_light('Translation.Channel_'+str(self._channel)+'.'+str(control.name))
-				except:
-					control.send_value(self._color, True)
-				control.set_channel(self._channel)
-				control.set_enabled(False)
+				if control:
+					control.clear_send_cache()
+					control.release_parameter()
+					try:
+						control.set_light('Translation.Channel_'+str(self._channel)+'.'+str(control.name))
+					except:
+						control.send_value(self._color, True)
+					control.set_channel(self._channel)
+					control.set_enabled(False)
 		else:
 			for control in self._controls:
-				control.use_default_message()
-				control.set_enabled(True)
+				control and control.use_default_message() and control.set_enabled(True)
 		self.update_channel_selector_buttons()
 		self.update_channel_selector_control()
 	

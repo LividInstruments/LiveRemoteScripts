@@ -5,6 +5,10 @@ import Live
 import math
 import sys
 from re import *
+=======
+import re
+#from _Tools.re import *
+>>>>>>> beta
 from itertools import imap, chain, starmap
 
 """ _Framework files """
@@ -14,7 +18,7 @@ from _Framework.ButtonMatrixElement import ButtonMatrixElement
 from _Framework.ClipSlotComponent import ClipSlotComponent
 from _Framework.CompoundComponent import CompoundComponent
 from _Framework.ControlElement import ControlElement, ControlElementClient
-from _Framework.ControlSurface import ControlSurface
+from _Framework.ControlSurface import ControlSurface, OptimizedControlSurface
 from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
 from _Framework.DisplayDataSource import DisplayDataSource
 from _Framework.DeviceComponent import DeviceComponent
@@ -848,7 +852,7 @@ class Base(ControlSurface):
 	def _setup_mixer_control(self):
 		is_momentary = True
 		self._num_tracks = (8)
-		self._mixer = MixerComponent(num_tracks = 8, num_returns = 4, invert_mute_feedback = True, autoname = True)
+		self._mixer = MixerComponent(num_tracks = 8, num_returns = 4, invert_mute_feedback = True, auto_name = True)
 		self._mixer.name = 'Mixer'
 		self._mixer.set_track_offset(0)
 		self._mixer.master_strip().set_volume_control(self._fader[8])

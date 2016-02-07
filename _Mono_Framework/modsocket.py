@@ -1,6 +1,10 @@
 # Wrapper module for _socket, providing some additional facilities
 # implemented in Python.
 
+from _Mono_Framework.Debug import *
+
+debug = initialize_debug()
+
 """\
 This module provides socket operations and some related functions.
 On Unix, it supports IP (Internet Protocol) and Unix domain sockets.
@@ -71,12 +75,12 @@ __all__ = ["getfqdn"]
 #    __all__.extend(os._get_exports_list(_ssl))
 
 _realsocket = socket
-if _have_ssl:
-    _realssl = ssl
-    def ssl(sock, keyfile=None, certfile=None):
-        if hasattr(sock, "_sock"):
-            sock = sock._sock
-        return _realssl(sock, keyfile, certfile)
+#if _have_ssl:
+#   _realssl = ssl
+#    def ssl(sock, keyfile=None, certfile=None):
+#        if hasattr(sock, "_sock"):
+#            sock = sock._sock
+#        return _realssl(sock, keyfile, certfile)
 
 # WSA error codes
 if sys.platform.lower().startswith("win"):

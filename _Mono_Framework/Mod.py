@@ -6,7 +6,8 @@ import os
 import copy
 import Live
 import contextlib
-from _Tools.re import *
+#from _Tools.re import *
+import re
 from _Framework.ButtonMatrixElement import ButtonMatrixElement
 from _Framework.ControlSurface import ControlSurface
 from _Framework.ControlSurfaceComponent import ControlSurfaceComponent

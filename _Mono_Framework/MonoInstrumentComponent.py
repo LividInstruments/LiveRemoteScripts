@@ -774,6 +774,9 @@ class MonoInstrumentComponent(CompoundComponent):
 
 
 	def __init__(self, script, skin, grid_resolution, scalenames = SCALENAMES, *a, **k):
+		debug('init monoinstrument with:', k)
+		debug('skin is:', skin)
+		debug('grid_resolution is:', grid_resolution)
 		super(MonoInstrumentComponent, self).__init__(*a, **k)
 		self._scalenames = scalenames
 		self._script = script

@@ -543,7 +543,8 @@ class Cntrlr(ControlSurface):
 	def _setup_mixer_control(self):
 		is_momentary = True
 		self._num_tracks = (4)
-		self._mixer = MixerComponent(num_tracks = 4, num_returns = 2, name = 'Mixer', auto_name = True, invert_mute_feedback = True)
+		self._mixer = MixerComponent(num_tracks = 4, num_returns = 2, invert_mute_feedback = True, auto_name = True)
+		self._name = 'Mixer'
 		self._mixer.set_track_offset(0)
 		if self._mixer.channel_strip(0)._track:
 			self.song().view.selected_track = self._mixer.channel_strip(0)._track

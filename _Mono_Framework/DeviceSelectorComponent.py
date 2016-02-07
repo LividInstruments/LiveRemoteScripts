@@ -8,7 +8,8 @@ from _Framework.ModeSelectorComponent import ModeSelectorComponent
 from _Framework.SubjectSlot import SubjectEvent, SubjectSlotGroup, subject_slot, subject_slot_group
 
 from _Mono_Framework.MonoButtonElement import MonoButtonElement
-from _Tools.re import *
+#from _Tools.re import *
+import re
 
 from _Mono_Framework.Debug import *
 

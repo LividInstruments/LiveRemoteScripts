@@ -78,7 +78,7 @@ def maketrans(fromstr, tostr):
 
 
 ####################################################################
-from _Tools import re as _re
+import re as _re
 
 class _multimap:
     """Helper class for combining multiple mappings.
