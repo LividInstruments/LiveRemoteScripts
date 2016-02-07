@@ -5,10 +5,6 @@ import Live
 import math
 import sys
 from re import *
-=======
-import re
-#from _Tools.re import *
->>>>>>> beta
 from itertools import imap, chain, starmap
 
 """ _Framework files """
