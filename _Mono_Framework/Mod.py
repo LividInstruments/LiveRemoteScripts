@@ -6,7 +6,7 @@ import os
 import copy
 import Live
 import contextlib
-#from _Tools.re import *
+#from re import *
 import re
 from _Framework.ButtonMatrixElement import ButtonMatrixElement
 from _Framework.ControlSurface import ControlSurface
@@ -29,6 +29,8 @@ from _Mono_Framework.ModDevices import *
 from _Mono_Framework.Debug import *
 
 from ableton.v2.control_surface import ControlSurface as ControlSurface_v2
+
+from aumhaa.v2.control_surface.mod import ModRouter as NewModRouter
 
 INITIAL_SCROLLING_DELAY = 5
 INTERVAL_SCROLLING_DELAY = 1
@@ -78,10 +80,10 @@ def enumerate_track_device(track):
 
 def get_monomodular(host):
 		if isinstance(__builtins__, dict):
-			if not 'monomodular' in __builtins__.keys() or not isinstance(__builtins__['monomodular'], ModRouter):
+			if not 'monomodular' in __builtins__.keys() or not isinstance(__builtins__['monomodular'], ModRouter) or not isinstance(__builtins__['monomodular'], NewModRouter):
 				__builtins__['monomodular'] = ModRouter()
 		else:
-			if not hasattr(__builtins__, 'monomodular') or not isinstance(__builtins__['monomodular'], ModRouter):
+			if not hasattr(__builtins__, 'monomodular') or not isinstance(__builtins__['monomodular'], ModRouter) or not isinstance(__builtins__['monomodular'], NewModRouter):
 				setattr(__builtins__, 'monomodular', ModRouter())
 		monomodular = __builtins__['monomodular']
 		if not monomodular.has_host():

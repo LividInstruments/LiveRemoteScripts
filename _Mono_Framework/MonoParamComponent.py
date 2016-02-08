@@ -2,7 +2,7 @@
 
 
 import Live
-#from _Tools.re import *
+#from re import *
 import re
 from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
 from _Mono_Framework.Live8DeviceComponent import Live8DeviceComponent as DeviceComponent

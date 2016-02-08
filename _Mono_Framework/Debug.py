@@ -15,7 +15,8 @@ DIRS_TO_REBUILD = ['Debug', 'AumPC20_b995_9', 'AumPC40_b995_9', 'AumPush_b995', 
 
 MODS_TO_REBUILD = ['Debug', 'AumPC20', 'AumPC40', 'AumPush', 'AumTroll', 'AumTroll_G', 'Base', 'BlockMod', 'Codec', 'LaunchMod', 'Lemur256', 'LemurPad', 'Alias8', 'Block', 'CNTRLR', 'CodeGriid', 'Ohm64', 'MonOhm', 'Monomodular']
 
-#from _Tools.re import *
+#from re import *
+import re
 
 from _Framework.ControlSurface import * 
 from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
