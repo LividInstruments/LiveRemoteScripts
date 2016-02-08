@@ -28,9 +28,7 @@ from _Mono_Framework.MonoDeviceComponent import NewMonoDeviceComponent as MonoDe
 from _Mono_Framework.ModDevices import *
 from _Mono_Framework.Debug import *
 
-from ableton.v2.control_surface import ControlSurface as ControlSurface_v2
 
-from aumhaa.v2.control_surface.mod import ModRouter as NewModRouter
 
 INITIAL_SCROLLING_DELAY = 5
 INTERVAL_SCROLLING_DELAY = 1
@@ -80,10 +78,10 @@ def enumerate_track_device(track):
 
 def get_monomodular(host):
 		if isinstance(__builtins__, dict):
-			if not 'monomodular' in __builtins__.keys() or not isinstance(__builtins__['monomodular'], ModRouter) or not isinstance(__builtins__['monomodular'], NewModRouter):
+			if not 'monomodular' in __builtins__.keys() or not isinstance(__builtins__['monomodular'], ModRouter):
 				__builtins__['monomodular'] = ModRouter()
 		else:
-			if not hasattr(__builtins__, 'monomodular') or not isinstance(__builtins__['monomodular'], ModRouter) or not isinstance(__builtins__['monomodular'], NewModRouter):
+			if not hasattr(__builtins__, 'monomodular') or not isinstance(__builtins__['monomodular'], ModRouter):
 				setattr(__builtins__, 'monomodular', ModRouter())
 		monomodular = __builtins__['monomodular']
 		if not monomodular.has_host():
@@ -1435,7 +1433,7 @@ class ModRouter(CompoundComponent):
 	
 
 	def set_host(self, host):
-		assert isinstance(host, ControlSurface) or isinstance(host, ControlSurface_v2)
+		assert isinstance(host, ControlSurface)
 		self._host = host
 		#self._task_group = host._task_group
 		self._host.log_message('host registered: ' + str(host))
