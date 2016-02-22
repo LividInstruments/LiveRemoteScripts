@@ -473,7 +473,37 @@ class MonoMixerComponent(MixerComponentBase):
 		return tuple(self.song.visible_tracks) + tuple(self.song.return_tracks)
 	
 
+	def set_track_select_dial(self, dial):
+		self._on_track_select_dial_value.subject = dial
+	
 
+	@listens('value')
+	def _on_track_select_dial_value(self, value):
+		#debug('_on_track_select_dial_value', value)
+		if value > 64:
+			self.select_prev_track()
+		else:
+			self.select_next_track()
+	
+
+	def select_next_track(self):
+		if self.is_enabled():
+			selected_track = self.song.view.selected_track
+			all_tracks = tuple(self.song.visible_tracks) + tuple(self.song.return_tracks) + (self.song.master_track,)
+			assert(selected_track in all_tracks)
+			if selected_track != all_tracks[-1]:
+				index = list(all_tracks).index(selected_track)
+				self.song.view.selected_track = all_tracks[index + 1]
+	
+
+	def select_prev_track(self):
+		if self.is_enabled():
+			selected_track = self.song.view.selected_track
+			all_tracks = tuple(self.song.visible_tracks) + tuple(self.song.return_tracks) + (self.song.master_track,)
+			assert(selected_track in all_tracks)
+			if selected_track != all_tracks[0]:
+				index = list(all_tracks).index(selected_track)
+				self.song.view.selected_track = all_tracks[index - 1]
 #a
 
 

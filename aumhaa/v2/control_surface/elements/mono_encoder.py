@@ -41,8 +41,8 @@ class MonoEncoderElement(EncoderElement):
 		self._mapped_to_midi_velocity = False
 		if not monobridge is None:
 			self._monobridge = monobridge
-		elif hasattr(script, 'notification_to_bridge'):
-			self._monobridge = script
+		elif hasattr(script, '_monobridge'):
+			self._monobridge = script._monobridge
 		else:
 			self._monobridge = MonoBridgeProxy()
 		self.set_report_values(True, False)

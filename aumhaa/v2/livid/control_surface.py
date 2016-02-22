@@ -30,6 +30,7 @@ class LividControlSurface(ControlSurface):
 	_connected = False
 	_sysex_id = 0
 	_model_name = 'Livid Control Surface'
+	_version_check = 'Mod_Disabled'
 
 	def __init__(self, *a, **k):
 		self.log_message = logger.info
@@ -43,12 +44,12 @@ class LividControlSurface(ControlSurface):
 	
 
 	def _open_log(self):
-		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._model_name) + " " + str(self._version_check if self._version_check else 'Mod Disabled') + " log opened =>>>>>>>>>>>>>>>>>>>") 
+		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._model_name) + " " + str(self._version_check) + " log opened =>>>>>>>>>>>>>>>>>>>") 
 		self.show_message(str(self._model_name) + ' Control Surface Loaded')
 	
 
 	def _close_log(self):
-		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._model_name) + " " + str(self._version_check if self._version_check else 'Mod Disabled') + " log closed =>>>>>>>>>>>>>>>>>>>") 
+		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._model_name) + " " + str(self._version_check) + " log closed =>>>>>>>>>>>>>>>>>>>") 
 	
 
 	def _setup_monobridge(self):
@@ -70,8 +71,7 @@ class LividControlSurface(ControlSurface):
 	
 
 	def _initialize_hardware(self):
-		#debug(self._model_name, 'initialize_hardware()')
-		self.log_message('here 1')
+		debug(self._model_name, 'initialize_hardware()')
 	
 
 	def _initialize_script(self):

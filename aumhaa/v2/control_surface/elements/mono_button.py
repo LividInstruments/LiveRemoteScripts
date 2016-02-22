@@ -30,7 +30,6 @@ class MonoButtonElement(ButtonElement):
 
 	def __init__(self, name = 'MonoButton', script = None, color_map = None, monobridge = None, *a, **k):
 		super(MonoButtonElement, self).__init__(name = name, *a, **k)
-		self._monobridge = monobridge
 		self._script = script
 		self._color_map = color_map or [2, 64, 4, 8, 16, 127, 32]
 		self._num_colors = 7
@@ -46,6 +45,12 @@ class MonoButtonElement(ButtonElement):
 		self._force_next_value = False
 		self._parameter = None
 		#self._report_input = True
+		if not monobridge is None:
+			self._monobridge = monobridge
+		elif hasattr(script, '_monobridge'):
+			self._monobridge = script._monobridge
+		else:
+			self._monobridge = MonoBridgeProxy()
 	
 
 	def set_color_map(self, color_map):

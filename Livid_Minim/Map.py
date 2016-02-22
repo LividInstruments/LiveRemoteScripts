@@ -1,4 +1,9 @@
 # by amounra 0216 : http://www.aumhaa.com
+# written against Live 9.6 release on 021516
+
+
+from ableton.v2.control_surface.elements.color import Color
+from aumhaa.v2.livid.colors import *
 
 """
 Minim_Map.py
@@ -33,8 +38,6 @@ MINIM_BOTTOM_BUTTON = 50
 
 
 COLOR_MAP = [2, 64, 4, 8, 16, 127, 32]
-
-from aumhaa.v2.control_surface.elements.livid_colors import *
 
 
 LENGTH_VALUES = [2, 3, 4]
