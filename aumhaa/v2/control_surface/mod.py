@@ -647,11 +647,11 @@ class ModHandler(CompoundComponent):
 
 	def select_appointed_device(self, *a):
 		debug('select_appointed_device' + str(a))
-		track = self.song.view.selected_track
-		device_to_select = track.view.selected_device
-		if device_to_select == None and len(track.devices) > 0:
-			device_to_select = track.devices[0]
-		self.select_mod(self.modrouter.is_mod(device_to_select))
+		#track = self.song.view.selected_track
+		#device_to_select = track.view.selected_device
+		#if device_to_select == None and len(track.devices) > 0:
+		#	device_to_select = track.devices[0]
+		self.select_mod(self.modrouter.is_mod(self._device_provider.device))
 
 	
 

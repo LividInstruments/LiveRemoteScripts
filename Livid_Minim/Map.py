@@ -1,56 +1,42 @@
 # by amounra 0216 : http://www.aumhaa.com
-# written against Live 9.6 release on 021516
-
-
-from ableton.v2.control_surface.elements.color import Color
-from aumhaa.v2.livid.colors import *
 
 """
-Base_Map.py
+Minim_Map.py
 
-Created by amounra on 2014-7-26.
+Created by amounra on 2012-12-30.
 
 This file allows the reassignment of the controls from their default arrangement.  The order is from left to right; 
 Buttons are Note #'s and Faders/Rotaries are Controller #'s
 """
 
-USER_OFFSET = 10
+OSC_TRANSMIT = False
+
+OSC_OUTPORT = 9001
 
 SHIFT_LATCHING = False
 
-CAP_BUTTON_TRANSLATIONS = False   #include the top 8 capacitive touch buttons in UserMode translations.
-
 CHANNEL = 0		#main channel (0 - 15)
 
-AFTERTOUCH = True   #when True, sends AT in instrument modes and UserMode.  When false, turns CC's off for instrument modes and transmits CC's in UserModes.
+MINIM_PADS = [[40, 41, 42, 43], [36, 37, 38, 39]]
 
-BASE_PADS = [60, 61, 62, 63, 64, 65, 66, 67, 52, 53, 54, 55, 56, 57, 58, 59, 44, 45, 46, 47, 48, 49, 50, 51, 36, 37, 38, 39, 40, 41, 42, 43]	#there are 16 of these
+MINIM_BUTTONS = [[44, 45, 46, 47], [32, 33, 34, 35]]
 
-BASE_TOUCHSTRIPS = [1, 2, 3, 4, 5, 6, 7, 8, 9]		#there are 9 of these
+MINIM_SLIDER = 1
 
-BASE_TOUCHPADS = [10, 11, 12, 13, 14, 15, 16, 17]
+MINIM_ACCELS = [5, 6, 7]
 
-BASE_BUTTONS = [18, 19, 20, 21, 22, 23, 24, 25]		#there are 16 of these
+MINIM_SIDE_BUTTONS = [2, 3, 4, 5, 6]
 
-BASE_RUNNERS = [68, 69, 70, 71, 72, 73, 74, 75]
+MINIM_TOP_BUTTONS = [48, 49]
 
-BASE_LCDS = [34, 35]
+MINIM_BOTTOM_BUTTON = 50
+
 
 COLOR_MAP = [2, 64, 4, 8, 16, 127, 32]
 
-"""You can change the orientation of the Up, Down, Left, and Right buttons (where applicable) by changing the array.  The values correspond to the buttons from top to bottom."""
-UDLR = [0, 1, 2, 3]
+from aumhaa.v2.control_surface.elements.livid_colors import *
 
-"""The values in this array determine the choices for what length of clip is created when "Fixed Length" is turned on:
-0 = 1 Beat
-1 = 2 Beat
-2 = 1 Bar
-3 = 2 Bars
-4 = 4 Bars
-5 = 8 Bars
-6 = 16 Bars
-7 = 32 Bars
-"""
+
 LENGTH_VALUES = [2, 3, 4]
 
 CHANNELS = ['Ch. 2', 'Ch. 3', 'Ch. 4', 'Ch. 5', 'Ch. 6', 'Ch. 7', 'Ch. 8', 'Ch. 9', 'Ch. 10', 'Ch. 11', 'Ch. 12', 'Ch. 13', 'Ch. 14']
@@ -141,7 +127,9 @@ DEFAULT_INSTRUMENT_SETTINGS = {'Scales':SCALES,
 								'DefaultMode':DEFAULT_MODE,
 								'Channels':CHANNELS}
 
-class BaseColors:
+
+
+class MinimColors:
 
 
 	class DefaultButton:
@@ -151,15 +139,30 @@ class BaseColors:
 		Alert = LividRGB.BlinkFast.WHITE
 	
 
-	class MainModes:
-		Clips = LividRGB.WHITE
-		Clips_shifted = LividRGB.BlinkFast.WHITE
-		Sends = LividRGB.MAGENTA
-		Sends_shifted = LividRGB.BlinkFast.MAGENTA
-		Device = LividRGB.CYAN
-		Device_shifted = LividRGB.BlinkFast.CYAN
-		User = LividRGB.RED
-		User_shifted = LividRGB.BlinkFast.RED
+	class Transport:
+		OverdubOn = LividRGB.BlinkFast.RED
+		OverdubOff = LividRGB.RED
+		PlayOff = LividRGB.GREEN
+		PlayOn = LividRGB.BlinkSlow.GREEN
+		StopOn = LividRGB.BLUE
+		StopOff = LividRGB.OFF
+	
+
+	ResetSendsColor = LividRGB.WHITE
+
+	class Mod:
+		ShiftOff = LividRGB.OFF
+		ShiftOn = LividRGB.WHITE
+	
+
+	class Mode:
+		Main = LividRGB.OFF
+		Main_shifted = LividRGB.BlinkFast.WHITE
+	
+
+	class ShiftMode:
+		Enabled = LividRGB.BlinkFast.WHITE
+		Disabled = LividRGB.OFF
 	
 
 	class Session:
@@ -265,11 +268,6 @@ class BaseColors:
 		OverdubOff = LividRGB.RED
 	
 
-	class Transport:
-		OverdubOn = LividRGB.BlinkFast.RED
-		OverdubOff = LividRGB.RED
-	
-
 	class Sequencer:
 		OctaveOn = LividRGB.BlinkFast.CYAN
 		OctaveOff = LividRGB.OFF
@@ -295,13 +293,6 @@ class BaseColors:
 		ChainNavOff = LividRGB.OFF
 		LevelNavOn = LividRGB.CYAN
 		LevelNavOff = LividRGB.OFF
-	
-
-	class Mod:
-		class Nav:
-			OnValue = LividRGB.RED
-			OffValue = LividRGB.WHITE
-		
 	
 
 	class MonoInstrument:
@@ -335,159 +326,7 @@ class BaseColors:
 		
 
 	
-
-	class Translation:
-
-		SelectorOn = LividRGB.WHITE
-		SelectorOff = LividRGB.OFF
-
-		class Channel_10:
-			Pad_0 = LividRGB.WHITE
-			Pad_1 = LividRGB.OFF
-			Pad_2 = LividRGB.OFF
-			Pad_3 = LividRGB.OFF
-			Pad_4 = LividRGB.OFF
-			Pad_5 = LividRGB.OFF
-			Pad_6 = LividRGB.OFF
-			Pad_7 = LividRGB.OFF
-			Pad_8 = LividRGB.OFF
-			Pad_9 = LividRGB.OFF
-			Pad_10 = LividRGB.OFF
-			Pad_11 = LividRGB.OFF
-			Pad_12 = LividRGB.OFF
-			Pad_13 = LividRGB.OFF
-			Pad_14 = LividRGB.OFF
-			Pad_15 = LividRGB.OFF
-			Pad_16 = LividRGB.OFF
-			Pad_17 = LividRGB.OFF
-			Pad_18 = LividRGB.OFF
-			Pad_19 = LividRGB.OFF
-			Pad_20 = LividRGB.OFF
-			Pad_21 = LividRGB.OFF
-			Pad_22 = LividRGB.OFF
-			Pad_23 = LividRGB.OFF
-			Pad_24 = LividRGB.OFF
-			Pad_25 = LividRGB.OFF
-			Pad_26 = LividRGB.OFF
-			Pad_27 = LividRGB.OFF
-			Pad_28 = LividRGB.OFF
-			Pad_29 = LividRGB.OFF
-			Pad_30 = LividRGB.OFF
-			Pad_31 = LividRGB.OFF
-		
-
-		class Channel_11:
-			Pad_0 = LividRGB.OFF
-			Pad_1 = LividRGB.OFF
-			Pad_2 = LividRGB.OFF
-			Pad_3 = LividRGB.OFF
-			Pad_4 = LividRGB.OFF
-			Pad_5 = LividRGB.OFF
-			Pad_6 = LividRGB.OFF
-			Pad_7 = LividRGB.OFF
-			Pad_8 = LividRGB.OFF
-			Pad_9 = LividRGB.OFF
-			Pad_10 = LividRGB.OFF
-			Pad_11 = LividRGB.OFF
-			Pad_12 = LividRGB.OFF
-			Pad_13 = LividRGB.OFF
-			Pad_14 = LividRGB.OFF
-			Pad_15 = LividRGB.OFF
-			Pad_16 = LividRGB.OFF
-			Pad_17 = LividRGB.OFF
-			Pad_18 = LividRGB.OFF
-			Pad_19 = LividRGB.OFF
-			Pad_20 = LividRGB.OFF
-			Pad_21 = LividRGB.OFF
-			Pad_22 = LividRGB.OFF
-			Pad_23 = LividRGB.OFF
-			Pad_24 = LividRGB.OFF
-			Pad_25 = LividRGB.OFF
-			Pad_26 = LividRGB.OFF
-			Pad_27 = LividRGB.OFF
-			Pad_28 = LividRGB.OFF
-			Pad_29 = LividRGB.OFF
-			Pad_30 = LividRGB.OFF
-			Pad_31 = LividRGB.OFF
-		
-
-		class Channel_12:
-			Pad_0 = LividRGB.OFF
-			Pad_1 = LividRGB.OFF
-			Pad_2 = LividRGB.OFF
-			Pad_3 = LividRGB.OFF
-			Pad_4 = LividRGB.OFF
-			Pad_5 = LividRGB.OFF
-			Pad_6 = LividRGB.OFF
-			Pad_7 = LividRGB.OFF
-			Pad_8 = LividRGB.OFF
-			Pad_9 = LividRGB.OFF
-			Pad_10 = LividRGB.OFF
-			Pad_11 = LividRGB.OFF
-			Pad_12 = LividRGB.OFF
-			Pad_13 = LividRGB.OFF
-			Pad_14 = LividRGB.OFF
-			Pad_15 = LividRGB.OFF
-			Pad_16 = LividRGB.OFF
-			Pad_17 = LividRGB.OFF
-			Pad_18 = LividRGB.OFF
-			Pad_19 = LividRGB.OFF
-			Pad_20 = LividRGB.OFF
-			Pad_21 = LividRGB.OFF
-			Pad_22 = LividRGB.OFF
-			Pad_23 = LividRGB.OFF
-			Pad_24 = LividRGB.OFF
-			Pad_25 = LividRGB.OFF
-			Pad_26 = LividRGB.OFF
-			Pad_27 = LividRGB.OFF
-			Pad_28 = LividRGB.OFF
-			Pad_29 = LividRGB.OFF
-			Pad_30 = LividRGB.OFF
-			Pad_31 = LividRGB.OFF
-		
-
-		class Channel_13:
-			Pad_0 = LividRGB.OFF
-			Pad_1 = LividRGB.OFF
-			Pad_2 = LividRGB.OFF
-			Pad_3 = LividRGB.OFF
-			Pad_4 = LividRGB.OFF
-			Pad_5 = LividRGB.OFF
-			Pad_6 = LividRGB.OFF
-			Pad_7 = LividRGB.OFF
-			Pad_8 = LividRGB.OFF
-			Pad_9 = LividRGB.OFF
-			Pad_10 = LividRGB.OFF
-			Pad_11 = LividRGB.OFF
-			Pad_12 = LividRGB.OFF
-			Pad_13 = LividRGB.OFF
-			Pad_14 = LividRGB.OFF
-			Pad_15 = LividRGB.OFF
-			Pad_16 = LividRGB.OFF
-			Pad_17 = LividRGB.OFF
-			Pad_18 = LividRGB.OFF
-			Pad_19 = LividRGB.OFF
-			Pad_20 = LividRGB.OFF
-			Pad_21 = LividRGB.OFF
-			Pad_22 = LividRGB.OFF
-			Pad_23 = LividRGB.OFF
-			Pad_24 = LividRGB.OFF
-			Pad_25 = LividRGB.OFF
-			Pad_26 = LividRGB.OFF
-			Pad_27 = LividRGB.OFF
-			Pad_28 = LividRGB.OFF
-			Pad_29 = LividRGB.OFF
-			Pad_30 = LividRGB.OFF
-			Pad_31 = LividRGB.OFF
-		
-
-	
+## a
 
 
 
-
-
-
-
-
-	

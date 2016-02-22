@@ -12,7 +12,12 @@ from ableton.v2.control_surface.profile import profile
 from ableton.v2.control_surface.control_surface import *
 from ableton.v2.control_surface.input_control_element import InputControlElement, MIDI_CC_TYPE, MIDI_NOTE_TYPE, MIDI_PB_TYPE, MIDI_SYSEX_TYPE
 
-from aumhaa.v2.control_surface.elements import MonoButtonElement
+from aumhaa.v2.control_surface.elements import MonoButtonElement, MonoBridgeElement
+from aumhaa.v2.livid.utilities import LividSettings
+from aumhaa.v2.base.debug import initialize_debug
+
+debug = initialize_debug()
+
 
 class LividControlSurface(ControlSurface):
 
@@ -22,10 +27,56 @@ class LividControlSurface(ControlSurface):
 	_timer = 0
 	_touched = 0
 	flash_status = 1
+	_connected = False
+	_sysex_id = 0
+	_model_name = 'Livid Control Surface'
 
 	def __init__(self, *a, **k):
 		self.log_message = logger.info
 		super(LividControlSurface, self).__init__(*a, **k)
+		with self.component_guard():
+			self._setup_monobridge()
+			self._livid_settings = LividSettings(model = self._sysex_id, control_surface = self)
+		self.schedule_message(1, self._open_log)
+		self._connection_routine = self._tasks.add(task.sequence(task.wait(10), task.run(self._check_connection)))
+		self._connection_routine.restart()
+	
+
+	def _open_log(self):
+		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._model_name) + " " + str(self._version_check if self._version_check else 'Mod Disabled') + " log opened =>>>>>>>>>>>>>>>>>>>") 
+		self.show_message(str(self._model_name) + ' Control Surface Loaded')
+	
+
+	def _close_log(self):
+		self.log_message("<<<<<<<<<<<<<<<<<<<<= " + str(self._model_name) + " " + str(self._version_check if self._version_check else 'Mod Disabled') + " log closed =>>>>>>>>>>>>>>>>>>>") 
+	
+
+	def _setup_monobridge(self):
+		self._monobridge = MonoBridgeElement(self)
+		self._monobridge.name = 'MonoBridge'
+	
+
+	def port_settings_changed(self):
+		debug('port settings changed!')
+		self._connected = False
+		self._check_connection()
+	
+
+	def _check_connection(self):
+		if not self._connected:
+			debug(self._model_name, '_check_connection')
+			self._livid_settings.query_surface()
+			self._connection_routine.restart()
+	
+
+	def _initialize_hardware(self):
+		#debug(self._model_name, 'initialize_hardware()')
+		self.log_message('here 1')
+	
+
+	def _initialize_script(self):
+		self.refresh_state()
+		debug(self._model_name, 'initialize_script()')
 	
 
 	def set_appointed_device(self, device):
@@ -83,6 +134,22 @@ class LividControlSurface(ControlSurface):
 				logger.warning('Got unknown message: ' + midi.pretty_print_bytes(midi_bytes))
 	
 
+	def handle_sysex(self, midi_bytes):
+		debug('sysex: ', str(midi_bytes))
+		debug('matching:', midi_bytes[3:11], 'to', tuple([6, 2, 0, 1, 97, 1, 0]  + [self._sysex_id]))
+		if midi_bytes[3:11] == tuple([6, 2, 0, 1, 97, 1, 0]  + [self._sysex_id]):
+			if not self._connected:
+				debug('connecting from sysex...')
+				#self._connection_routine.kill()
+				self._connected = True
+				#self._livid_settings.set_model(midi_bytes[11])
+				self._initialize_hardware()
+				self._initialize_script()
+	
+
+	def disconnect(self):
+		super(LividControlSurface, self).disconnect()
+		self._close_log()
 
 
 

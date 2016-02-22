@@ -307,9 +307,10 @@ class Debug(ControlSurface):
 
 	def load_script(self):
 		try:
-			import Livid_Base
+			from .Livid_Minim import Minim
+			reload(Minim)
 		except:
-			debug('nevermind :(')
+			print_debug('nevermind :(')
 	
 
 	def log_filenames(self):

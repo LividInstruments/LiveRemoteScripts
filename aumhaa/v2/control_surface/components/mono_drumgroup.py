@@ -78,6 +78,7 @@ class MonoDrumGroupComponent(DrumGroupComponent):
 		self._raw_position = index
 		if liveobj_valid(self._drum_group_device):
 			self._drum_group_device.view.drum_pads_scroll_position = index
+			self.update_matrix()
 		else:
 			self.update_matrix()
 	

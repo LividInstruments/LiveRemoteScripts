@@ -174,6 +174,7 @@ class ScaleSessionComponent(SessionComponent):
 		self._clip_launch_buttons = matrix
 		if matrix:
 			for button, (x,y) in matrix.iterbuttons():
+				debug('session button is:', button)
 				if button:
 					button.display_press = False
 					button.set_off_value('DefaultButton.Off')
@@ -236,7 +237,7 @@ class MonoScaleComponent(CompoundComponent):
 		scale_clip_creator = ClipCreator()
 		scale_note_editor = MonoNoteEditorComponent(clip_creator=scale_clip_creator, grid_resolution=grid_resolution)
 		self._note_sequencer = MonoStepSeqComponent(clip_creator=scale_clip_creator, skin=skin, grid_resolution=self._grid_resolution, name='Note_Sequencer', note_editor_component=scale_note_editor, instrument_component=self._keygroup )
-		self._note_sequencer._playhead_component._follower = self._note_sequencer._loop_selector
+		#self._note_sequencer._playhead_component._follower = self._note_sequencer._loop_selector  ##########pull this if everything works, it was a test
 		self._note_sequencer._playhead_component._notes=tuple(chain(*starmap(range, ((60, 68), (52, 60)))))
 		self._note_sequencer._playhead_component._triplet_notes=tuple(chain(*starmap(range, ((60, 66), (52, 58)))))
 		self._note_sequencer._playhead_component._feedback_channels = [15]
@@ -344,6 +345,8 @@ class MonoInstrumentComponent(CompoundComponent):
 	_scale_settings_component_class = ScaleTaggedSetting
 	_toggle_settings_component_class = ToggledTaggedSetting
 
+	_shifted = False
+
 	def __init__(self, script, skin, grid_resolution, drum_group_finder, device_provider, parent_task_group, settings = DEFAULT_INSTRUMENT_SETTINGS, *a, **k):
 		super(MonoInstrumentComponent, self).__init__(*a, **k)
 		self._settings = settings
@@ -404,16 +407,12 @@ class MonoInstrumentComponent(CompoundComponent):
 		self._selected_session = ScaleSessionComponent(name = "SelectedSession", session_ring = self._session_ring, enable_skinning = True, auto_name = True, is_enabled = False)
 		self._selected_session.set_enabled(False)
 		
-		#self._selected_session._session_ring.set_offsets(0, 0)
-		#for row in range(32):
-		#	clip_slot = self._selected_session.scene(row).clip_slot(0)
-	
-
 
 	def _setup_shift_mode(self):
 		self._shifted = False
-		self._shift_mode = ModesComponent()
-		self._shift_mode.add_mode('shift', tuple([lambda a: self._on_shift_value(1), lambda a: self._on_shift_value(0)]), behaviour = ShiftCancellableBehaviourWithRelease())
+		self._shift_mode = self.register_component(ModesComponent())
+		self._shift_mode.add_mode('disabled', [])
+		self._shift_mode.add_mode('shift', tuple([lambda a: self._on_shift_value(True), lambda a: self._on_shift_value(False)]), behaviour = ShiftCancellableBehaviourWithRelease())
 	
 
 	def set_shift_button(self, button):
@@ -425,13 +424,13 @@ class MonoInstrumentComponent(CompoundComponent):
 	def set_shift_mode_button(self, button):
 		self._on_shift_value.subject = None
 		self._shifted = 0
-		#self._shift_mode.mode_cycle_button.set_control_element(button)
+		self._shift_mode.shift_button.set_control_element(button)
 	
 
 	@listens('value')
 	def _on_shift_value(self, value):
 		#debug('on shift value:', value)
-		self._shifted = value
+		self._shifted = bool(value)
 		self.update()
 	
 
@@ -484,32 +483,33 @@ class MonoInstrumentComponent(CompoundComponent):
 	def update(self):
 		super(MonoInstrumentComponent, self).update()
 		self._main_modes.selected_mode = 'disabled'
-		if self.is_enabled():
-			new_mode = 'disabled'
-			drum_device = find_drum_group_device(self.song.view.selected_track)
-			#debug('instrument update, drum device:', drum_device.name if drum_device else None)
-			self._drumpad._drumgroup.set_drum_group_device(drum_device)
-			cur_track = self.song.view.selected_track
-			if cur_track.has_audio_input and cur_track in self.song.visible_tracks:
-				new_mode = 'audioloop'
-			elif cur_track.has_midi_input:
-				scale, mode = self._scale_offset_component.value, self._mode_component.value
-				new_mode = get_instrument_type(cur_track, scale, self._settings)
-				if mode is 'split':
-					new_mode += '_split'
-				elif mode is 'seq':
-					new_mode +=  '_sequencer'
-				if self._shifted:
-					new_mode += '_shifted'
-				self._script.set_feedback_channels([self._scale_offset_component.channel])
-				self._script.set_controlled_track(self.song.view.selected_track)
-			if new_mode in self._main_modes._mode_map or new_mode is None:
-				self._main_modes.selected_mode = new_mode
-				self._script.set_controlled_track(None)
-			else:
-				self._main_modes.selected_mode = 'disabled'
-				self._script.set_controlled_track(None)
-			#debug('monoInstrument mode is:', self._main_modes.selected_mode, '  inst:', self.is_enabled(), '  modes:', self._main_modes.is_enabled(), '   key:', self._keypad.is_enabled(), '   drum:', self._drumpad.is_enabled())
+		#if self.is_enabled():
+		new_mode = 'disabled'
+		drum_device = find_drum_group_device(self.song.view.selected_track)
+		debug('instrument update, drum device:', drum_device.name if drum_device else None)
+		self._drumpad._drumgroup.set_drum_group_device(drum_device)
+		cur_track = self.song.view.selected_track
+		if cur_track.has_audio_input and cur_track in self.song.visible_tracks:
+			new_mode = 'audioloop'
+		elif cur_track.has_midi_input:
+			scale, mode = self._scale_offset_component.value, self._mode_component.value
+			new_mode = get_instrument_type(cur_track, scale, self._settings)
+			if mode is 'split':
+				new_mode += '_split'
+			elif mode is 'seq':
+				new_mode +=  '_sequencer'
+			if self._shifted:
+				new_mode += '_shifted'
+			self._script.set_feedback_channels([self._scale_offset_component.channel])
+			self._script.set_controlled_track(self.song.view.selected_track)
+		debug('trying to set mode:', new_mode)
+		if new_mode in self._main_modes._mode_map or new_mode is None:
+			self._main_modes.selected_mode = new_mode
+			self._script.set_controlled_track(self.song.view.selected_track)
+		else:
+			self._main_modes.selected_mode = 'disabled'
+			self._script.set_controlled_track(self.song.view.selected_track)
+		debug('monoInstrument mode is:', self._main_modes.selected_mode, '  inst:', self.is_enabled(), '  modes:', self._main_modes.is_enabled(), '   key:', self._keypad.is_enabled(), '   drum:', self._drumpad.is_enabled())
 	
 
 

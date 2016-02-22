@@ -85,7 +85,7 @@ DEFAULT_DRUMOFFSET = 9
 DEFAULT_SCALE = 'Auto'
 
 """This is the default SplitMode used for all MIDI Channels"""
-DEFAULT_MODE = 'seq'
+DEFAULT_MODE = 'none'
 
 
 if SCALENAMES is None:

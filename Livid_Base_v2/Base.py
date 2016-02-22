@@ -11,7 +11,7 @@ from itertools import imap, chain, starmap
 from ableton.v2.base import inject, listens, listens_group
 from ableton.v2.control_surface import ControlSurface, ControlElement, Layer, Skin, PrioritizedResource, Component, ClipCreator, DeviceBankRegistry
 from ableton.v2.control_surface.elements import ButtonMatrixElement, DoublePressElement, MultiElement, DisplayDataSource, SysexElement
-from ableton.v2.control_surface.components import ClipSlotComponent, DeviceComponent, SceneComponent, SessionComponent, TransportComponent, BackgroundComponent, ViewControlComponent, SessionRingComponent, SessionRecordingComponent, SessionNavigationComponent, MixerComponent, PlayableComponent
+from ableton.v2.control_surface.components import ClipSlotComponent, SceneComponent, SessionComponent, TransportComponent, BackgroundComponent, ViewControlComponent, SessionRingComponent, SessionRecordingComponent, SessionNavigationComponent, MixerComponent, PlayableComponent
 from ableton.v2.control_surface.components.mixer import simple_track_assigner
 from ableton.v2.control_surface.mode import AddLayerMode, ModesComponent, DelayMode
 from ableton.v2.control_surface.elements.physical_display import PhysicalDisplayElement
@@ -26,9 +26,12 @@ from aumhaa.v2.control_surface.mod import *
 from aumhaa.v2.control_surface.elements import MonoEncoderElement, MonoBridgeElement, generate_strip_string
 from aumhaa.v2.control_surface.elements.mono_button import *
 from aumhaa.v2.control_surface.components import MonoDeviceComponent, DeviceNavigator, TranslationComponent, MonoM4LInterfaceComponent, MonoMixerComponent
+from aumhaa.v2.control_surface.components.device import DeviceComponent
 from aumhaa.v2.control_surface.components.mono_instrument import *
 from aumhaa.v2.livid import LividControlSurface, LividSettings, LividRGB
 from aumhaa.v2.control_surface.components.fixed_length_recorder import FixedLengthSessionRecordingComponent
+from aumhaa.v2.control_surface.components.device import DeviceComponent
+
 from pushbase.auto_arm_component import AutoArmComponent
 from pushbase.grid_resolution import GridResolution
 from pushbase.playhead_element import PlayheadElement
@@ -647,11 +650,15 @@ class BaseMonoInstrumentComponent(MonoInstrumentComponent):
 class Base(LividControlSurface):
 
 
+	_sysex_id = 12
+	_alt_sysex_id = 17
+	_model_name = 'Base'
+	_host_name = 'Base'
+	_version_check = 'b996'
+	monomodular = None
+	
 	def __init__(self, *a, **k):
 		super(Base, self).__init__(*a, **k)
-		self._connected = False
-		self._host_name = 'Base'
-		self.monomodular = None
 		self._current_nav_buttons = []
 		self._last_pad_stream = [0 for i in range(0, 32)]
 		self._shift_latching = LatchingShiftedBehaviour if SHIFT_LATCHING else ShiftedBehaviour
@@ -676,9 +683,6 @@ class Base(LividControlSurface):
 			self._setup_m4l_interface()
 		self._on_device_changed.subject = self._device_provider
 		self.set_feedback_channels(range(14, 15))
-		self.log_message("<<<<<<<<<<<<<<<<<= Base log opened =>>>>>>>>>>>>>>>>>>>>>")
-		self._livid_settings.query_surface()
-		self.schedule_message(2, self._check_connection)
 	
 
 	def set_feedback_channels(self, channels, *a, **k):
@@ -687,7 +691,7 @@ class Base(LividControlSurface):
 
 	"""script initialization methods"""
 	def _initialize_hardware(self):
-		debug('initialize hardware')
+		super(Base, self)._initialize_hardware()
 		self._livid_settings.send('set_streaming_enabled', STREAMINGON)
 		self._livid_settings.send('set_function_button_leds_linked', [1])
 		self._livid_settings.send('set_capacitive_fader_note_output_enabled', [1])
@@ -696,31 +700,8 @@ class Base(LividControlSurface):
 	
 
 	def _initialize_script(self):
-		debug('initialize script')
-		self.refresh_state()
+		super(Base, self)._initialize_script()
 		self._main_modes.selected_mode = 'Clips'
-	
-
-	def _check_connection(self):
-		if not self._connected:
-			debug('_check_connection')
-			self._livid_settings.query_surface()
-			self.schedule_message(100, self._check_connection)
-		else:
-			pass
-
-	
-
-	def port_settings_changed(self):
-		debug('port settings changed!')
-		self._connected = False
-		self._check_connection()
-	
-
-	def _setup_monobridge(self):
-		with self._control_surface_injector:
-			self._monobridge = MonoBridgeElement(script = self)
-			self._monobridge.name = 'MonoBridge'
 	
 
 	def pad_held(self):
@@ -731,15 +712,15 @@ class Base(LividControlSurface):
 		is_momentary = True
 		optimized = True
 		resource = PrioritizedResource
-		self._fader = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, BASE_TOUCHSTRIPS[index], Live.MidiMap.MapMode.absolute, 'Fader_' + str(index), index, self, mapping_feedback_delay = -1, monobridge = self._monobridge, optimized_send_midi = optimized, resource_type = resource) for index in range(9)]
+		self._fader = [MonoEncoderElement(msg_type = MIDI_CC_TYPE, channel = CHANNEL, identifier = BASE_TOUCHSTRIPS[index], name = 'Fader_' + str(index), num = index, script = self, mapping_feedback_delay = -1, monobridge = self._monobridge, optimized_send_midi = optimized, resource_type = resource) for index in range(9)]
 		self._fader_matrix = ButtonMatrixElement(name = 'FaderMatrix', rows = [self._fader[:8]])
-		self._button = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_BUTTONS[index], name = 'Button_' + str(index), script = self, monobridge = self._monobridge, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(8)]
-		self._pad = [BlockingMonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_PADS[index], name = 'Pad_' + str(index), script = self, monobridge = self._monobridge, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(32)]
-		self._pad_CC = [MonoEncoderElement(MIDI_CC_TYPE, CHANNEL, BASE_PADS[index], Live.MidiMap.MapMode.absolute, 'Pad_CC_' + str(index), index, self, monobridge = self._monobridge, optimized_send_midi = optimized, resource_type = resource) for index in range(32)]
-		self._touchpad = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_TOUCHPADS[index], name = 'TouchPad_' + str(index), script = self, resource_type = PrioritizedResource, skin = self._skin, monobridge = self._monobridge) for index in range(8)]
+		self._button = [MonoButtonElement(is_momentary = is_momentary, msg_type = MIDI_NOTE_TYPE, channel = CHANNEL, identifier = BASE_BUTTONS[index], name = 'Button_' + str(index), script = self, monobridge = self._monobridge, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(8)]
+		self._pad = [BlockingMonoButtonElement(is_momentary = is_momentary, msg_type = MIDI_NOTE_TYPE, channel = CHANNEL, identifier = BASE_PADS[index], name = 'Pad_' + str(index), script = self, monobridge = self._monobridge, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(32)]
+		self._pad_CC = [MonoEncoderElement(msg_type = MIDI_CC_TYPE, channel = CHANNEL, identifier = BASE_PADS[index], name = 'Pad_CC_' + str(index), num = index, script = self, monobridge = self._monobridge, optimized_send_midi = optimized, resource_type = resource) for index in range(32)]
+		self._touchpad = [MonoButtonElement(is_momentary = is_momentary, msg_type = MIDI_NOTE_TYPE, channel = CHANNEL, identifier = BASE_TOUCHPADS[index], name = 'TouchPad_' + str(index), script = self, skin = self._skin, monobridge = self._monobridge, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(8)]
 		self._touchpad_matrix = ButtonMatrixElement(name = 'TouchPadMatrix', rows = [self._touchpad],)
 		self._touchpad_multi = MultiElement(self._touchpad[0], self._touchpad[1], self._touchpad[2], self._touchpad[3], self._touchpad[4], self._touchpad[5], self._touchpad[6], self._touchpad[7],)
-		self._runner = [MonoButtonElement(is_momentary, MIDI_NOTE_TYPE, CHANNEL, BASE_RUNNERS[index], name = 'Runner_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(8)]
+		self._runner = [MonoButtonElement(is_momentary = is_momentary, msg_type = MIDI_NOTE_TYPE, channel = CHANNEL, identifier = BASE_RUNNERS[index], name = 'Runner_' + str(index), script = self, skin = self._skin, color_map = COLOR_MAP, optimized_send_midi = optimized, resource_type = resource) for index in range(8)]
 		self._runner_matrix = ButtonMatrixElement(name = 'RunnerMatrix', rows = [self._runner])
 		self._stream_pads = [self._pad[index%8 + (abs((index/8)-3)*8)] for index in range(32)]
 		self._mode_buttons = ButtonMatrixElement( name = 'mode_buttons' , rows = [self._button[0:4]])
@@ -760,7 +741,7 @@ class Base(LividControlSurface):
 	
 
 	def _define_sysex(self):
-		self._livid_settings = LividSettings(model = 12, control_surface = self)
+		#self._livid_settings = LividSettings(model = 12, control_surface = self)
 
 		self.clips_layer_sysex = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_fader_led_colors', message = CLIPS_FADER_COLORS)
 		self.sends_layer_sysex = SendLividSysexMode(livid_settings = self._livid_settings, call = 'set_fader_led_colors', message = SENDS_FADER_COLORS)
@@ -995,7 +976,7 @@ class Base(LividControlSurface):
 
 	def _setup_modswitcher(self):
 		self._modswitcher = BaseDisplayingModesComponent(name = 'ModSwitcher')
-		self._modswitcher.add_mode('mod', [self.modhandler, self.user_mode_sysex], display_string = MODE_DATA['Mod'])
+		self._modswitcher.add_mode('mod', [self.modhandler, DelayMode(self.modhandler.update, delay = .5), self.user_mode_sysex], display_string = MODE_DATA['Mod'])
 		self._modswitcher.add_mode('instrument', [self._instrument, self.device_layer_sysex])
 		self._modswitcher.selected_mode = 'instrument'
 		self._modswitcher.set_enabled(False)
@@ -1096,7 +1077,6 @@ class Base(LividControlSurface):
 	"""general functionality"""
 	def disconnect(self):
 		self._livid_settings.send('set_streaming_enabled', STREAMINGOFF)
-		self.log_message("--------------= Base log closed =--------------")
 		super(Base, self).disconnect()
 	
 
@@ -1162,8 +1142,9 @@ class Base(LividControlSurface):
 				self._register_pad_pressed(midi_bytes[6:14])
 			elif midi_bytes[:6] == tuple([240, 0, 1, 97, 17, 64]):
 				self._register_pad_pressed(midi_bytes[6:14])
-			elif midi_bytes[3:10] == tuple([6, 2, 0, 1, 97, 1, 0]):
+			elif midi_bytes[3:11] == tuple([6, 2, 0, 1, 97, 1, 0]  + [self._sysex_id]) or midi_bytes[3:11] == tuple([6, 2, 0, 1, 97, 1, 0]  + [self._alt_sysex_id]):
 				if not self._connected:
+					self._connection_routine.kill()
 					self._connected = True
 					self._livid_settings.set_model(midi_bytes[11])
 					self._initialize_hardware()

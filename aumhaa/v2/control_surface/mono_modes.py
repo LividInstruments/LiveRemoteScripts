@@ -71,15 +71,18 @@ class MomentaryBehaviour(ModeButtonBehaviour):
 
 
 	def press_immediate(self, component, mode):
+		debug('momentary press')
 		component.push_mode(mode)
 	
 
 	def release_immediate(self, component, mode):
+		debug('momentary release immediate')
 		if len(component.active_modes) > 1:
 			component.pop_mode(mode)
 	
 
 	def release_delayed(self, component, mode):
+		debug('momentary release delayed')
 		if len(component.active_modes) > 1:
 			component.pop_mode(mode)
 	
@@ -232,13 +235,6 @@ class LatchingShiftedBehaviour(ShiftedBehaviour):
 	
 
 
-#class CancellableBehaviourWithRelease(CancellableBehaviour):
-
-#
-#	def release_delayed(self, component, mode):
-#		component.pop_mode(mode)
-	
-
 
 class CancellableBehaviour(ModeButtonBehaviour):
 
@@ -270,6 +266,15 @@ class CancellableBehaviour(ModeButtonBehaviour):
 	
 
 
+"""
+class CancellableBehaviourWithRelease(CancellableBehaviour):
+
+
+	def release_delayed(self, component, mode):
+		component.pop_mode(mode)
+	
+
+"""
 class CancellableBehaviourWithRelease(CancellableBehaviour):
 
 
@@ -282,10 +287,15 @@ class CancellableBehaviourWithRelease(CancellableBehaviour):
 		groups = component.get_mode_groups(mode)
 		selected_groups = component.get_mode_groups(selected_mode)
 		value = (mode == selected_mode or bool(groups & selected_groups))*32 or 1
-		#button.send_value(value, True)
-		button.color = value
+		#if mode == selected_mode:
+		#	button.mode_selected_color = self.color
+		#elif (groups & selected_groups):
+		#	button.mode_unselected_color = self.color
+		#else:
+		#	button.mode_unselected_color = self.off_color
+		button.mode_selected_color = value
+		button.update()
 	
-
 
 class FlashingBehaviour(CancellableBehaviourWithRelease):
 
@@ -309,7 +319,7 @@ class FlashingBehaviour(CancellableBehaviourWithRelease):
 class ColoredCancellableBehaviourWithRelease(CancellableBehaviourWithRelease):
 
 
-	def __init__(self, color = 'ButtonDefault.On', off_color = 'ButtonDefault.Off', *a, **k):
+	def __init__(self, color = 'DefaultButton.On', off_color = 'DefaultButton.Off', *a, **k):
 		super(ColoredCancellableBehaviourWithRelease, self).__init__(*a, **k)
 		self._color = color
 		self._off_color = off_color
@@ -321,10 +331,11 @@ class ColoredCancellableBehaviourWithRelease(CancellableBehaviourWithRelease):
 		selected_groups = component.get_mode_groups(selected_mode)
 		if mode == selected_mode:
 			#button.set_light(self._color)
-			button.color = self._color
+			button.mode_selected_color = self._color
 		else:
 			#button.set_light(self._off_color)
-			button.color = self._off_color
+			button.mode_unselected_color = self._off_color
+		button.update()
 	
 
 
