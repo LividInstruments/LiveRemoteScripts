@@ -1,10 +1,28 @@
-# by amounra 0814 : http://www.aumhaa.com
+# by amounra 0216 : http://www.aumhaa.com
+# written against Live 9.6 release on 021516
 
 from aumhaa.v2.base.debug import *
 
 debug = initialize_debug()
 
-#PRODUCTS:  BRAIN="01", OHM64="02", BLOCK="03", CODE="04", MCD="05", MCP="06", OHMRGB="07", CNTRLR="08", BRAIN2="09", ENLIGHTEN="0A", ALIAS8="0B", BASE="0C", BRAINJR="0D", DS1="10", BASEII="11", MINIM="15"
+
+class PRODUCTS:
+	BRAIN = 1
+	OHM64 = 2
+	BLOCK = 3
+	CODE = 4
+	MCD = 5 
+	MCP = 6 
+	OHMRGB = 7
+	CNTRLR = 8
+	BRAIN2 = 9
+	ENLIGHTEN = 10
+	ALIAS8 = 11
+	BASE = 12
+	BRAINJR = 13
+	DS1 = 16
+	BASEII = 17
+	MINIM = 21
 
 LIVID_RGB_COLORMAP = [2, 64, 4, 8, 16, 127, 32]
 
@@ -20,6 +38,7 @@ CALLS = {'set_streaming_enabled':62,
 		'set_encoder_mapping':11,
 		'set_encoder_encosion_mode':17,
 		'set_encoder_speed':30,
+		'reverse_crossfader':15,
 		}
 
 def fallback_send_midi(message = None, *a, **k):

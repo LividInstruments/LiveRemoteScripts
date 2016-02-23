@@ -194,6 +194,31 @@ class CntrlrAutoArmComponent(AutoArmComponent):
 	
 
 
+class CntrlrDeviceComponent(DeviceComponent):
+
+
+	_alt_pressed = False
+
+	def __init__(self, script = None, *a, **k):
+		self._script = script
+		super(CntrlrDeviceComponent, self).__init__(*a, **k)
+	
+
+	def _current_bank_details(self):
+		#debug('current bank deets...')
+		if not self._script.modhandler.active_mod() is None:
+			if self._script.modhandler.active_mod() and self._script.modhandler.active_mod()._param_component._device_parent != None:
+				bank_name = self._script.modhandler.active_mod()._param_component._bank_name
+				bank = [param._parameter for param in self._script.modhandler.active_mod()._param_component._params]
+				if self._script.modhandler._alt_value.subject and self._script.modhandler._alt_value.subject.is_pressed():
+					bank = bank[8:]
+				return (bank_name, bank)
+			else:
+				return DeviceComponent._current_bank_details(self)
+		else:
+			return DeviceComponent._current_bank_details(self)
+	
+
 class Cntrlr(LividControlSurface):
 	__module__ = __name__
 	__doc__ = " Monomodular controller script for Livid CNTRLR "
@@ -405,7 +430,7 @@ class Cntrlr(LividControlSurface):
 
 	def _setup_device_control(self):
 		self._device_selection_follows_track_selection = FOLLOW
-		self._device = DeviceComponent(name = 'Device_Component', device_provider = self._device_provider, device_bank_registry = DeviceBankRegistry())
+		self._device = CntrlrDeviceComponent(script = self, name = 'Device_Component', device_provider = self._device_provider, device_bank_registry = DeviceBankRegistry())
 		self._device.layer = Layer(priority = 4, parameter_controls = self._dial_matrix.submatrix[:, 1:3], 
 												on_off_button = self._encoder_button[4],
 												bank_prev_button = self._encoder_button[6],

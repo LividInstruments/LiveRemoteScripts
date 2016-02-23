@@ -984,9 +984,9 @@ class NavigationBox(Component):
 	
 
 	def set_matrix(self, matrix):
-		if matrix:
-			for button, _ in matrix.iterbuttons():
-				button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
+		#if matrix:
+		#	for button, _ in matrix.iterbuttons():
+		#		button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
 		self._on_navigation_value.subject = matrix
 		if not matrix is None:
 			self._x_inc = int(self.width()/matrix.width())
@@ -1009,22 +1009,22 @@ class NavigationBox(Component):
 	
 
 	def set_nav_up_button(self, button):
-		button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
+		#button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
 		self._on_nav_up_value.subject = button
 	
 
 	def set_nav_down_button(self, button):
-		button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
+		#button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
 		self._on_nav_down_value.subject = button
 	
 
 	def set_nav_left_button(self, button):
-		button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
+		#button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
 		self._on_nav_left_value.subject = button
 	
 
 	def set_nav_right_button(self, button):
-		button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
+		#button and button.set_on_off_values('Mod.Nav.OnValue', 'Mod.Nav.OffValue')
 		self._on_nav_right_value.subject = button
 	
 
@@ -1116,10 +1116,10 @@ class NavigationBox(Component):
 			for button, coord in nav_grid.iterbuttons():
 				x = coord[0]
 				y = coord[1]
-				button.set_light( ((x*xinc) in range(xoff, xmax)) and ((y*yinc) in range(yoff, ymax)) )
-		left_button and left_button.set_light(xoff>0)
+				button.set_light('Mod.Nav.OnValue' if ((x*xinc) in range(xoff, xmax)) and ((y*yinc) in range(yoff, ymax)) else 'Mod.Nav.OffValue')
+		left_button and left_button.set_light('Mod.Nav.OnValue' if xoff>0 else 'Mod.Nav.OffValue')
 		right_button and right_button.set_light(xoff<(self.width()-self._window_x))
-		up_button and up_button.set_light(yoff>0)
+		up_button and up_button.set_light('Mod.Nav.OnValue' if yoff>0 else 'Mod.Nav.OffValue')
 		down_button and down_button.set_light(yoff<(self.height()-self._window_y))
 	
 

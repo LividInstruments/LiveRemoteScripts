@@ -1,4 +1,5 @@
 # by amounra 0216 : http://www.aumhaa.com
+# written against Live 9.6 release on 021516
 
 from __future__ import absolute_import, print_function
 import Live
@@ -135,8 +136,8 @@ class LividControlSurface(ControlSurface):
 	
 
 	def handle_sysex(self, midi_bytes):
-		debug('sysex: ', str(midi_bytes))
-		debug('matching:', midi_bytes[3:11], 'to', tuple([6, 2, 0, 1, 97, 1, 0]  + [self._sysex_id]))
+		#debug('sysex: ', str(midi_bytes))
+		#debug('matching:', midi_bytes[3:11], 'to', tuple([6, 2, 0, 1, 97, 1, 0]  + [self._sysex_id]))
 		if midi_bytes[3:11] == tuple([6, 2, 0, 1, 97, 1, 0]  + [self._sysex_id]):
 			if not self._connected:
 				debug('connecting from sysex...')

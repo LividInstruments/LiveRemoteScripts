@@ -137,11 +137,12 @@ class MonoButtonElement(ButtonElement):
 		except SkinColorMissingError:
 			debug('skin missing for', value)
 			pass
-		#debug('skin value:', value)
+		#debug(self.name, 'skin value:', value)
 		super(MonoButtonElement, self).set_light(value, *a, **k)
 	
 
 	def send_value(self, value, force = False):
+		#debug(self.name, 'send_value', value)
 		if (value != None) and isinstance(value, int) and (value in range(128)):
 			if (force or self._force_next_send or ((value != self._last_sent_value) and self._is_being_forwarded)):
 				data_byte1 = self._original_identifier

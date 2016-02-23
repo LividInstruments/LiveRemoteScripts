@@ -134,6 +134,9 @@ class MonoChannelStripComponent(ChannelStripComponentBase):
 	_selected_on_color = 'DefaultButton.On'
 	_selected_off_color = 'DefaultButton.Off'
 	_clip_stop_color = 'DefaultButton.On'
+	_xfade_off_color = 'DefaultButton.Off'
+	_xfade_a_color = 'DefaultButton.On'
+	_xfade_b_color = 'DefaultButton.On'
 	empty_color = 'DefaultButton.Off'
 	_eq_gain_controls = None
 	_eq_device = None
@@ -209,6 +212,21 @@ class MonoChannelStripComponent(ChannelStripComponentBase):
 		self._update_track_button()
 	
 
+	def _on_cf_assign_changed(self):
+		if self.is_enabled() and self._crossfade_toggle != None:
+			if liveobj_valid(self._track) and self._track in chain(self.song.tracks, self.song.return_tracks):
+				val = self._track.mixer_device.crossfade_assign
+				if val == 0:
+					self._crossfade_toggle.set_light(self._xfade_a_color)
+				elif val == 2:
+					self._crossfade_toggle.set_light(self._xfade_b_color)
+				else:
+					self._crossfade_toggle.set_light(self._xfade_off_color)
+			else:
+				self._crossfade_toggle.turn_off()
+			#debug('xfade toggle is:', self._track.mixer_device.crossfade_assign)
+	
+
 	def set_stop_button(self, button):
 		#debug('setting stop button:', button)
 		button and button.reset()
@@ -246,7 +264,7 @@ class MonoChannelStripComponent(ChannelStripComponentBase):
 
 	@listens('devices')
 	def _on_devices_changed(self):
-		debug(self.name, 'on devices changed')
+		#debug(self.name, 'on devices changed')
 		self._update_device_selection()
 		self._detect_eq(self._track)
 		self.update()
@@ -399,6 +417,9 @@ class MonoMixerComponent(MixerComponentBase):
 			strip._selected_on_color = 'Mixer.SelectedOn'
 			strip._selected_off_color = 'Mixer.SelectedOff'
 			strip._clip_stop_color = 'Mixer.StopClip'
+			strip._xfade_off_color = 'Mixer.XFadeOff'
+			strip._xfade_a_color = 'Mixer.XFadeAOn'
+			strip._xfade_b_color = 'Mixer.XFadeBOn'
 	
 
 	def return_strip(self, index):
@@ -435,6 +456,11 @@ class MonoMixerComponent(MixerComponentBase):
 			if channel_strip:
 				channel_strip.set_volume_control(control)
 				channel_strip.update()
+	
+
+	def set_crossfade_toggles(self, buttons):
+		for strip, button in izip_longest(self._channel_strips, buttons or []):
+			strip.set_crossfade_toggle(button)
 	
 
 	def set_stop_clip_buttons(self, buttons):
