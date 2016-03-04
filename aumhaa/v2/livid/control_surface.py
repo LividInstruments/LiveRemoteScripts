@@ -2,7 +2,9 @@
 # written against Live 9.6 release on 021516
 
 from __future__ import absolute_import, print_function
+
 import Live
+
 import math
 import sys
 
@@ -40,8 +42,9 @@ class LividControlSurface(ControlSurface):
 			self._setup_monobridge()
 			self._livid_settings = LividSettings(model = self._sysex_id, control_surface = self)
 		self.schedule_message(1, self._open_log)
-		self._connection_routine = self._tasks.add(task.sequence(task.wait(10), task.run(self._check_connection)))
-		self._connection_routine.restart()
+		#self._connection_routine = self._tasks.add(task.sequence(task.wait(10), task.run(self._check_connection)))
+		#self._connection_routine.restart()
+		self.schedule_message(2, self._check_connection)
 	
 
 	def _open_log(self):
@@ -68,7 +71,8 @@ class LividControlSurface(ControlSurface):
 		if not self._connected:
 			debug(self._model_name, '_check_connection')
 			self._livid_settings.query_surface()
-			self._connection_routine.restart()
+			#self._connection_routine.restart()
+			self.schedule_message(10, self._check_connection)
 	
 
 	def _initialize_hardware(self):
@@ -151,6 +155,6 @@ class LividControlSurface(ControlSurface):
 	def disconnect(self):
 		super(LividControlSurface, self).disconnect()
 		self._close_log()
-
+	
 
 

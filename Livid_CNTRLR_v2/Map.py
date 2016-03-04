@@ -172,6 +172,7 @@ class CntrlrColors:
 		ClipTriggeredPlay = LividRGB.BlinkFast.GREEN
 		ClipTriggeredRecord = LividRGB.BlinkFast.RED
 		RecordButton = LividRGB.OFF
+		ClipEmpty = LividRGB.OFF
 		ClipStopped = LividRGB.WHITE
 		ClipStarted = LividRGB.GREEN
 		ClipRecording = LividRGB.RED
@@ -246,6 +247,7 @@ class CntrlrColors:
 		PlayOn = LividRGB.BlinkMedium.GREEN
 		PlayOff = LividRGB.GREEN
 		StopOn = LividRGB.BLUE
+		StopOff = LividRGB.BLUE
 		RecordOn = LividRGB.BlinkMedium.RED
 		RecordOff = LividRGB.RED
 		OverdubOn = LividRGB.BlinkFast.RED

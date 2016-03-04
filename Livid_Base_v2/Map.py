@@ -171,6 +171,7 @@ class BaseColors:
 		ClipTriggeredPlay = LividRGB.BlinkFast.GREEN
 		ClipTriggeredRecord = LividRGB.BlinkFast.RED
 		RecordButton = LividRGB.OFF
+		ClipEmpty = LividRGB.OFF
 		ClipStopped = LividRGB.WHITE
 		ClipStarted = LividRGB.GREEN
 		ClipRecording = LividRGB.RED
@@ -268,6 +269,8 @@ class BaseColors:
 	class Transport:
 		OverdubOn = LividRGB.BlinkFast.RED
 		OverdubOff = LividRGB.RED
+		StopOn = LividRGB.BLUE
+		StopOff = LividRGB.BLUE
 	
 
 	class Sequencer:

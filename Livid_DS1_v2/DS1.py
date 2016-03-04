@@ -26,7 +26,7 @@ from aumhaa.v2.control_surface.mod_devices import *
 from aumhaa.v2.control_surface.mod import *
 from aumhaa.v2.control_surface.elements import MonoEncoderElement, MonoBridgeElement, generate_strip_string
 from aumhaa.v2.control_surface.elements.mono_button import *
-from aumhaa.v2.control_surface.components import MonoDeviceComponent, DeviceNavigator, TranslationComponent, MonoM4LInterfaceComponent, MonoMixerComponent
+from aumhaa.v2.control_surface.components import MonoDeviceComponent, DeviceNavigator, TranslationComponent, MonoMixerComponent
 from aumhaa.v2.control_surface.components.device import DeviceComponent
 from aumhaa.v2.control_surface.components.mono_instrument import *
 from aumhaa.v2.livid import LividControlSurface, LividSettings, LividRGB
@@ -201,7 +201,8 @@ class DS1(LividControlSurface):
 		self._session_navigation.layer = Layer(priority = 4, track_select_dial = ComboElement(control = self._encoder[1], modifier = [self._encoder_button[1]] ), up_button = self._grid[0][1], down_button = self._grid[0][2])
 		self._session_navigation.set_enabled(False)
 		
-		self._session = DS1SessionComponent(session_ring = self._session_ring, enable_skinning = True, auto_name = True)
+		self._session = DS1SessionComponent(session_ring = self._session_ring, auto_name = True)
+		hasattr(self._session, '_enable_skinning') and self._session._enable_skinning()
 		self._session.layer = Layer(priority = 4, scene_launch_buttons = self._grid_matrix.submatrix[1:2, 1:2])
 		self._session.clips_layer = AddLayerMode(self._session, Layer(priority = 4, clip_launch_buttons = self._top_buttons, stop_track_clip_buttons = self._bottom_buttons))
 		self._session.set_enabled(False)

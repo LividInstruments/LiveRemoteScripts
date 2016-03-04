@@ -2,7 +2,9 @@
 # written against Live 9.6 release on 021516
 
 from __future__ import absolute_import, print_function
+
 import Live
+
 from itertools import izip, izip_longest, product
 from ableton.v2.base import listens, listens_group, Subject, SlotManager, liveobj_valid, nop, clamp, listenable_property, liveobj_changed
 import ableton.v2.base.task as Task

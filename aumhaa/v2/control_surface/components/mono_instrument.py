@@ -1,7 +1,10 @@
 # by amounra 0216 : http://www.aumhaa.com
 # written against Live 9.6 release on 021516
 
+from __future__ import absolute_import, print_function
+
 import Live
+
 from itertools import imap, chain, starmap, ifilter
 from functools import partial
 from ableton.v2.control_surface import Component, CompoundComponent, ClipCreator, Layer
@@ -404,7 +407,8 @@ class MonoInstrumentComponent(CompoundComponent):
 
 	def _setup_selected_session_control(self):
 		self._session_ring = SessionRingComponent(num_tracks=1, num_scenes=32)
-		self._selected_session = ScaleSessionComponent(name = "SelectedSession", session_ring = self._session_ring, enable_skinning = True, auto_name = True, is_enabled = False)
+		self._selected_session = ScaleSessionComponent(name = "SelectedSession", session_ring = self._session_ring, auto_name = True, is_enabled = False)
+		hasattr(self._selected_session, '_enable_skinning') and self._selected_session._enable_skinning()
 		self._selected_session.set_enabled(False)
 		
 

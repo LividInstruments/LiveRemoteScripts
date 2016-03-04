@@ -71,7 +71,8 @@ class GuitarWing(LividControlSurface):
 		self._session_ring = SessionRingComponent(num_tracks = 1, num_scenes = 4, tracks_to_use = lambda : self.song.visible_tracks + self.song.return_tracks)
 		self._session_ring.set_enabled(False)
 
-		self._session = SessionComponent(session_ring = self._session_ring, enable_skinning = True, auto_name = True)
+		self._session = SessionComponent(session_ring = self._session_ring, auto_name = True)
+		hasattr(self._session, '_enable_skinning') and self._session._enable_skinning()
 		self._session.layer = Layer(scene_launch_buttons = self._scene_launch_matrix)
 
 		self._session_navigation =SessionNavigationComponent(name = 'SessionNavigation', session_ring = self._session_ring)

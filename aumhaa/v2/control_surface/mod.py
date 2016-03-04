@@ -2,6 +2,7 @@
 # written against Live 9.6 release on 021516
 
 from __future__ import with_statement
+
 import sys
 import os
 import copy
@@ -15,7 +16,7 @@ from ableton.v2.control_surface.elements import ButtonMatrixElement
 from ableton.v2.base.task import *
 from ableton.v2.base import Event, listens, listens_group, Signal, in_range, Disconnectable
 
-from aumhaa.v2.control_surface.components import DeviceSelectorComponent, MonoParamComponent, NewMonoDeviceComponent as MonoDeviceComponent
+from aumhaa.v2.control_surface.components import DeviceSelectorComponent, MonoDeviceComponent
 from aumhaa.v2.control_surface.mod_devices import *
 from aumhaa.v2.base.debug import initialize_debug
 

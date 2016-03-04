@@ -171,6 +171,7 @@ class OhmColors:
 		ClipTriggeredPlay = LividRGB.BlinkFast.GREEN
 		ClipTriggeredRecord = LividRGB.BlinkFast.RED
 		RecordButton = LividRGB.OFF
+		ClipEmpty = LividRGB.OFF
 		ClipStopped = LividRGB.WHITE
 		ClipStarted = LividRGB.GREEN
 		ClipRecording = LividRGB.RED

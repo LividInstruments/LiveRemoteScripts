@@ -61,6 +61,7 @@ class DS1Colors:
 		ClipTriggeredPlay = LividRGB.BlinkFast.GREEN
 		ClipTriggeredRecord = LividRGB.BlinkFast.RED
 		RecordButton = LividRGB.OFF
+		ClipEmpty = LividRGB.OFF
 		ClipStopped = LividRGB.WHITE
 		ClipStarted = LividRGB.GREEN
 		ClipRecording = LividRGB.RED
@@ -90,6 +91,7 @@ class DS1Colors:
 		PlayOn = LividRGB.BiColor.WHITE.GREEN
 		PlayOff = LividRGB.GREEN
 		StopOn = LividRGB.BLUE
+		StopOff = LividRGB.BLUE
 		RecordOn = LividRGB.BiColor.WHITE.RED
 		RecordOff = LividRGB.RED
 		OverdubOn = LividRGB.BiColor.WHITE.MAGENTA

@@ -1,7 +1,11 @@
-# by amounra 0915 : http://www.aumhaa.com
+# by amounra 0216 : http://www.aumhaa.com
+# written against Live 9.6 release on 021516
+
+from __future__ import absolute_import, print_function
+
 import Live
+
 import logging
-from _Mono_Framework.Debug import Debug as OldDebug
 
 #import os, __builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _types, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, fcntl, gc, imp, itertools, marshal, math, operator, posix, pwd, select, signal, sys, thread, time, unicodedata, xxsubtype, zipimport, zlib
 
@@ -97,7 +101,7 @@ def initialize_debug():
 	debug = no_debug
 	for module in get_control_surfaces():
 		#logger.info('module is:' + str(module))
-		if isinstance(module, Debug) or isinstance(module, OldDebug):
+		if isinstance(module, Debug):
 			debug = log_flattened_arguments
 	return debug
 
@@ -299,7 +303,7 @@ class Debug(ControlSurface):
 		#self._log_dirs()
 		#self._log_C_modules()
 		#self.log_filenames()
-		self.load_script()
+		#self.load_script()
 		self.log_message('_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_ DEBUG ON _^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_')
 		self._scripts = []
 		#self._scan()

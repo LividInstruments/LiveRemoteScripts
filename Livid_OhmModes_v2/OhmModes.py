@@ -25,7 +25,7 @@ from aumhaa.v2.control_surface.mod_devices import *
 from aumhaa.v2.control_surface.mod import *
 from aumhaa.v2.control_surface.elements import MonoEncoderElement, MonoBridgeElement, generate_strip_string
 from aumhaa.v2.control_surface.elements.mono_button import *
-from aumhaa.v2.control_surface.components import MonoKeyGroupComponent, MonoDrumGroupComponent, MonoDeviceComponent, DeviceNavigator, TranslationComponent, MonoM4LInterfaceComponent, MonoMixerComponent
+from aumhaa.v2.control_surface.components import MonoKeyGroupComponent, MonoDrumGroupComponent, MonoDeviceComponent, DeviceNavigator, TranslationComponent, MonoMixerComponent
 from aumhaa.v2.control_surface.components.device import DeviceComponent
 from aumhaa.v2.control_surface.components.mono_instrument import *
 from aumhaa.v2.livid import LividControlSurface, LividSettings, LividRGB
@@ -335,7 +335,8 @@ class OhmModes(LividControlSurface):
 		self._session_navigation._horizontal_paginator.scroll_down_button.color = 'Session.PageNavigationButtonOn'
 		self._session_navigation.set_enabled(False)
 
-		self._session = OhmSessionComponent(name = 'Session', session_ring = self._session_ring, enable_skinning = True, auto_name = True)
+		self._session = OhmSessionComponent(name = 'Session', session_ring = self._session_ring, auto_name = True)
+		hasattr(self._session, '_enable_skinning') and self._session._enable_skinning()
 		self._session.set_enabled(False)
 		self._session.clip_launch_layer = AddLayerMode(self._session, Layer(priority = 5,  clip_launch_buttons = self._matrix.submatrix[:7,:5]))
 		self._session.scene_launch_layer = AddLayerMode(self._session, Layer(priority = 5,  scene_launch_buttons = self._matrix.submatrix[7,:5]))
@@ -549,7 +550,7 @@ class OhmModes(LividControlSurface):
 				self._register_pad_pressed(midi_bytes[6:14])
 			elif midi_bytes[3:11] == tuple([6, 2, 0, 1, 97, 1, 0]  + [self._sysex_id]) or midi_bytes[3:11] == tuple([6, 2, 0, 1, 97, 1, 0]  + [self._alt_sysex_id]):
 				if not self._connected:
-					self._connection_routine.kill()
+					#self._connection_routine.kill()
 					self._connected = True
 					self._livid_settings.set_model(midi_bytes[11])
 					self._initialize_hardware()

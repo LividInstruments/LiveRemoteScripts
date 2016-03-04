@@ -5,7 +5,6 @@ from re import *
 
 from ableton.v2.control_surface.component import Component
 from ableton.v2.control_surface.elements import ButtonElement, ButtonMatrixElement
-from aumhaa.v2.control_surface.components.mode_selector import ModeSelectorComponent
 from ableton.v2.base.slot import Event as SubjectEvent, SlotGroup as SubjectSlotGroup, listens, listens_group
 from ableton.v2.control_surface.control import ButtonControl
 

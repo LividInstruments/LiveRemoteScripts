@@ -1,6 +1,10 @@
 # by amounra 0216 : http://www.aumhaa.com
+# written against Live 9.6 release on 021516
+
+from __future__ import absolute_import, print_function
 
 from itertools import imap
+
 from ableton.v2.control_surface.mode import *
 
 from aumhaa.v2.base.debug import initialize_debug

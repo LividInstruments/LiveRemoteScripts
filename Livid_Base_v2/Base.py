@@ -11,7 +11,7 @@ from itertools import imap, chain, starmap
 from ableton.v2.base import inject, listens, listens_group
 from ableton.v2.control_surface import ControlSurface, ControlElement, Layer, Skin, PrioritizedResource, Component, ClipCreator, DeviceBankRegistry
 from ableton.v2.control_surface.elements import ButtonMatrixElement, DoublePressElement, MultiElement, DisplayDataSource, SysexElement
-from ableton.v2.control_surface.components import ClipSlotComponent, SceneComponent, SessionComponent, TransportComponent, BackgroundComponent, ViewControlComponent, SessionRingComponent, SessionRecordingComponent, SessionNavigationComponent, MixerComponent, PlayableComponent
+from ableton.v2.control_surface.components import M4LInterfaceComponent, ClipSlotComponent, SceneComponent, SessionComponent, TransportComponent, BackgroundComponent, ViewControlComponent, SessionRingComponent, SessionRecordingComponent, SessionNavigationComponent, MixerComponent, PlayableComponent
 from ableton.v2.control_surface.components.mixer import simple_track_assigner
 from ableton.v2.control_surface.mode import AddLayerMode, ModesComponent, DelayMode
 from ableton.v2.control_surface.elements.physical_display import PhysicalDisplayElement
@@ -25,7 +25,7 @@ from aumhaa.v2.control_surface.mod_devices import *
 from aumhaa.v2.control_surface.mod import *
 from aumhaa.v2.control_surface.elements import MonoEncoderElement, MonoBridgeElement, generate_strip_string
 from aumhaa.v2.control_surface.elements.mono_button import *
-from aumhaa.v2.control_surface.components import MonoDeviceComponent, DeviceNavigator, TranslationComponent, MonoM4LInterfaceComponent, MonoMixerComponent
+from aumhaa.v2.control_surface.components import MonoDeviceComponent, DeviceNavigator, TranslationComponent, MonoMixerComponent
 from aumhaa.v2.control_surface.components.device import DeviceComponent
 from aumhaa.v2.control_surface.components.mono_instrument import *
 from aumhaa.v2.livid import LividControlSurface, LividSettings, LividRGB
@@ -808,7 +808,8 @@ class Base(LividControlSurface):
 		self._session_navigation._horizontal_paginator.scroll_down_button.color = 'Session.PageNavigationButtonOn'
 		self._session_navigation.set_enabled(False)
 
-		self._session = BaseSessionComponent(name = 'Session', parent_task_group = self._task_group, session_ring = self._session_ring, enable_skinning = True, auto_name = True)
+		self._session = BaseSessionComponent(name = 'Session', parent_task_group = self._task_group, session_ring = self._session_ring, auto_name = True)
+		hasattr(self._session, '_enable_skinning') and self._session._enable_skinning()
 		self._session.cliplaunch_layer = AddLayerMode(self._session, Layer(priority = 4, clip_launch_buttons = self._base_grid))
 		self._session.overlay_cliplaunch_layer = AddLayerMode(self._session, Layer(priority = 4, clip_launch_buttons = self._base_grid.submatrix[:7, :], scene_launch_buttons = self._base_grid.submatrix[7:, :]))
 		#self._session.clipstop_layer = AddLayerMode(self._session, Layer(priority = 4, stop_track_clip_buttons = self._base_grid.submatrix[:, 3:4]))
@@ -854,7 +855,7 @@ class Base(LividControlSurface):
 	
 
 	def _setup_m4l_interface(self):
-		self._m4l_interface = MonoM4LInterfaceComponent(controls=self.controls, component_guard=self.component_guard, priority = 10)
+		self._m4l_interface = M4LInterfaceComponent(controls=self.controls, component_guard=self.component_guard, priority = 10)
 		self._m4l_interface.name = "M4LInterface"
 		self.get_control_names = self._m4l_interface.get_control_names
 		self.get_control = self._m4l_interface.get_control
@@ -1136,7 +1137,7 @@ class Base(LividControlSurface):
 	
 
 	def handle_sysex(self, midi_bytes):
-		#debug('sysex: ', str(midi_bytes))
+		debug('sysex: ', str(midi_bytes))
 		if len(midi_bytes) > 14:
 			if midi_bytes[:6] == tuple([240, 0, 1, 97, 12, 64]):
 				self._register_pad_pressed(midi_bytes[6:14])
@@ -1144,7 +1145,7 @@ class Base(LividControlSurface):
 				self._register_pad_pressed(midi_bytes[6:14])
 			elif midi_bytes[3:11] == tuple([6, 2, 0, 1, 97, 1, 0]  + [self._sysex_id]) or midi_bytes[3:11] == tuple([6, 2, 0, 1, 97, 1, 0]  + [self._alt_sysex_id]):
 				if not self._connected:
-					self._connection_routine.kill()
+					#self._connection_routine.kill()
 					self._connected = True
 					self._livid_settings.set_model(midi_bytes[11])
 					self._initialize_hardware()

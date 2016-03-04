@@ -113,6 +113,8 @@ class CodecColors:
 	class Transport:
 		OverdubOn = LividRGB.BlinkFast.RED
 		OverdubOff = LividRGB.RED
+		StopOn = LividRGB.BLUE
+		StopOff = LividRGB.BLUE
 	
 
 	class Device:

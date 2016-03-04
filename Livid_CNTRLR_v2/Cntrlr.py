@@ -10,7 +10,7 @@ import sys
 from ableton.v2.base import inject, listens, listens_group, inject
 from ableton.v2.control_surface import ControlSurface, ControlElement, Layer, Skin, PrioritizedResource, Component, ClipCreator, DeviceBankRegistry
 from ableton.v2.control_surface.elements import ButtonMatrixElement, DoublePressElement, MultiElement, DisplayDataSource, SysexElement
-from ableton.v2.control_surface.components import ClipSlotComponent, SceneComponent, SessionComponent, TransportComponent, BackgroundComponent, ViewControlComponent, SessionRingComponent, SessionRecordingComponent, SessionNavigationComponent, SessionOverviewComponent, MixerComponent, PlayableComponent
+from ableton.v2.control_surface.components import M4LInterfaceComponent, ClipSlotComponent, SceneComponent, SessionComponent, TransportComponent, BackgroundComponent, ViewControlComponent, SessionRingComponent, SessionRecordingComponent, SessionNavigationComponent, SessionOverviewComponent, MixerComponent, PlayableComponent
 from ableton.v2.control_surface.components.mixer import simple_track_assigner
 from ableton.v2.control_surface.mode import AddLayerMode, ModesComponent, DelayMode, CompoundMode
 from ableton.v2.control_surface.elements.physical_display import PhysicalDisplayElement
@@ -23,7 +23,7 @@ from aumhaa.v2.control_surface.mod_devices import *
 from aumhaa.v2.control_surface.mod import *
 from aumhaa.v2.control_surface.elements import MonoEncoderElement, MonoBridgeElement, generate_strip_string, CodecEncoderElement
 from aumhaa.v2.control_surface.elements.mono_button import *
-from aumhaa.v2.control_surface.components import DeviceNavigator, TranslationComponent, MonoM4LInterfaceComponent, MonoMixerComponent, ResetSendsComponent, DeviceSelectorComponent, MonoMixerComponent
+from aumhaa.v2.control_surface.components import DeviceNavigator, TranslationComponent, MonoMixerComponent, ResetSendsComponent, DeviceSelectorComponent, MonoMixerComponent
 from aumhaa.v2.control_surface.components.device import DeviceComponent
 from aumhaa.v2.control_surface.components.mono_instrument import *
 from aumhaa.v2.control_surface.mono_modes import SendLividSysexMode, SendSysexMode, CancellableBehaviourWithRelease, ColoredCancellableBehaviourWithRelease, MomentaryBehaviour, BicoloredMomentaryBehaviour, DefaultedBehaviour
@@ -108,13 +108,6 @@ class CntrlrSessionNavigationComponent(SessionNavigationComponent):
 		self._can_bank_left() and self._bank_left() if value == 127 else self._can_bank_right() and self._bank_right()
 	
 
-
-class CntrlrSessionComponent(SessionComponent):
-
-
-	def __init__(self, *a, **k):
-		super(CntrlrSessionComponent, self).__init__(*a, **k)
-	
 
 """We need to add an extra mode to the instrument to deal with session shifting, thus the _matrix_modes and extra functions."""
 """We also set up the id's for the note_editor here"""
@@ -378,7 +371,8 @@ class Cntrlr(LividControlSurface):
 
 		self._session_navigation.set_enabled(False)
 
-		self._session = CntrlrSessionComponent(session_ring = self._session_ring, enable_skinning = True, auto_name = True)
+		self._session = SessionComponent(session_ring = self._session_ring, auto_name = True)
+		hasattr(self._session, '_enable_skinning') and self._session._enable_skinning()
 		self._session.clip_launch_layer = LayerMode(self._session, Layer(priority = 4,
 									clip_launch_buttons = self._matrix.submatrix[:,:]))
 		self._session.scene_launch_layer = AddLayerMode(self._session._selected_scene, Layer(priority = 4, 
@@ -805,7 +799,7 @@ class Cntrlr(LividControlSurface):
 	
 
 	def _setup_m4l_interface(self):
-		self._m4l_interface = MonoM4LInterfaceComponent(controls=self.controls, component_guard=self.component_guard, priority = 10)
+		self._m4l_interface = M4LInterfaceComponent(controls=self.controls, component_guard=self.component_guard, priority = 10)
 		self._m4l_interface.name = "M4LInterface"
 		self.get_control_names = self._m4l_interface.get_control_names
 		self.get_control = self._m4l_interface.get_control

@@ -1,6 +1,8 @@
 # by amounra 0216 : http://www.aumhaa.com
 # written against Live 9.6 release on 021516
 
+from __future__ import absolute_import, print_function
+
 import Live
 
 from ableton.v2.control_surface.elements.button import ButtonElement, ON_VALUE, OFF_VALUE
@@ -130,13 +132,15 @@ class MonoButtonElement(ButtonElement):
 	
 
 	def set_light(self, value, *a, **k):
+		if value is None:
+			value = False
 		if isinstance(value, bool):
 			value = 'DefaultButton.On' if value else 'DefaultButton.Off'
 		try:
 			self._skin[value]
 		except SkinColorMissingError:
 			debug('skin missing for', value)
-			pass
+			value = 'DefaultButton.On'
 		#debug(self.name, 'skin value:', value)
 		super(MonoButtonElement, self).set_light(value, *a, **k)
 	
