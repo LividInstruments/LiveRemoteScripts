@@ -189,8 +189,12 @@ class DS1(LividControlSurface):
 		self._auto_arm.can_auto_arm_track = self._can_auto_arm_track
 	
 
+	def _tracks_to_use(self):
+		return self.song.visible_tracks + self.song.return_tracks
+	
+
 	def _setup_session_control(self):
-		self._session_ring = SessionRingComponent(num_tracks = 8, num_scenes = 1)
+		self._session_ring = SessionRingComponent(num_tracks = 8, num_scenes = 1, tracks_to_use = self._tracks_to_use)
 		self._session_ring.set_enabled(True)
 
 		self._session_navigation = DS1SessionNavigationComponent(name = 'SessionNavigation', session_ring = self._session_ring)
