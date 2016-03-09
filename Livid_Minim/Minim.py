@@ -96,7 +96,7 @@ class Minim(LividControlSurface):
 			self._setup_controls()
 			self._setup_background()
 			self._setup_autoarm()
-			self._setup_veiwcontrol()
+			self._setup_viewcontrol()
 			self._setup_session()
 			self._setup_mixer()
 			self._setup_transport()
@@ -126,7 +126,7 @@ class Minim(LividControlSurface):
 		self._on_device_changed.subject = self._device_provider
 		self._main_modes.set_enabled(True)
 		self._main_modes.selected_mode = 'session'
-		self._session_ring.update()
+		self._session_ring._update_highlight()
 		self.refresh_state()
 	
 
@@ -164,7 +164,7 @@ class Minim(LividControlSurface):
 		self._auto_arm._update_notification = lambda: None
 	
 
-	def _setup_veiwcontrol(self):
+	def _setup_viewcontrol(self):
 		self._viewcontrol = ViewControlComponent()
 		self._viewcontrol.layer = Layer(priority = 4, prev_track_button = self._top_button[0], next_track_button = self._top_button[1])
 		self._viewcontrol.set_enabled(False)
@@ -255,8 +255,8 @@ class Minim(LividControlSurface):
 	def _setup_modes(self):
 		self._main_modes = ModesComponent(name = 'MainModes')
 		self._main_modes.add_mode('disabled', [])
-		self._main_modes.add_mode('session_shifted', [self._mixer, self._mixer.solo_mute_record_stop_layer, self._session, self._session.stop_layer, self._session_navigation, self._session_navigation._vertical_layer, self._transport], groups = ['shifted'], behaviour = self._shift_latching(color = 'Mode.Session'))
-		self._main_modes.add_mode('session', [self._mixer, self._session, self._session.cliplaunch_layer, self._session_navigation, self._session_navigation._horizontal_layer, self._transport], behaviour = self._shift_latching(color = 'Mode.Session'))
+		self._main_modes.add_mode('session_shifted', [self._recorder, self._mixer, self._mixer.solo_mute_record_stop_layer, self._session, self._session.stop_layer, self._session_navigation, self._session_navigation._vertical_layer, self._transport], groups = ['shifted'], behaviour = self._shift_latching(color = 'Mode.Session'))
+		self._main_modes.add_mode('session', [self._recorder, self._mixer, self._session, self._session.cliplaunch_layer, self._session_navigation, self._session_navigation._horizontal_layer, self._transport], behaviour = self._shift_latching(color = 'Mode.Session'))
 		self._main_modes.add_mode('instrument_shifted', [self._recorder, self._mixer, self._mixer.mute_layer, self._viewcontrol, self._instrument, self._transport], groups = ['shifted'], behaviour = self._shift_latching(color = 'Mode.Instrument'))
 		self._main_modes.add_mode('instrument', [self._recorder, self._mixer, self._mixer.select_layer, self._viewcontrol, self._instrument, self._transport], behaviour = self._shift_latching(color = 'Mode.Instrument'))
 
