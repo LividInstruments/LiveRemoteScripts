@@ -25,6 +25,7 @@ class MonoDrumGroupComponent(DrumGroupComponent):
 	_raw_position = 0
 	_selected_note = DEFAULT_DRUMOFFSET*4
 	select_matrix = control_matrix(PlayableControl)
+	create_translation_entry = lambda self, button: (button.coordinate[1], button.coordinate[0], button.identifier, button.channel)
 
 	def __init__(self, channel_list = CHANNELS, settings = DEFAULT_INSTRUMENT_SETTINGS, *a, **k):
 		self._channel_list = channel_list
@@ -98,20 +99,13 @@ class MonoDrumGroupComponent(DrumGroupComponent):
 	
 
 	def _create_and_set_pad_translations(self):
-		def create_translation_entry(button):
-			row, col = button.coordinate
-			return (col,
-			 row,
-			 button.identifier,
-			 button.channel)
-		
 		if self._can_set_pad_translations():
 			translations = []
 			for button in self.matrix:
 				button.channel = self._translation_channel
 				button.identifier = self._button_coordinates_to_pad_index(self._raw_position*4, button.coordinate)
 				button.enabled = True
-				translations.append(create_translation_entry(button))
+				translations.append(self.create_translation_entry(button))
 
 			self._set_pad_translations(tuple(translations))
 		else:

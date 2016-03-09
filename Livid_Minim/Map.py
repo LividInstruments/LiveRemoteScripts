@@ -159,8 +159,10 @@ class MinimColors:
 	
 
 	class Mode:
-		Main = LividRGB.OFF
-		Main_shifted = LividRGB.BlinkFast.WHITE
+		Session = LividRGB.BLUE
+		Session_shifted = LividRGB.BlinkFast.BLUE
+		Instrument = LividRGB.CYAN
+		Instrument_shifted = LividRGB.BlinkFast.CYAN
 	
 
 	class ShiftMode:
@@ -177,6 +179,7 @@ class MinimColors:
 		ClipTriggeredPlay = LividRGB.BlinkFast.GREEN
 		ClipTriggeredRecord = LividRGB.BlinkFast.RED
 		RecordButton = LividRGB.OFF
+		ClipEmpty = LividRGB.OFF
 		ClipStopped = LividRGB.WHITE
 		ClipStarted = LividRGB.GREEN
 		ClipRecording = LividRGB.RED
@@ -243,6 +246,7 @@ class MinimColors:
 		MuteOn = LividRGB.YELLOW
 		MuteOff = LividRGB.OFF
 		ArmSelected = LividRGB.GREEN
+		ArmSelectedImplicit = LividRGB.MAGENTA
 		ArmUnselected = LividRGB.RED
 		ArmOff = LividRGB.OFF
 		StopClip = LividRGB.BLUE
@@ -251,9 +255,9 @@ class MinimColors:
 	
 
 	class Recording:
-		On = LividRGB.BlinkFast.GREEN
-		Off = LividRGB.GREEN
-		Transition = LividRGB.BlinkSlow.GREEN
+		On = LividRGB.BlinkFast.RED
+		Off = LividRGB.RED
+		Transition = LividRGB.BlinkSlow.RED
 	
 
 	class Recorder:
