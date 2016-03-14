@@ -2,7 +2,6 @@
 # written against Live 9.6 release on 021516
 
 from __future__ import absolute_import, print_function
-
 import Live
 
 from ableton.v2.control_surface.elements.encoder import EncoderElement
@@ -34,6 +33,7 @@ class MonoEncoderElement(EncoderElement):
 		super(MonoEncoderElement, self).__init__(map_mode=Live.MidiMap.MapMode.absolute, *a, **k)
 		self._mapping_feedback_delay = mapping_feedback_delay
 		self.num = num
+		self.name = name
 		self._parameter = None
 		self._script = script
 		self._is_enabled = True
