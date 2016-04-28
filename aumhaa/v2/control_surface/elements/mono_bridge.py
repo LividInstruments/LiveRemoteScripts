@@ -116,7 +116,7 @@ class MonoBridgeElement(NotifyingControlElement):
 		self._script.refresh_state()
 	
 
-	def _send(self, args1 = None, args2 = None, args3 = None, args4 = None):
+	def _send(self, args1 = None, args2 = None, args3 = None, *a):
 		self.notify_value(args1, args2, args3)
 	
 
@@ -130,9 +130,11 @@ class MonoBridgeElement(NotifyingControlElement):
 
 	def notification_to_bridge(self, name = None, value = None, sender = None):
 		if hasattr(sender, 'name'):
+			#debug('has name:',  sender.name)
 			self._send(sender.name, 'lcd_name', str(generate_strip_string(name)))
 			self._send(sender.name, 'lcd_value', str(generate_strip_string(value)))
 		else:
+			#debug('missing name:',  sender, name)
 			self._send(name, 'lcd_name', str(generate_strip_string(name)))
 			self._send(name, 'lcd_value', str(generate_strip_string(value)))
 	

@@ -16,6 +16,8 @@ from ableton.v2.control_surface.mode import AddLayerMode, ModesComponent, DelayM
 from ableton.v2.control_surface.elements.physical_display import PhysicalDisplayElement
 from ableton.v2.control_surface.components.session_recording import *
 from ableton.v2.control_surface.control import PlayableControl, ButtonControl, control_matrix
+from ableton.v2.control_surface.components.scroll import ScrollComponent
+from ableton.v2.control_surface.components.view_control import BasicSceneScroller
 
 from aumhaa.v2.base import initialize_debug
 from aumhaa.v2.control_surface import SendLividSysexMode, MomentaryBehaviour, ExcludingMomentaryBehaviour, DelayedExcludingMomentaryBehaviour, ShiftedBehaviour, LatchingShiftedBehaviour, FlashingBehaviour
@@ -54,6 +56,37 @@ FASTENCODER = (240, 0, 1, 97, 8, 30, 04, 00, 247)
 
 
 
+class CntrlrViewControlComponent(ViewControlComponent):
+
+
+	def __init__(self, *a, **k):
+		super(CntrlrViewControlComponent, self).__init__(*a, **k)
+		self._basic_scroll_scenes = self.register_component(ScrollComponent(BasicSceneScroller()))
+		self.register_slot(self.song, self._basic_scroll_scenes.update, 'scenes')
+		self.register_slot(self.song.view, self._basic_scroll_scenes.update, 'selected_scene')
+	
+
+	def set_scene_select_dial(self, dial):
+		self._on_scene_select_dial_value.subject = dial
+	
+
+	@listens('value')
+	def _on_scene_select_dial_value(self, value):
+		#debug('_on_scene_select_dial_value', value)
+		self._basic_scroll_scenes.scroll_up() if value == 127 else self._basic_scroll_scenes.scroll_down()
+	
+
+	def set_track_select_dial(self, dial):
+		self._on_track_select_dial_value.subject = dial
+	
+
+	@listens('value')
+	def _on_track_select_dial_value(self, value):
+		#debug('_on_scene_select_dial_value', value)
+		self._scroll_tracks.scroll_up() if value == 127 else self._scroll_tracks.scroll_down()
+	
+
+
 class CntrlrResetSendsComponent(ResetSendsComponent):
 
 
@@ -88,23 +121,23 @@ class CntrlrSessionNavigationComponent(SessionNavigationComponent):
 		self._can_scroll_page_left() and self._scroll_page_left() if value == 127 else self._can_scroll_page_right() and self._scroll_page_right()
 	
 
-	def set_scene_select_dial(self, dial):
-		self._on_scene_select_dial_value.subject = dial
+	def set_scene_nav_dial(self, dial):
+		self._on_scene_nav_dial_value.subject = dial
 	
 
 	@listens('value')
-	def _on_scene_select_dial_value(self, value):
-		#debug('_on_scene_select_dial_value', value)
+	def _on_scene_nav_dial_value(self, value):
+		#debug('_on_scene_nav_dial_value', value)
 		self._can_bank_up() and self._bank_up() if value == 127 else self._can_bank_down() and self._bank_down()
 	
 
-	def set_track_select_dial(self, dial):
-		self._on_track_select_dial_value.subject = dial
+	def set_track_nav_dial(self, dial):
+		self._on_track_nav_dial_value.subject = dial
 	
 
 	@listens('value')
-	def _on_track_select_dial_value(self, value):
-		#debug('_on_scene_select_dial_value', value)
+	def _on_track_nav_dial_value(self, value):
+		#debug('_on_track_nav_dial_value', value)
 		self._can_bank_left() and self._bank_left() if value == 127 else self._can_bank_right() and self._bank_right()
 	
 
@@ -359,14 +392,15 @@ class Cntrlr(LividControlSurface):
 		self._session_navigation.bank_dial_layer = AddLayerMode(self._session_navigation, Layer(priority = 5, 
 									track_bank_dial = self._encoder[3], 
 									scene_bank_dial = self._encoder[2],))
-		self._session_navigation.select_dial_layer = AddLayerMode(self._session_navigation, Layer(priority = 5,
-									scene_select_dial = self._encoder[2],
-									track_select_dial = self._encoder[3],))
-		self._session_navigation.nav_layer = AddLayerMode(self._session_navigation, Layer(priority = 4,
+		self._session_navigation.nav_dial_layer = AddLayerMode(self._session_navigation, Layer(priority = 5,
+									scene_nav_dial = self._encoder[2],
+									track_nav_dial = self._encoder[3],))
+		self._session_navigation.select_dial_layer = AddLayerMode(self._session_navigation, Layer(priority = 5))
+		"""self._session_navigation.nav_layer = AddLayerMode(self._session_navigation, Layer(priority = 4,
 									page_down_button = self._button[14],
 									page_up_button = self._button[15],
 									page_left_button = self._button[12],
-									page_right_button = self._button[13]))
+									page_right_button = self._button[13]))"""
 		self._session_navigation.nav_layer = AddLayerMode(self._session_navigation, Layer(priority = 4))
 
 		self._session_navigation.set_enabled(False)
@@ -561,19 +595,14 @@ class Cntrlr(LividControlSurface):
 	
 
 	def _setup_viewcontrol(self):
-		#self._view_control = ViewControlComponent(name='View_Control')# is_enabled = False)
+		self._view_control = CntrlrViewControlComponent(name='View_Control')
+		self._view_control.main_layer = AddLayerMode(self._view_control, Layer(scene_select_dial = self._encoder[2],
+																				track_select_dial = self._encoder[3],))
 		#self._view_control.main_layer = AddLayerMode(self._view_control, Layer(prev_track_button=self._button[24], 
 		#											next_track_button= self._button[25], 
 		#											next_scene_button=self._button[27], 
 		#											prev_scene_button = self._button[26]))
-		#self._view_control.set_enabled(False)
-		"""self._view_control.selector_layer = AddLayerMode(self._view_control, Layer(priority = 8, 
-													prev_track_button = self._grid[12], 
-													next_track_button = self._grid[13], 
-													next_scene_button = self._grid[15], 
-													prev_scene_button = self._grid[14]))
-		"""
-		pass
+		self._view_control.set_enabled(False)
 	
 
 	def _setup_modes(self):
@@ -592,11 +621,12 @@ class Cntrlr(LividControlSurface):
 									self._device)
 		main_faders=CompoundMode(self._mixer.main_faders_layer, 
 									self._mixer.master_fader_layer)
-		main_dials=CompoundMode(self._session_navigation.select_dial_layer, 
-									self._session_navigation.nav_layer,
+		main_dials=CompoundMode(self._view_control,
+									self._view_control.main_layer,
 									self._device_navigator.select_dial_layer, 
 									self.encoder_navigation_on)
-		shifted_dials=CompoundMode(self._session_navigation.bank_dial_layer,
+		shifted_dials=CompoundMode(self._session_navigation,
+									self._session_navigation.nav_dial_layer,
 									self._device_navigator.select_dial_layer,
 									self.encoder_navigation_on)
 
@@ -628,15 +658,15 @@ class Cntrlr(LividControlSurface):
 		self._instrument._main_modes.add_mode('drumpad_shifted', [self._instrument._drumpad.sequencer_shift_layer, 
 																					self._instrument.drumpad_shift_layer, 
 																					shifted_main_buttons, 
-																					main_dials])
+																					shifted_dials])
 		self._instrument._main_modes.add_mode('drumpad_split_shifted', [self._instrument._drumpad.split_layer, 
 																					self._instrument.drumpad_shift_layer, 
 																					shifted_main_buttons, 
-																					main_dials])
+																					shifted_dials])
 		self._instrument._main_modes.add_mode('drumpad_sequencer_shifted', [self._instrument._drumpad.sequencer_shift_layer, 
 																					self._instrument.drumpad_shift_layer, 
 																					shifted_main_buttons, 
-																					main_dials])
+																					shifted_dials])
 		self._instrument._main_modes.add_mode('keypad', [self._instrument._keypad.sequencer_layer, 
 																					main_buttons, 
 																					main_dials])
@@ -650,15 +680,15 @@ class Cntrlr(LividControlSurface):
 		self._instrument._main_modes.add_mode('keypad_shifted', [self._instrument._keypad.sequencer_shift_layer, 
 																					self._instrument.keypad_shift_layer, 
 																					shifted_main_buttons,
-																					main_dials])
+																					shifted_dials])
 		self._instrument._main_modes.add_mode('keypad_split_shifted', [self._instrument._keypad.split_layer, 
 																					self._instrument.keypad_shift_layer,
 																					shifted_main_buttons, 
-																					main_dials])
+																					shifted_dials])
 		self._instrument._main_modes.add_mode('keypad_sequencer_shifted', [self._instrument._keypad.sequencer_shift_layer, 
 																					self._instrument.keypad_shift_layer, 
 																					shifted_main_buttons, 
-																					main_dials])
+																					shifted_dials])
 		self._instrument._main_modes.add_mode('drumpad_session', [self._instrument._drumpad.sequencer_session_layer, 
 																					main_buttons,
 																					self._session,
@@ -728,8 +758,7 @@ class Cntrlr(LividControlSurface):
 																					self._session,
 																					DelayMode(self._session.clip_launch_layer, delay = .1)])
 		self._instrument._main_modes.add_mode('audioloop_shifted', [self._instrument.audioloop_layer, 
-																					shifted_main_buttons, 
-																					main_dials, 
+																					shifted_main_buttons,
 																					self._session_zoom, 
 																					shifted_dials])
 		#self._instrument._main_modes.add_mode('audioloop_shifted_session', [self._instrument.audioloop_layer, self._session, shifted_main_buttons, main_dials, shifted_dials])
@@ -753,7 +782,8 @@ class Cntrlr(LividControlSurface):
 													main_dials, 
 													self._mixer.main_knobs_layer, 
 													self._session_navigation.select_dial_layer, 
-													self._session_navigation.nav_layer, 
+													self._view_control,
+													self._view_control.main_layer, 
 													self._device_navigator.select_dial_layer, 
 													self.encoder_navigation_on, self._modswitcher, 
 													DelayMode(self._update_modswitcher, delay = .1)], 
