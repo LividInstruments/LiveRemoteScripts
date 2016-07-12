@@ -17,7 +17,7 @@ from _Framework.ModesComponent import DisplayingModesComponent, ModesComponent
 from _Framework.Util import forward_property
 from _Framework.SessionComponent import SessionComponent
 
-from Push.Colors import Basic, Rgb, Pulse, Blink, BiLed
+#from Push.Colors import Basic, Rgb, Pulse, Blink, BiLed
 
 INITIAL_SCROLLING_DELAY = 5
 INTERVAL_SCROLLING_DELAY = 1

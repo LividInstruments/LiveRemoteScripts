@@ -1,8 +1,6 @@
-# by amounra 0216 : http://www.aumhaa.com
-# written against Live 9.6 release on 021516
+# by amounra 0915 : http://www.aumhaa.com
 
 from __future__ import absolute_import, print_function
-
 import contextlib
 from ableton.v2.base import Event, Signal, in_range
 from ableton.v2.control_surface import NotifyingControlElement, InputSignal

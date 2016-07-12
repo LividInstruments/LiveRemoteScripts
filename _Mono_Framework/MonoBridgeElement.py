@@ -77,7 +77,7 @@ class MonoBridgeElement(NotifyingControlElement):
 
 
 	def __init__(self, script, *a, **k):
-		super(MonoBridgeElement, self).__init__()
+		super(MonoBridgeElement, self).__init__(*a, **k)
 		self._script = script
 	
 

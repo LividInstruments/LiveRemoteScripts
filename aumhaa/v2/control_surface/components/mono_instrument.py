@@ -1,15 +1,12 @@
 # by amounra 0216 : http://www.aumhaa.com
 # written against Live 9.6 release on 021516
 
-from __future__ import absolute_import, print_function
-
 import Live
-
 from itertools import imap, chain, starmap, ifilter
 from functools import partial
 from ableton.v2.control_surface import Component, CompoundComponent, ClipCreator, Layer
 from ableton.v2.control_surface.components import SessionRingComponent, SessionComponent, ViewControlComponent, PlayableComponent, DrumGroupComponent
-from ableton.v2.base import listens, listens_group, forward_property, find_if, first, in_range, product, clamp, Subject, SlotManager, listenable_property, liveobj_changed
+from ableton.v2.base import listens, listens_group, forward_property, find_if, first, in_range, product, clamp, listenable_property, liveobj_changed
 from ableton.v2.control_surface.elements import ButtonElement, ButtonMatrixElement, DisplayDataSource
 from ableton.v2.control_surface.mode import ModesComponent, AddLayerMode, LayerMode, ModeButtonBehaviour
 from ableton.v2.base.task import *
@@ -18,7 +15,7 @@ from ableton.v2.base import task
 from ableton.v2.control_surface.control import control_list, ButtonControl, StepEncoderControl, ToggleButtonControl, control_color, PlayableControl, control_matrix
 
 from pushbase.step_seq_component import StepSeqComponent
-from pushbase.percussion_instrument_finder_component import PercussionInstrumentFinderComponent as DrumGroupFinderComponent, find_drum_group_device
+from pushbase.percussion_instrument_finder import PercussionInstrumentFinder as DrumGroupFinderComponent, find_drum_group_device
 from pushbase.note_editor_component import NoteEditorComponent
 from pushbase.loop_selector_component import LoopSelectorComponent
 from pushbase.playhead_component import PlayheadComponent
@@ -408,7 +405,6 @@ class MonoInstrumentComponent(CompoundComponent):
 	def _setup_selected_session_control(self):
 		self._session_ring = SessionRingComponent(num_tracks=1, num_scenes=32)
 		self._selected_session = ScaleSessionComponent(name = "SelectedSession", session_ring = self._session_ring, auto_name = True, is_enabled = False)
-		hasattr(self._selected_session, '_enable_skinning') and self._selected_session._enable_skinning()
 		self._selected_session.set_enabled(False)
 		
 

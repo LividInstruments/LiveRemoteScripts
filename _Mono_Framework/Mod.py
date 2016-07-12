@@ -28,7 +28,7 @@ from _Mono_Framework.MonoDeviceComponent import NewMonoDeviceComponent as MonoDe
 from _Mono_Framework.ModDevices import *
 from _Mono_Framework.Debug import *
 
-
+#from ableton.v2.control_surface import ControlSurface as ControlSurface_v2
 
 INITIAL_SCROLLING_DELAY = 5
 INTERVAL_SCROLLING_DELAY = 1
@@ -640,7 +640,7 @@ class ModHandler(CompoundComponent):
 
 	@subject_slot('appointed_device')
 	def _on_device_changed(self):
-		#debug('modhandler on_device_changed')
+		debug('modhandler on_device_changed')
 		if not self.is_locked() or self.active_mod() is None:
 			#self.modrouter._task_group.add(sequence(delay(2), self.select_appointed_device))
 			self.select_appointed_device()
@@ -1203,6 +1203,7 @@ class ModClient(NotifyingControlElement):
 		self._param_component = MonoDeviceComponent(self, MOD_BANK_DICT, MOD_TYPES)
 		self._param_component._device = self.device
 		self.register_addresses()
+		self.device and self.device.canonical_parent and self.device.canonical_parent.add_devices_listener(self._device_listener)
 		#self._device_listener.subject = device.canonical_parent
 		self._parent._task_group.add(sequence(delay(2), self.connect))
 	
@@ -1518,7 +1519,7 @@ class ModRouter(CompoundComponent):
 			with self._host.component_guard():
 				self._mods.append( ModClient(self, device, 'modClient'+str(len(self._mods))) )
 		ret = self.get_mod(device)
-		#debug('add mod device: ' + str(device.name) + ' ' + str(ret))
+		debug('add mod device: ' + str(device.name) + ' ' + str(ret))
 		return ret
 	
 

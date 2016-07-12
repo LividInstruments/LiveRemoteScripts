@@ -2,9 +2,7 @@
 # written against Live 9.6 release on 021516
 
 from __future__ import absolute_import, print_function
-
 import Live
-
 import math
 import sys
 
@@ -72,7 +70,7 @@ class LividControlSurface(ControlSurface):
 			debug(self._model_name, '_check_connection')
 			self._livid_settings.query_surface()
 			#self._connection_routine.restart()
-			self.schedule_message(10, self._check_connection)
+			self.schedule_message(5, self._check_connection)
 	
 
 	def _initialize_hardware(self):
@@ -155,6 +153,6 @@ class LividControlSurface(ControlSurface):
 	def disconnect(self):
 		super(LividControlSurface, self).disconnect()
 		self._close_log()
-	
+
 
 

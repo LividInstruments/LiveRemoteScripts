@@ -1,8 +1,6 @@
 # by amounra 0216 : http://www.aumhaa.com
 # written against Live 9.6 release on 021516
 
-from __future__ import absolute_import, print_function
-
 from aumhaa.v2.base.debug import *
 
 debug = initialize_debug()

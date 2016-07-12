@@ -35,7 +35,7 @@ from aumhaa.v2.control_surface.components.device import DeviceComponent
 from pushbase.auto_arm_component import AutoArmComponent
 from pushbase.grid_resolution import GridResolution
 from pushbase.playhead_element import PlayheadElement
-from pushbase.percussion_instrument_finder_component import PercussionInstrumentFinderComponent, find_drum_group_device
+from pushbase.percussion_instrument_finder import PercussionInstrumentFinder, find_drum_group_device
 from pushbase.drum_group_component import DrumGroupComponent
 
 debug = initialize_debug()
@@ -907,7 +907,7 @@ class Base(LividControlSurface):
 
 		quantgrid = ButtonMatrixElement([self._base_grid._orig_buttons[2][4:8], self._base_grid._orig_buttons[3][4:7]])
 
-		self._drum_group_finder = PercussionInstrumentFinderComponent(device_parent=self.song.view.selected_track)
+		self._drum_group_finder = PercussionInstrumentFinder(device_parent=self.song.view.selected_track)
 
 		self._instrument = BaseMonoInstrumentComponent(name = 'InstrumentModes', script = self, skin = self._skin, drum_group_finder = self._drum_group_finder, grid_resolution = self._grid_resolution, settings = DEFAULT_INSTRUMENT_SETTINGS, device_provider = self._device_provider, parent_task_group = self._task_group)
 		self._instrument.layer = Layer(priority = 6, base_display = self._display)

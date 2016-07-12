@@ -1,8 +1,3 @@
-# by amounra 0216 : http://www.aumhaa.com
-# written against Live 9.6 release on 021516
-
-from __future__ import absolute_import, print_function
-
 import Live
 
 from functools import partial
@@ -49,8 +44,9 @@ class FixedLengthSessionRecordingComponent(SessionRecordingComponent):
 
 	_length_buttons = []
 
-	def __init__(self, length_values = LENGTH_VALUES, *a, **k):
+	def __init__(self, clip_creator, length_values = LENGTH_VALUES, *a, **k):
 		super(FixedLengthSessionRecordingComponent, self).__init__(*a, **k)
+		self._clip_creator = clip_creator
 		self._length_value = 1
 		self._length_values = length_values
 		self._fixed_length = self.register_component(ToggleWithOptionsComponent())

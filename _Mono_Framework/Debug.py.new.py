@@ -1,8 +1,13 @@
-# by amounra 0915 : http://www.aumhaa.com
+# by amounra 0613 : http://www.aumhaa.com
 import Live
+
 import logging
 
-import os, __builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, gc, imp, itertools, marshal, math, sys, time
+
+
+#import os, __builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _types, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, fcntl, gc, imp, itertools, marshal, math, operator, posix, pwd, select, signal, sys, thread, time, unicodedata, xxsubtype, zipimport, zlib
+
+import os, __builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, gc, imp, itertools, marshal, math, sys, time  #_types
 
 #modules = [__builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _types, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, fcntl, gc, imp, itertools, marshal, math, operator, posix, pwd, select, signal, sys, thread, time, unicodedata, xxsubtype, zipimport, zlib]
 
@@ -12,12 +17,10 @@ DIRS_TO_REBUILD = ['Debug', 'AumPC20_b995_9', 'AumPC40_b995_9', 'AumPush_b995', 
 
 MODS_TO_REBUILD = ['Debug', 'AumPC20', 'AumPC40', 'AumPush', 'AumTroll', 'AumTroll_G', 'Base', 'BlockMod', 'Codec', 'LaunchMod', 'Lemur256', 'LemurPad', 'Alias8', 'Block', 'CNTRLR', 'CodeGriid', 'Ohm64', 'MonOhm', 'Monomodular']
 
-from re import *
+#from re import *
 
-from ableton.v2.control_surface.control_surface import * 
-from ableton.v2.control_surface.component import Component as ControlSurfaceComponent
-
-logger = logging.getLogger(__name__)
+from _Framework.ControlSurface import * 
+from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
 
 mod_path = "/Users/amounra/Documents/Max/Packages/mod/Python Scripts"
 livid_path = "/Users/amounra/monomodular_git/Livid Python Scripts"
@@ -29,6 +32,8 @@ if not (livid_path) in sys.path:
 	if os.path.isdir(livid_path):
 		sys.path.append(livid_path)"""
 
+
+logger = logging.getLogger(__name__)
 
 DEBUG = True
 
@@ -87,16 +92,7 @@ def print_debug(message):
 
 
 def no_debug(*a, **k):
-	pass
-
-
-def initialize_debug():
-	debug = no_debug
-	for module in get_control_surfaces():
-		#logger.info('module is:' + str(module))
-		if isinstance(module, Debug):
-			debug = log_flattened_arguments
-	return debug
+	return False
 
 
 def log_flattened_arguments(*a, **k):
@@ -104,6 +100,31 @@ def log_flattened_arguments(*a, **k):
 	for item in a:
 		args = args + str(item) + ' '
 	logger.info(args)
+
+
+def initialize_debug():
+	debug = no_debug
+	try:
+		from aumhaa.v2.base.debug import Debug as NewDebug
+		logger.info('aumhaa debugger installed')
+		for module in get_control_surfaces():
+			if isinstance(module, NewDebug):
+				debug = log_flattened_arguments
+			else:
+				pass
+	except:
+		logger.info('_Mono_Framework debugger installed')
+		for module in get_control_surfaces():
+			if isinstance(module, Debug):
+				debug = log_flattened_arguments
+			else:
+				pass
+	return debug
+
+
+def initialize_debug():
+	logger.info('new debugger installed')
+	return log_flattened_arguments
 
 
 try:
@@ -286,28 +307,18 @@ class Debug(ControlSurface):
 
 	def __init__(self, *a, **k):
 		super(Debug, self).__init__(*a, **k)
-		#self.mtimes = {}
-		#self.changed_files = []
+		self.mtimes = {}
+		self.changed_files = []
 		#self.reloader = Reloader()
 		#self.reloader.enable()
-		#self._log_version_data()
+		self._log_version_data()
 		#self._log_sys_modules()
 		#self._log_paths()
 		#self._log_dirs()
-		#self._log_C_modules()
 		#self.log_filenames()
-		#self.load_script()
 		self.log_message('_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_ DEBUG ON _^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_')
 		self._scripts = []
-		#self._scan()
-	
-
-	def load_script(self):
-		try:
-			from .Livid_Minim import Minim
-			reload(Minim)
-		except:
-			print_debug('nevermind :(')
+		self._scan()
 	
 
 	def log_filenames(self):
@@ -467,13 +478,8 @@ class Debug(ControlSurface):
 		#self.log_message('Debug-> removed scripts' + str(removed_scripts))
 	
 
-	def log_message(self, *a):
-		logger.info(a)
-	
-
 	def disconnect(self):
 		#self.reloader.disable()
-		self.log_message('_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_ DEBUG OFF _v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_v_')
 		super(Debug, self).disconnect()
 	
 

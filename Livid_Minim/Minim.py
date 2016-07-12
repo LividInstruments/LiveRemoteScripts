@@ -33,7 +33,7 @@ from ableton.v2.control_surface.components.m4l_interface import M4LInterfaceComp
 from ableton.v2.control_surface.elements.combo import ComboElement, DoublePressElement, MultiElement, DoublePressContext
 from ableton.v2.control_surface.components.background import BackgroundComponent
 from ableton.v2.control_surface.components.session_ring import SessionRingComponent
-from ableton.v2.base.slot import *
+from ableton.v2.base.event import *
 from ableton.v2.base.task import *
 
 from Push.mode_behaviours import CancellableBehaviour
@@ -42,7 +42,7 @@ from aumhaa.v2.control_surface.components.fixed_length_recorder import FixedLeng
 from pushbase.auto_arm_component import AutoArmComponent
 from pushbase.grid_resolution import GridResolution
 from pushbase.playhead_element import PlayheadElement
-from pushbase.percussion_instrument_finder_component import PercussionInstrumentFinderComponent, find_drum_group_device
+from pushbase.percussion_instrument_finder import PercussionInstrumentFinder, find_drum_group_device
 
 from _Generic.Devices import *
 
@@ -202,7 +202,7 @@ class Minim(LividControlSurface):
 	
 
 	def _setup_recorder(self):
-		self._recorder = SessionRecordingComponent(clip_creator = ClipCreator(), view_controller = self._viewcontrol)
+		self._recorder = SessionRecordingComponent(view_controller = self._viewcontrol)
 		self._recorder.layer = Layer(priority = 4, new_button = self._side_button[2], record_button = self._side_button[1])
 		self._recorder.set_enabled(False)
 	
@@ -213,7 +213,7 @@ class Minim(LividControlSurface):
 		self._c_instance.playhead.enabled = True
 		self._playhead_element = PlayheadElement(self._c_instance.playhead)
 
-		self._drum_group_finder = PercussionInstrumentFinderComponent(device_parent=self.song.view.selected_track)
+		self._drum_group_finder = PercussionInstrumentFinder(device_parent=self.song.view.selected_track)
 
 		self._instrument = MinimMonoInstrumentComponent(name = 'InstrumentComponent', script = self, skin = self._skin, drum_group_finder = self._drum_group_finder, grid_resolution = self._grid_resolution, settings = DEFAULT_INSTRUMENT_SETTINGS, device_provider = self._device_provider, parent_task_group = self._task_group)
 		self._instrument._drumpad._drumgroup._button_coordinates_to_pad_index = lambda first_note, coordinates: coordinates[1] + (abs(coordinates[0]-1)*4) + first_note

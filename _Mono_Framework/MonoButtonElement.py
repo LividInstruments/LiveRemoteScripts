@@ -200,7 +200,6 @@ class DescriptiveMonoButtonElement(MonoButtonElement):
 
 
 	def __init__(self, *a, **k):
-
 		super(DescriptiveMonoButtonElement, self).__init__(*a, **k)
 
 		self._descriptor = None

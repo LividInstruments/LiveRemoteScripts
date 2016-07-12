@@ -1,19 +1,15 @@
 # by amounra 0613 : http://www.aumhaa.com
 import Live
 
-
-
-#import os, __builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _types, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, fcntl, gc, imp, itertools, marshal, math, operator, posix, pwd, select, signal, sys, thread, time, unicodedata, xxsubtype, zipimport, zlib
-
 import os, __builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, gc, imp, itertools, marshal, math, sys, time  #_types
 
 #modules = [__builtin__, __main__, _ast, _codecs, _functools, _md5, _random, _sha, _sha256, _sha512, _socket, _sre, _ssl, _struct, _symtable, _types, _weakref, binascii, cStringIO, collections, datetime, errno, exceptions, fcntl, gc, imp, itertools, marshal, math, operator, posix, pwd, select, signal, sys, thread, time, unicodedata, xxsubtype, zipimport, zlib]
 
-modules = []
+#modules = []
 
-DIRS_TO_REBUILD = ['Debug', 'AumPC20_b995_9', 'AumPC40_b995_9', 'AumPush_b995', 'AumTroll_b995_9', 'AumTroll_b995_9_G', 'Base_9_LE', 'BlockMod_b995_9', 'Codec_b995_9', 'Codex', 'LaunchMod_b995_9', 'Lemur256_b995_9', 'LemurPad_b995_9', 'Livid_Alias8', 'Livid_Base', 'Livid_Block', 'Livid_CNTRLR', 'Livid_CodeGriid', 'Livid_CodeRemoteScriptLinked', 'Livid_Ohm64', 'Livid_OhmModes', 'MonOhm_b995_9', 'Monomodular_b995_9']
+#DIRS_TO_REBUILD = ['Debug', 'AumPC20_b995_9', 'AumPC40_b995_9', 'AumPush_b995', 'AumTroll_b995_9', 'AumTroll_b995_9_G', 'Base_9_LE', 'BlockMod_b995_9', 'Codec_b995_9', 'Codex', 'LaunchMod_b995_9', 'Lemur256_b995_9', 'LemurPad_b995_9', 'Livid_Alias8', 'Livid_Base', 'Livid_Block', 'Livid_CNTRLR', 'Livid_CodeGriid', 'Livid_CodeRemoteScriptLinked', 'Livid_Ohm64', 'Livid_OhmModes', 'MonOhm_b995_9', 'Monomodular_b995_9']
 
-MODS_TO_REBUILD = ['Debug', 'AumPC20', 'AumPC40', 'AumPush', 'AumTroll', 'AumTroll_G', 'Base', 'BlockMod', 'Codec', 'LaunchMod', 'Lemur256', 'LemurPad', 'Alias8', 'Block', 'CNTRLR', 'CodeGriid', 'Ohm64', 'MonOhm', 'Monomodular']
+#MODS_TO_REBUILD = ['Debug', 'AumPC20', 'AumPC40', 'AumPush', 'AumTroll', 'AumTroll_G', 'Base', 'BlockMod', 'Codec', 'LaunchMod', 'Lemur256', 'LemurPad', 'Alias8', 'Block', 'CNTRLR', 'CodeGriid', 'Ohm64', 'MonOhm', 'Monomodular']
 
 #from re import *
 import re
@@ -21,8 +17,8 @@ import re
 from _Framework.ControlSurface import * 
 from _Framework.ControlSurfaceComponent import ControlSurfaceComponent
 
-mod_path = "/Users/amounra/Documents/Max/Packages/mod/Python Scripts"
-livid_path = "/Users/amounra/monomodular_git/Livid Python Scripts"
+#mod_path = "/Users/amounra/Documents/Max/Packages/mod/Python Scripts"
+#livid_path = "/Users/amounra/monomodular_git/Livid Python Scripts"
 
 """if not (mod_path) in sys.path:
 	if os.path.isdir(mod_path):
@@ -280,18 +276,18 @@ class Debug(ControlSurface):
 
 	def __init__(self, *a, **k):
 		super(Debug, self).__init__(*a, **k)
-		self.mtimes = {}
-		self.changed_files = []
+		#self.mtimes = {}
+		#self.changed_files = []
 		#self.reloader = Reloader()
 		#self.reloader.enable()
-		self._log_version_data()
+		#self._log_version_data()
 		#self._log_sys_modules()
 		#self._log_paths()
 		#self._log_dirs()
 		#self.log_filenames()
-		self.log_message('_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_ DEBUG ON _^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_')
-		self._scripts = []
-		self._scan()
+		self.log_message('_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_ OLD DEBUG ON _^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_^_')
+		#self._scripts = []
+		#self._scan()
 	
 
 	def log_filenames(self):
@@ -434,6 +430,7 @@ class Debug(ControlSurface):
 		#	self.log_message('cant del OhmModes')
 	
 
+	"""
 	def connect_script_instances(self, instanciated_scripts):
 		new_scripts = get_control_surfaces()
 		removed_scripts = []
@@ -442,6 +439,7 @@ class Debug(ControlSurface):
 			if not script in new_scripts:
 				removed_scripts.append(script)
 		self._scripts = new_scripts
+	"""
 
 
 		#modulenames = set(sys.modules)&set(globals())

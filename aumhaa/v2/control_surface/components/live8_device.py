@@ -1,10 +1,4 @@
-# by amounra 0216 : http://www.aumhaa.com
-# written against Live 9.6 release on 021516
-
-from __future__ import absolute_import, print_function
-
 import Live
-
 from _Generic.Devices import *
 
 from ableton.v2.control_surface.component import Component as ControlSurfaceComponent

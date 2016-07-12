@@ -1,10 +1,6 @@
 # by amounra 0216 : http://www.aumhaa.com
-# written against Live 9.6 release on 021516
-
-from __future__ import absolute_import, print_function
 
 from itertools import imap
-
 from ableton.v2.control_surface.mode import *
 
 from aumhaa.v2.base.debug import initialize_debug
@@ -107,10 +103,10 @@ class BicoloredMomentaryBehaviour(MomentaryBehaviour):
 		selected_groups = component.get_mode_groups(selected_mode)
 		if mode == selected_mode:
 			#button.set_light(self._color)
-			button.color = self._color
+			button.mode_selected_color = self._color
 		else:
 			#button.set_light(self._off_color)
-			button.color = self._off_color
+			button.mode_unselected_color = self._off_color
 	
 
 

@@ -247,7 +247,7 @@ class DS1(LividControlSurface):
 	def _setup_session_recording_component(self):
 		self._clip_creator = ClipCreator()
 		self._clip_creator.name = 'ClipCreator'
-		self._recorder = SessionRecordingComponent(self._clip_creator, ViewControlComponent())
+		self._recorder = SessionRecordingComponent(ViewControlComponent())
 		self._recorder.set_enabled(True)
 		self._recorder.layer = Layer(priority = 4, automation_button = self._grid[1][2], record_button  = self._grid[2][1],)
 	
