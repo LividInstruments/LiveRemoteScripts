@@ -245,6 +245,7 @@ class CntrlrDeviceComponent(DeviceComponent):
 			return DeviceComponent._current_bank_details(self)
 	
 
+
 class Cntrlr(LividControlSurface):
 	__module__ = __name__
 	__doc__ = " Monomodular controller script for Livid CNTRLR "
@@ -615,6 +616,7 @@ class Cntrlr(LividControlSurface):
 		shifted_main_buttons=CompoundMode(self._mixer.solo_buttons_layer, 
 									self._recorder, 
 									self._recorder.shift_layer,
+									self._session,
 									self._session.scene_launch_layer,
 									self._device)
 		main_faders=CompoundMode(self._mixer.main_faders_layer, 
