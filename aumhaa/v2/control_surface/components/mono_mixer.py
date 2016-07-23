@@ -438,7 +438,7 @@ class MonoMixerComponent(MixerComponentBase):
 		self._send_controls = controls
 		if controls:
 			for index in range(len(self._channel_strips)):
-				send_controls = [controls.get_button(index, row) for row in range(controls.height())]
+				send_controls = [controls.get_button(row, index) for row in range(controls.height())]
 				if self.send_index > controls.height:
 					send_controls = send_controls + [None for _ in range(self.send_index - controls.height)]
 				self._channel_strips[index].set_send_controls(send_controls)
