@@ -10,7 +10,7 @@ Here's where to install the Remote Script folders.<br>
  + Live 9: C:\Program Data\Ableton\Live 9.x.x\Resources\MIDI Remote Scripts
 
 **For Live 9.7 scripts, visit**
-https://github.com/LividInstruments/m4m7
+https://github.com/aumhaa/m4m7
 
 Example Max For Live devices for the various controllers are featured in a git repository at:<br>
 https://github.com/LividInstruments/Max<br>
